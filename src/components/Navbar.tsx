@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 const pillars = [
-  { name: "The Journey", icon: Clock, path: "/journey" },
-  { name: "The Character", icon: Heart, path: "/character" },
-  { name: "The Map", icon: Compass, path: "/map" },
-  { name: "The Library", icon: BookOpen, path: "/library" },
+  { name: "الرحلة", icon: Clock, path: "/journey" },
+  { name: "الشمائل", icon: Heart, path: "/character" },
+  { name: "الخريطة", icon: Compass, path: "/map" },
+  { name: "المكتبة", icon: BookOpen, path: "/library" },
 ];
 
 const Navbar = () => {
@@ -20,7 +20,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="font-serif-display text-xl md:text-2xl font-bold text-primary tracking-wide">
-            The Seerah Path
+            مسار السيرة
           </Link>
 
           {/* Desktop Nav */}
@@ -48,7 +48,7 @@ const Navbar = () => {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden p-2 text-foreground/70 hover:text-secondary transition-colors"
-            aria-label="Toggle menu"
+            aria-label="القائمة"
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>

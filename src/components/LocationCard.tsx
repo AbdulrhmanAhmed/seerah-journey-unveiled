@@ -41,9 +41,8 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ duration: 0.3 }}
-        className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-96 z-20 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-lg overflow-hidden"
+        className="absolute bottom-4 right-4 left-4 md:right-auto md:left-4 md:bottom-4 md:w-96 z-20 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-lg overflow-hidden"
       >
-        {/* Photo placeholder */}
         <div className="h-32 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center islamic-pattern-dense">
           <div className="text-center">
             <p className="font-serif-display text-3xl text-foreground/80">
@@ -72,10 +71,9 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
             {location.description}
           </p>
 
-          {/* Key events with category badges */}
           <div className="mb-3">
-            <h4 className="font-body text-xs font-semibold uppercase tracking-widest text-secondary mb-2">
-              Key Events
+            <h4 className="font-body text-xs font-semibold text-secondary mb-2">
+              الأحداث الرئيسية
             </h4>
             <ul className="space-y-1.5">
               {location.events.map((event, i) => (
@@ -90,17 +88,16 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
             </ul>
           </div>
 
-          {/* Distance tooltip */}
           {location.travel.distanceKm > 0 && (
             <div className="rounded-lg bg-muted/50 p-3 border border-border/50">
-              <h4 className="font-body text-xs font-semibold uppercase tracking-widest text-foreground/70 mb-2">
-                Distance from {location.travel.from}
+              <h4 className="font-body text-xs font-semibold text-foreground/70 mb-2">
+                المسافة من {location.travel.from}
               </h4>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <Footprints size={14} className="text-secondary" />
                   <div>
-                    <p className="font-body text-xs text-muted-foreground">By camel</p>
+                    <p className="font-body text-xs text-muted-foreground">بالجمل</p>
                     <p className="font-body text-sm font-semibold text-foreground">
                       {location.travel.camelDays}
                     </p>
@@ -110,7 +107,7 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
                 <div className="flex items-center gap-1.5">
                   <Car size={14} className="text-primary" />
                   <div>
-                    <p className="font-body text-xs text-muted-foreground">By car today</p>
+                    <p className="font-body text-xs text-muted-foreground">بالسيارة اليوم</p>
                     <p className="font-body text-sm font-semibold text-foreground">
                       {location.travel.carHours}
                     </p>
@@ -118,9 +115,9 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
                 </div>
                 <div className="w-px h-8 bg-border" />
                 <div>
-                  <p className="font-body text-xs text-muted-foreground">Distance</p>
+                  <p className="font-body text-xs text-muted-foreground">المسافة</p>
                   <p className="font-body text-sm font-semibold text-foreground">
-                    {location.travel.distanceKm} km
+                    {location.travel.distanceKm} كم
                   </p>
                 </div>
               </div>

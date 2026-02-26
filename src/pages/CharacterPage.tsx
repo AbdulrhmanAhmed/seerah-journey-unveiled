@@ -13,9 +13,9 @@ const CharacterPage = () => (
         <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
           <Heart size={28} className="text-secondary" />
         </div>
-        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">The Character</h1>
+        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">الشمائل</h1>
         <p className="text-muted-foreground font-body">
-          Explore the noble qualities and teachings of the Prophet ﷺ — coming soon.
+          استكشف الصفات النبيلة وتعاليم النبي ﷺ — قريباً بإذن الله.
         </p>
       </motion.div>
     </div>
