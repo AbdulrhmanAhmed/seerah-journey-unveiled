@@ -1,11 +1,34 @@
-import { X, Footprints, Car } from "lucide-react";
+import { X, Footprints, Car, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { categoryMap } from "@/data/eventCategories";
 import type { MapLocation } from "@/data/mapLocations";
+import type { EventCategory } from "@/data/eventCategories";
+
+const iconMap: Record<string, React.ElementType> = {
+  Star, Swords, FileText, AlertCircle, Heart, Send,
+};
 
 interface LocationCardProps {
   location: MapLocation | null;
   onClose: () => void;
 }
+
+const CategoryBadge = ({ category }: { category: EventCategory }) => {
+  const cat = categoryMap[category];
+  const Icon = iconMap[cat.icon];
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-body font-medium"
+      style={{
+        backgroundColor: `hsl(${cat.colorHsl} / 0.12)`,
+        color: `hsl(${cat.colorHsl})`,
+      }}
+    >
+      {Icon && <Icon size={10} />}
+      {cat.label}
+    </span>
+  );
+};
 
 const LocationCard = ({ location, onClose }: LocationCardProps) => {
   if (!location) return null;
@@ -49,19 +72,19 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
             {location.description}
           </p>
 
-          {/* Key events */}
+          {/* Key events with category badges */}
           <div className="mb-3">
             <h4 className="font-body text-xs font-semibold uppercase tracking-widest text-secondary mb-2">
               Key Events
             </h4>
-            <ul className="space-y-1">
+            <ul className="space-y-1.5">
               {location.events.map((event, i) => (
                 <li
                   key={i}
                   className="font-body text-xs text-muted-foreground flex items-start gap-2"
                 >
-                  <span className="w-1 h-1 rounded-full bg-secondary mt-1.5 shrink-0" />
-                  {event}
+                  <CategoryBadge category={event.category} />
+                  <span className="pt-0.5">{event.label}</span>
                 </li>
               ))}
             </ul>
