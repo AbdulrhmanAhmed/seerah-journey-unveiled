@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Compass, Route } from "lucide-react";
 import { motion } from "framer-motion";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
@@ -31,7 +31,6 @@ const MapPage = () => {
   return (
     <div className="min-h-screen pt-24 pb-16 islamic-pattern">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -42,14 +41,13 @@ const MapPage = () => {
             <Compass size={28} className="text-secondary" />
           </div>
           <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
-            The Map
+            الخريطة
           </h1>
           <p className="text-muted-foreground font-body">
-            Explore the lands that shaped the Prophetic mission. Tap on any location to discover its story.
+            استكشف الأراضي التي شكّلت الرسالة النبوية. انقر على أي موقع لتكتشف قصته.
           </p>
         </motion.div>
 
-        {/* Controls */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -65,11 +63,10 @@ const MapPage = () => {
             }`}
           >
             <Route size={16} />
-            {showRoute ? "Hide Hijrah Route" : "Toggle Hijrah Route"}
+            {showRoute ? "إخفاء مسار الهجرة" : "عرض مسار الهجرة"}
           </button>
         </motion.div>
 
-        {/* Map container */}
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -85,20 +82,17 @@ const MapPage = () => {
             />
           </div>
 
-          {/* Location Card overlay */}
           <LocationCard
             location={selectedLocation}
             onClose={() => setSelectedLocation(null)}
           />
 
-          {/* Category Filter */}
           <MapCategoryFilter
             activeCategories={activeCategories}
             onToggle={handleToggleCategory}
           />
         </motion.div>
 
-        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -117,7 +111,7 @@ const MapPage = () => {
           {showRoute && (
             <div className="flex items-center gap-2">
               <span className="w-6 border-t-2 border-dashed border-secondary" />
-              Hijrah Route (622 CE)
+              مسار الهجرة (٦٢٢ م)
             </div>
           )}
         </motion.div>

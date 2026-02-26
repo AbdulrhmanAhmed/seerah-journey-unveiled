@@ -5,12 +5,7 @@ import { categories } from "@/data/eventCategories";
 import type { EventCategory } from "@/data/eventCategories";
 
 const iconMap: Record<string, React.ElementType> = {
-  Star,
-  Swords,
-  FileText,
-  AlertCircle,
-  Heart,
-  Send,
+  Star, Swords, FileText, AlertCircle, Heart, Send,
 };
 
 interface MapCategoryFilterProps {
@@ -22,12 +17,11 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="absolute bottom-4 right-4 z-30">
-      {/* Toggle button */}
+    <div className="absolute bottom-4 left-4 z-30">
       <button
         onClick={() => setOpen((p) => !p)}
         className="w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors"
-        aria-label="Filter categories"
+        aria-label="تصفية الفئات"
       >
         <Filter size={18} />
       </button>
@@ -39,10 +33,10 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-12 right-0 w-56 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-lg p-3"
+            className="absolute bottom-12 left-0 w-56 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-lg p-3"
           >
-            <p className="font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-              Filter by Category
+            <p className="font-body text-xs font-semibold text-muted-foreground mb-2">
+              تصفية حسب الفئة
             </p>
             <div className="space-y-1">
               {categories.map((cat) => {
@@ -52,7 +46,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
                   <button
                     key={cat.id}
                     onClick={() => onToggle(cat.id)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left font-body text-sm transition-all duration-200 ${
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-right font-body text-sm transition-all duration-200 ${
                       active
                         ? "bg-secondary/10 text-foreground"
                         : "text-muted-foreground/50 hover:text-muted-foreground"
@@ -68,7 +62,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
                     </span>
                     <span className={active ? "font-medium" : ""}>{cat.label}</span>
                     <span
-                      className={`ml-auto w-2 h-2 rounded-full transition-colors ${
+                      className={`ms-auto w-2 h-2 rounded-full transition-colors ${
                         active ? "" : "bg-muted"
                       }`}
                       style={{

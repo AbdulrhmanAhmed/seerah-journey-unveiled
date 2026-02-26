@@ -21,25 +21,25 @@ const TimelineEventModal = ({ event, open, onOpenChange }: TimelineEventModalPro
       <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto border-border bg-card">
         <DialogHeader>
           <span
-            className={`inline-block text-xs font-body font-semibold uppercase tracking-widest mb-1 px-2.5 py-0.5 rounded-full w-fit ${
+            className={`inline-block text-xs font-body font-semibold mb-1 px-2.5 py-0.5 rounded-full w-fit ${
               event.era === "makkah"
                 ? "bg-secondary/15 text-secondary"
                 : "bg-primary/15 text-primary"
             }`}
           >
-            {event.era === "makkah" ? "Makkah Era" : "Madinah Era"}
+            {event.era === "makkah" ? "العهد المكي" : "العهد المدني"}
           </span>
           <p className="font-body text-sm text-muted-foreground">
             {event.year}
             {event.hijriYear && (
-              <span className="ml-2 text-secondary">({event.hijriYear})</span>
+              <span className="me-2 text-secondary">({event.hijriYear})</span>
             )}
           </p>
           <DialogTitle className="font-serif-display text-2xl md:text-3xl text-foreground leading-snug">
             {event.title}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Details about {event.title}
+            تفاصيل {event.title}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-2">

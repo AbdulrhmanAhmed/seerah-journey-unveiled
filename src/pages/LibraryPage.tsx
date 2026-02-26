@@ -13,9 +13,9 @@ const LibraryPage = () => (
         <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
           <BookOpen size={28} className="text-secondary" />
         </div>
-        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">The Library</h1>
+        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">المكتبة</h1>
         <p className="text-muted-foreground font-body">
-          A curated collection of authentic Seerah resources is being prepared for you.
+          مجموعة منتقاة من مصادر السيرة الموثقة قيد الإعداد لكم.
         </p>
       </motion.div>
     </div>

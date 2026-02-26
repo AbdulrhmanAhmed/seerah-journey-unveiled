@@ -34,14 +34,12 @@ const JourneyPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Find the split point between Makkah and Madinah eras
   const madinahStartIndex = timelineEvents.findIndex((e) => e.era === "madinah");
   const makkahEvents = timelineEvents.slice(0, madinahStartIndex);
   const madinahEvents = timelineEvents.slice(madinahStartIndex);
 
   return (
     <div className="min-h-screen">
-      {/* Hero header */}
       <div className="pt-24 pb-12 islamic-pattern">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
@@ -54,21 +52,19 @@ const JourneyPage = () => {
               <Clock size={28} className="text-secondary" />
             </div>
             <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
-              The Journey
+              الرحلة
             </h1>
             <p className="text-muted-foreground font-body">
-              Walk through the life of the Prophet Muhammad ﷺ — from the blessed birth in
-              Makkah to the establishment of a nation in Madinah.
+              تنقّل عبر حياة النبي محمد ﷺ — من المولد المبارك في
+              مكة إلى تأسيس أمة في المدينة.
             </p>
           </motion.div>
         </div>
       </div>
 
-      {/* Timeline */}
       <div className="relative" ref={timelineRef}>
         <YearQuickNav />
 
-        {/* Makkah Era */}
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
           style={{
@@ -77,7 +73,6 @@ const JourneyPage = () => {
           }}
         >
           <div className="container mx-auto px-4 md:px-6">
-            {/* Era header */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -85,11 +80,10 @@ const JourneyPage = () => {
               className="text-center mb-12"
             >
               <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-secondary bg-secondary/10 px-4 py-1.5 rounded-full">
-                The Makkah Era · 570–622 CE
+                العهد المكي · ٥٧٠–٦٢٢ م
               </span>
             </motion.div>
 
-            {/* Timeline line (golden, scroll-linked) */}
             <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-border">
               <div
                 className="w-full bg-secondary transition-[height] duration-100 ease-linear"
@@ -108,7 +102,6 @@ const JourneyPage = () => {
           </div>
         </section>
 
-        {/* Madinah Era */}
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
           style={{
@@ -117,7 +110,6 @@ const JourneyPage = () => {
           }}
         >
           <div className="container mx-auto px-4 md:px-6">
-            {/* Era header */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -125,11 +117,10 @@ const JourneyPage = () => {
               className="text-center mb-12"
             >
               <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-                The Madinah Era · 622–632 CE
+                العهد المدني · ٦٢٢–٦٣٢ م
               </span>
             </motion.div>
 
-            {/* Timeline line continuation */}
             <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-border">
               <div
                 className="w-full bg-secondary transition-[height] duration-100 ease-linear"
@@ -151,7 +142,6 @@ const JourneyPage = () => {
         </section>
       </div>
 
-      {/* Modal */}
       <TimelineEventModal
         event={selectedEvent}
         open={modalOpen}
