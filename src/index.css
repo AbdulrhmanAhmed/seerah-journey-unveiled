@@ -151,3 +151,9 @@
     border-bottom: 1px solid hsl(var(--border) / 0.5);
   }
 }
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
