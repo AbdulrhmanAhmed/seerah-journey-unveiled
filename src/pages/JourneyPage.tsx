@@ -1,25 +1,164 @@
-import { Clock } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
+import { timelineEvents } from "@/data/seerahTimeline";
+import type { TimelineEvent } from "@/data/seerahTimeline";
+import TimelineEventCard from "@/components/TimelineEventCard";
+import TimelineEventModal from "@/components/TimelineEventModal";
+import YearQuickNav from "@/components/YearQuickNav";
 
-const JourneyPage = () => (
-  <div className="pt-24 pb-16 min-h-screen islamic-pattern">
-    <div className="container mx-auto px-4 md:px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-2xl mx-auto text-center"
-      >
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
-          <Clock size={28} className="text-secondary" />
+const JourneyPage = () => {
+  const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  const handleLearnMore = useCallback((event: TimelineEvent) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+      const rect = timelineRef.current.getBoundingClientRect();
+      const timelineHeight = timelineRef.current.scrollHeight;
+      const viewportCenter = window.innerHeight / 2;
+      const scrolled = viewportCenter - rect.top;
+      const progress = Math.min(Math.max(scrolled / timelineHeight, 0), 1);
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Find the split point between Makkah and Madinah eras
+  const madinahStartIndex = timelineEvents.findIndex((e) => e.era === "madinah");
+  const makkahEvents = timelineEvents.slice(0, madinahStartIndex);
+  const madinahEvents = timelineEvents.slice(madinahStartIndex);
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero header */}
+      <div className="pt-24 pb-12 islamic-pattern">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
+              <Clock size={28} className="text-secondary" />
+            </div>
+            <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
+              The Journey
+            </h1>
+            <p className="text-muted-foreground font-body">
+              Walk through the life of the Prophet Muhammad ﷺ — from the blessed birth in
+              Makkah to the establishment of a nation in Madinah.
+            </p>
+          </motion.div>
         </div>
-        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">The Journey</h1>
-        <p className="text-muted-foreground font-body">
-          The interactive timeline of the Prophet's ﷺ life is coming soon. Follow the path from Makkah to Madinah.
-        </p>
-      </motion.div>
+      </div>
+
+      {/* Timeline */}
+      <div className="relative" ref={timelineRef}>
+        <YearQuickNav />
+
+        {/* Makkah Era */}
+        <section
+          className="relative py-12 md:py-16 transition-colors duration-700"
+          style={{
+            background:
+              "linear-gradient(180deg, hsl(48 44% 95%) 0%, hsl(48 40% 92%) 100%)",
+          }}
+        >
+          <div className="container mx-auto px-4 md:px-6">
+            {/* Era header */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-secondary bg-secondary/10 px-4 py-1.5 rounded-full">
+                The Makkah Era · 570–622 CE
+              </span>
+            </motion.div>
+
+            {/* Timeline line (golden, scroll-linked) */}
+            <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-border">
+              <div
+                className="w-full bg-secondary transition-[height] duration-100 ease-linear"
+                style={{ height: `${Math.min(scrollProgress * 200, 100)}%` }}
+              />
+            </div>
+
+            {makkahEvents.map((event, i) => (
+              <TimelineEventCard
+                key={event.id}
+                event={event}
+                index={i}
+                onLearnMore={handleLearnMore}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Madinah Era */}
+        <section
+          className="relative py-12 md:py-16 transition-colors duration-700"
+          style={{
+            background:
+              "linear-gradient(180deg, hsl(160 40% 93%) 0%, hsl(160 50% 90%) 100%)",
+          }}
+        >
+          <div className="container mx-auto px-4 md:px-6">
+            {/* Era header */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+                The Madinah Era · 622–632 CE
+              </span>
+            </motion.div>
+
+            {/* Timeline line continuation */}
+            <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-border">
+              <div
+                className="w-full bg-secondary transition-[height] duration-100 ease-linear"
+                style={{
+                  height: `${Math.min(Math.max((scrollProgress - 0.5) * 200, 0), 100)}%`,
+                }}
+              />
+            </div>
+
+            {madinahEvents.map((event, i) => (
+              <TimelineEventCard
+                key={event.id}
+                event={event}
+                index={i + madinahStartIndex}
+                onLearnMore={handleLearnMore}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Modal */}
+      <TimelineEventModal
+        event={selectedEvent}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
-  </div>
-);
+  );
+};
 
 export default JourneyPage;
