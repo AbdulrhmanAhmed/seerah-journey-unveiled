@@ -1,3 +1,5 @@
+import type { EventCategory } from "./eventCategories";
+
 export interface TimelineEvent {
   id: string;
   year: string;
@@ -6,6 +8,7 @@ export interface TimelineEvent {
   summary: string;
   details: string;
   era: "makkah" | "madinah";
+  category: EventCategory;
 }
 
 export const timelineEvents: TimelineEvent[] = [
@@ -16,6 +19,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Born in the Year of the Elephant in the noble city of Makkah, into the clan of Banu Hashim.",
     details: "Prophet Muhammad ﷺ was born on a Monday, the 12th of Rabi' al-Awwal, in the Year of the Elephant (570 CE). His father, Abdullah ibn Abdul-Muttalib, had passed away before his birth. He was born into the noble clan of Banu Hashim, part of the respected Quraysh tribe. His mother Aminah bint Wahb entrusted him to Halimah al-Sa'diyah for nursing, as was the custom among the Arabs of that time.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "halimah",
@@ -24,6 +28,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Raised among the Banu Sa'd in the open desert, learning pure Arabic and building resilience.",
     details: "The young Muhammad ﷺ spent his early years in the care of his wet nurse, Halimah al-Sa'diyah, among the Bedouin tribe of Banu Sa'd. This period shaped his character with the purity of desert life, eloquent Arabic speech, and physical strength. It was during this time that the famous incident of the opening of his chest occurred, witnessed by the angel Jibreel (Gabriel), peace be upon him.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "orphan",
@@ -32,6 +37,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Aminah passes away when he is six, followed by Abdul-Muttalib two years later.",
     details: "At the age of six, Muhammad ﷺ lost his beloved mother Aminah bint Wahb during a return journey from Madinah. His grandfather Abdul-Muttalib, the chief of Quraysh, then took guardianship. However, Abdul-Muttalib himself passed away when Muhammad ﷺ was only eight years old. His uncle Abu Talib then became his guardian, raising him with love and protection.",
     era: "makkah",
+    category: "challenge",
   },
   {
     id: "trade",
@@ -40,6 +46,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The young Muhammad ﷺ travels with his uncle and meets the monk Bahira.",
     details: "At around the age of twelve, Muhammad ﷺ accompanied his uncle Abu Talib on a trade caravan to Syria. During this journey, they encountered the Christian monk Bahira near Busra, who recognized signs of prophethood in the young boy and advised Abu Talib to protect him. This journey exposed Muhammad ﷺ to the broader world of trade, cultures, and religions beyond Makkah.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "khadijah",
@@ -48,6 +55,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "At 25, he marries the noble businesswoman Khadijah bint Khuwaylid, 15 years his senior.",
     details: "Khadijah bint Khuwaylid, a successful and respected merchant of Quraysh, hired Muhammad ﷺ to lead her trade caravan to Syria. Impressed by his honesty, integrity, and the success of the venture, she proposed marriage through an intermediary. They married when he was 25 and she was 40. Their union was one of deep love, mutual respect, and partnership. Khadijah bore him several children and became his greatest supporter.",
     era: "makkah",
+    category: "marriage",
   },
   {
     id: "revelation",
@@ -56,6 +64,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "In the Cave of Hira, Angel Jibreel delivers the first words of the Quran: 'Iqra!' (Read!).",
     details: "At the age of 40, during one of his regular retreats to the Cave of Hira on Jabal al-Noor, Muhammad ﷺ received the first revelation from Allah through the Angel Jibreel (Gabriel). The angel commanded him: 'Read! In the name of your Lord who created.' (Quran 96:1). Trembling, he returned home to Khadijah, who comforted him and took him to her cousin Waraqah ibn Nawfal, a Christian scholar who confirmed his prophethood.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "secret-dawah",
@@ -64,6 +73,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "For three years, the Prophet ﷺ quietly invites close companions to the message of Tawheed.",
     details: "The first phase of the prophetic mission was conducted in secrecy. The earliest believers included Khadijah (his wife), Ali ibn Abi Talib (his young cousin), Zayd ibn Harithah (his freed servant), and Abu Bakr al-Siddiq (his closest friend). Abu Bakr's influence brought several other prominent figures into Islam. They would gather secretly to learn, pray, and support one another. This small community grew to about 40 believers over three years.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "public-dawah",
@@ -72,6 +82,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Commanded to proclaim the message openly, he ascends Mount Safa and calls the Quraysh.",
     details: "After three years of secret preaching, the divine command came: 'Proclaim openly what you are commanded.' (Quran 15:94). The Prophet ﷺ climbed Mount Safa and called each clan of Quraysh by name, warning them of a severe punishment if they did not accept the Oneness of Allah. His uncle Abu Lahab responded with hostility. This public declaration marked the beginning of open opposition from the Quraysh leadership.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "persecution",
@@ -80,6 +91,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Early Muslims face torture, economic boycott, and social isolation at the hands of Quraysh.",
     details: "As Islam spread, the Quraysh intensified their persecution. Bilal ibn Rabah was tortured under the scorching sun by Umayyah ibn Khalaf. The family of Yasir — Ammar, Yasir, and Sumayyah — endured brutal torture; Sumayyah became the first martyr of Islam. The Prophet ﷺ himself faced abuse but remained steadfast, comforting his companions with the promise of paradise and the ultimate triumph of truth.",
     era: "makkah",
+    category: "challenge",
   },
   {
     id: "abyssinia",
@@ -88,6 +100,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Prophet ﷺ sends a group of persecuted Muslims to seek refuge under the just Christian king, Najashi.",
     details: "To protect his followers from the relentless persecution, the Prophet ﷺ advised a group of Muslims to emigrate to Abyssinia (modern-day Ethiopia), ruled by the just Christian king, the Negus (al-Najashi). About 15 Muslims made the first migration, followed by a larger group of about 80. The Quraysh sent envoys to demand their return, but the Negus, moved by the recitation of Surah Maryam, refused to hand them over.",
     era: "makkah",
+    category: "diplomacy",
   },
   {
     id: "boycott",
@@ -96,6 +109,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Quraysh imposes a three-year economic and social boycott on the Prophet's ﷺ entire clan.",
     details: "The Quraysh imposed a comprehensive boycott against Banu Hashim and Banu al-Muttalib, prohibiting all trade, marriage, and social interaction. The two clans were confined to the Valley of Abu Talib (Shi'b Abi Talib) for nearly three years, enduring severe hunger and hardship. The boycott ended when several fair-minded Quraysh leaders worked to annul the unjust pact, discovering that termites had eaten away all but the name of Allah from the written agreement.",
     era: "makkah",
+    category: "challenge",
   },
   {
     id: "year-of-sorrow",
@@ -104,6 +118,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Prophet ﷺ loses both his beloved wife Khadijah and his uncle and protector Abu Talib.",
     details: "The year 619 CE became known as the 'Year of Sorrow' (Aam al-Huzn). Within a short span, the Prophet ﷺ lost two of his greatest supporters: his uncle Abu Talib, who had shielded him from the Quraysh despite not embracing Islam, and his beloved wife Khadijah, who was his first believer, confidante, and source of comfort. These losses left him deeply grieved and more vulnerable to the hostility of the Quraysh.",
     era: "makkah",
+    category: "challenge",
   },
   {
     id: "taif",
@@ -112,6 +127,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Seeking support beyond Makkah, the Prophet ﷺ travels to Ta'if but is met with rejection and cruelty.",
     details: "After the Year of Sorrow, the Prophet ﷺ traveled to Ta'if with Zayd ibn Harithah, hoping the tribe of Thaqif would accept his message. Instead, the leaders mocked him and sent their youth to stone him, causing his feet to bleed. In his moment of deepest pain, he made his famous supplication to Allah. An angel offered to destroy the people of Ta'if, but the Prophet ﷺ declined, hoping their descendants would believe.",
     era: "makkah",
+    category: "challenge",
   },
   {
     id: "isra-miraj",
@@ -120,6 +136,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The miraculous Night Journey from Makkah to Jerusalem, and the Ascension through the heavens.",
     details: "In one of the most extraordinary events in human history, the Prophet ﷺ was transported by night from Masjid al-Haram in Makkah to Masjid al-Aqsa in Jerusalem (al-Isra'), and then ascended through the seven heavens (al-Mi'raj). He met previous prophets, witnessed the signs of Allah, and received the gift of the five daily prayers. This event strengthened his resolve and became a defining moment of faith for the Muslim community.",
     era: "makkah",
+    category: "milestone",
   },
   {
     id: "aqabah",
@@ -128,6 +145,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Delegations from Yathrib (Madinah) pledge allegiance, opening the door for the Hijrah.",
     details: "During the Hajj seasons, the Prophet ﷺ met groups from Yathrib (later Madinah) who embraced Islam. In the First Pledge of Aqabah (621 CE), twelve men pledged to worship Allah alone, avoid sins, and obey the Prophet ﷺ. In the Second Pledge of Aqabah (622 CE), seventy-three men and two women pledged to protect the Prophet ﷺ as they would their own families. These pledges paved the way for the historic migration to Madinah.",
     era: "makkah",
+    category: "contract",
   },
   {
     id: "hijrah",
@@ -137,6 +155,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Prophet ﷺ and Abu Bakr migrate to Madinah — the turning point of Islamic history.",
     details: "With the Quraysh plotting to assassinate him, the Prophet ﷺ and Abu Bakr secretly departed Makkah, hiding in the Cave of Thawr for three days. Guided by Abdullah ibn Urayqit, they took an unconventional route to Madinah. The people of Madinah — the Ansar — welcomed them with open arms and the famous nasheed 'Tala'al-Badru Alayna.' The Hijrah marks the beginning of the Islamic calendar and the establishment of the first Muslim state.",
     era: "madinah",
+    category: "milestone",
   },
   {
     id: "madinah-charter",
@@ -146,6 +165,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Prophet ﷺ drafts a groundbreaking charter establishing a multi-faith civic society.",
     details: "Upon arriving in Madinah, the Prophet ﷺ established the first mosque (Masjid al-Nabawi), instituted the bond of brotherhood (Mu'akhah) between the Muhajirun and Ansar, and drafted the Constitution of Madinah (Sahifat al-Madinah). This remarkable document defined the rights and duties of all citizens — Muslims, Jews, and other groups — establishing principles of mutual defense, religious freedom, and conflict resolution. It is considered one of the earliest constitutional documents in history.",
     era: "madinah",
+    category: "contract",
   },
   {
     id: "badr",
@@ -155,6 +175,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "313 Muslims face over 1,000 Quraysh warriors — and achieve a miraculous victory.",
     details: "The Battle of Badr was the first major military confrontation between the Muslims and the Quraysh. Despite being vastly outnumbered — 313 Muslims against over 1,000 well-equipped Quraysh fighters — the Muslims achieved a decisive victory with divine support. Allah sent angels to aid the believers, and several prominent leaders of Quraysh were killed or captured. The victory at Badr established the Muslim community as a serious force and boosted the morale of the believers.",
     era: "madinah",
+    category: "battle",
   },
   {
     id: "uhud",
@@ -164,6 +185,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "A hard-fought battle with painful losses teaches the believers valuable lessons in obedience.",
     details: "The Quraysh returned with 3,000 warriors seeking revenge for Badr. The Prophet ﷺ positioned archers on Mount Uhud with strict orders not to leave their posts. Initially, the Muslims gained the upper hand, but when the archers abandoned their positions to collect spoils, Khalid ibn al-Walid (then fighting for Quraysh) exploited the gap. The Prophet ﷺ was injured, and about 70 Muslims were martyred, including Hamzah ibn Abdul-Muttalib. The battle taught crucial lessons about obedience and steadfastness.",
     era: "madinah",
+    category: "battle",
   },
   {
     id: "khandaq",
@@ -173,6 +195,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "A coalition of 10,000 besieges Madinah, but a trench strategy and divine intervention save the city.",
     details: "A massive coalition of Quraysh, Ghatafan, and other tribes — numbering about 10,000 — marched against Madinah. On the suggestion of Salman al-Farisi, the Muslims dug a trench around the city's vulnerable northern side. The siege lasted about a month. Allah sent a fierce wind and unseen forces that shattered the coalition's morale. The allies withdrew in disarray, marking the last major offensive by the Quraysh against the Muslims.",
     era: "madinah",
+    category: "battle",
   },
   {
     id: "hudaybiyyah",
@@ -182,6 +205,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "A seemingly unfavorable peace treaty that the Quran calls 'a clear victory.'",
     details: "The Prophet ﷺ set out with about 1,400 companions to perform Umrah. The Quraysh blocked their entry at Hudaybiyyah. After negotiations, a treaty was signed with terms that seemed disadvantageous to the Muslims, including returning to Madinah without performing Umrah. However, the Quran described it as 'a clear victory' (Quran 48:1). The ten-year peace allowed Islam to spread rapidly, and within two years, the number of Muslims multiplied many times over.",
     era: "madinah",
+    category: "contract",
   },
   {
     id: "conquest",
@@ -191,6 +215,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Prophet ﷺ enters Makkah peacefully with 10,000 companions, granting a general amnesty.",
     details: "After the Quraysh violated the Treaty of Hudaybiyyah by attacking Muslim allies, the Prophet ﷺ marched to Makkah with an army of 10,000. The city was taken with virtually no bloodshed. The Prophet ﷺ entered with humility, his head bowed on his mount, reciting Surah al-Fath. He destroyed the 360 idols around the Ka'bah, declaring: 'Truth has come, and falsehood has vanished.' He granted a general amnesty to the people of Makkah, including his former persecutors — an act of mercy unparalleled in history.",
     era: "madinah",
+    category: "milestone",
   },
   {
     id: "farewell",
@@ -200,6 +225,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "Over 100,000 Muslims gather as the Prophet ﷺ delivers his timeless Farewell Sermon.",
     details: "In the 10th year of Hijrah, the Prophet ﷺ performed his only complete Hajj, known as Hajjat al-Wada' (the Farewell Pilgrimage). Over 100,000 companions gathered at the plains of Arafat, where he delivered his monumental Farewell Sermon. He proclaimed the sanctity of life, property, and honor; the equality of all people regardless of race; the rights of women; and the finality of his message. He asked the people to bear witness that he had conveyed the message, and they testified: 'Yes, you have!'",
     era: "madinah",
+    category: "milestone",
   },
   {
     id: "passing",
@@ -209,6 +235,7 @@ export const timelineEvents: TimelineEvent[] = [
     summary: "The Messenger of Allah ﷺ returns to his Lord, leaving behind the Quran and his Sunnah.",
     details: "On Monday, the 12th of Rabi' al-Awwal, 11 AH (June 8, 632 CE), the Prophet ﷺ passed away in Madinah, in the apartment of his wife Aisha. His last words included: 'With the highest companions' — choosing the company of Allah over remaining in this world. The companions were devastated. Abu Bakr calmed them with his famous words: 'Whoever worshipped Muhammad, let him know that Muhammad has died. But whoever worshipped Allah, let him know that Allah is alive and will never die.' He was buried where he passed away, in what is now part of Masjid al-Nabawi.",
     era: "madinah",
+    category: "milestone",
   },
 ];
 

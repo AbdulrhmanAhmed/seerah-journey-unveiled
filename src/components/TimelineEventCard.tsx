@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
 import type { TimelineEvent } from "@/data/seerahTimeline";
+import { categoryMap } from "@/data/eventCategories";
+
+const iconMap: Record<string, React.ElementType> = {
+  Star, Swords, FileText, AlertCircle, Heart, Send,
+};
 
 interface TimelineEventCardProps {
   event: TimelineEvent;
@@ -27,16 +32,34 @@ const TimelineEventCard = ({ event, index, onLearnMore }: TimelineEventCardProps
         className={`w-full md:w-[calc(50%-2rem)] ${isLeft ? "md:pr-0" : "md:pl-0"}`}
       >
         <div className="group relative rounded-xl border border-border bg-card/80 backdrop-blur-sm p-5 md:p-6 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all duration-300 cursor-pointer">
-          {/* Era badge */}
-          <span
-            className={`inline-block text-xs font-body font-semibold uppercase tracking-widest mb-2 px-2.5 py-0.5 rounded-full ${
-              event.era === "makkah"
-                ? "bg-secondary/15 text-secondary"
-                : "bg-primary/15 text-primary"
-            }`}
-          >
-            {event.era === "makkah" ? "Makkah Era" : "Madinah Era"}
-          </span>
+          {/* Era badge + Category badge */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span
+              className={`inline-block text-xs font-body font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full ${
+                event.era === "makkah"
+                  ? "bg-secondary/15 text-secondary"
+                  : "bg-primary/15 text-primary"
+              }`}
+            >
+              {event.era === "makkah" ? "Makkah Era" : "Madinah Era"}
+            </span>
+            {(() => {
+              const cat = categoryMap[event.category];
+              const CatIcon = iconMap[cat.icon];
+              return (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-body font-medium px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `hsl(${cat.colorHsl} / 0.12)`,
+                    color: `hsl(${cat.colorHsl})`,
+                  }}
+                >
+                  {CatIcon && <CatIcon size={10} />}
+                  {cat.label}
+                </span>
+              );
+            })()}
+          </div>
 
           {/* Date */}
           <p className="font-body text-sm text-muted-foreground mb-1">

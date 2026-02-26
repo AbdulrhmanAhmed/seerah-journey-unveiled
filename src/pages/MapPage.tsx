@@ -1,16 +1,31 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Compass, Route } from "lucide-react";
 import { motion } from "framer-motion";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
 import LocationCard from "@/components/LocationCard";
+import MapCategoryFilter from "@/components/MapCategoryFilter";
+import { categories } from "@/data/eventCategories";
 import type { MapLocation } from "@/data/mapLocations";
+import type { EventCategory } from "@/data/eventCategories";
 
 const MapPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [showRoute, setShowRoute] = useState(false);
+  const [activeCategories, setActiveCategories] = useState<Set<EventCategory>>(
+    () => new Set(categories.map((c) => c.id))
+  );
 
   const handleLocationClick = (location: MapLocation) => {
     setSelectedLocation((prev) => (prev?.id === location.id ? null : location));
+  };
+
+  const handleToggleCategory = (cat: EventCategory) => {
+    setActiveCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
   };
 
   return (
@@ -66,6 +81,7 @@ const MapPage = () => {
               onLocationClick={handleLocationClick}
               selectedId={selectedLocation?.id ?? null}
               showRoute={showRoute}
+              activeCategories={activeCategories}
             />
           </div>
 
@@ -73,6 +89,12 @@ const MapPage = () => {
           <LocationCard
             location={selectedLocation}
             onClose={() => setSelectedLocation(null)}
+          />
+
+          {/* Category Filter */}
+          <MapCategoryFilter
+            activeCategories={activeCategories}
+            onToggle={handleToggleCategory}
           />
         </motion.div>
 
@@ -83,10 +105,15 @@ const MapPage = () => {
           transition={{ delay: 0.5 }}
           className="flex flex-wrap justify-center gap-6 mt-6 font-body text-xs text-muted-foreground"
         >
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-            Key Location
-          </div>
+          {categories.map((cat) => (
+            <div key={cat.id} className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: `hsl(${cat.colorHsl})` }}
+              />
+              {cat.label}
+            </div>
+          ))}
           {showRoute && (
             <div className="flex items-center gap-2">
               <span className="w-6 border-t-2 border-dashed border-secondary" />
