@@ -192,8 +192,8 @@ const ArabianMapSVG = ({
           }
         )}
 
-      {/* Location markers */}
-      {visibleLocations.map((loc) => {
+      {/* Location markers — hidden when a path is active */}
+      {!activePath && visibleLocations.map((loc) => {
         const catConfig = categoryMap[loc.primaryCategory];
         const catColor = `hsl(${catConfig.colorHsl})`;
         const isSelected = selectedId === loc.id;
