@@ -42,6 +42,10 @@ export const translations = {
     mapHideRoute: "إخفاء مسار الهجرة",
     mapRouteLegend: "مسار الهجرة (٦٢٢ م)",
     mapHijrahRoute: "مسار الهجرة",
+    mapJourneys: "المسارات",
+    mapPlayPath: "تشغيل المسار",
+    mapStepOf: "الخطوة",
+    mapOf: "من",
 
     // Journey Page
     journeyTitle: "الرحلة",
@@ -128,6 +132,10 @@ export const translations = {
     mapHideRoute: "Hide Hijrah Route",
     mapRouteLegend: "Hijrah Route (622 CE)",
     mapHijrahRoute: "Hijrah Route",
+    mapJourneys: "Journeys",
+    mapPlayPath: "Play Path",
+    mapStepOf: "Step",
+    mapOf: "of",
 
     journeyTitle: "The Journey",
     journeySubtitle: "Navigate through the life of Prophet Muhammad ﷺ — from his blessed birth in Makkah to founding a nation in Madinah.",

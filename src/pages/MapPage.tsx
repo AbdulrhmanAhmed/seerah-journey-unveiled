@@ -1,21 +1,30 @@
-import { useState } from "react";
-import { Compass, Route } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Compass } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
 import LocationCard from "@/components/LocationCard";
 import MapCategoryFilter from "@/components/MapCategoryFilter";
+import MapPathSelector from "@/components/MapPathSelector";
+import MapStepNavigator from "@/components/MapStepNavigator";
 import { categories } from "@/data/eventCategories";
+import { mapLocations } from "@/data/mapLocations";
 import type { MapLocation } from "@/data/mapLocations";
 import type { EventCategory } from "@/data/eventCategories";
+import type { MapPath } from "@/data/mapPaths";
+
+const CINEMATIC_DELAY = 5000;
 
 const MapPage = () => {
   const { t, lang } = useLanguage();
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
-  const [showRoute, setShowRoute] = useState(false);
   const [activeCategories, setActiveCategories] = useState<Set<EventCategory>>(
     () => new Set(categories.map((c) => c.id))
   );
+  const [activePath, setActivePath] = useState<MapPath | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
   const handleLocationClick = (location: MapLocation) => {
     setSelectedLocation((prev) => (prev?.id === location.id ? null : location));
@@ -29,6 +38,101 @@ const MapPage = () => {
       return next;
     });
   };
+
+  const handleSelectPath = (path: MapPath | null) => {
+    stopPlaying();
+    setActivePath(path);
+    setCurrentStep(0);
+    setSelectedLocation(null);
+    // Show location card for first step if path selected
+    if (path?.steps[0]?.locationId) {
+      const loc = mapLocations.find((l) => l.id === path.steps[0].locationId);
+      if (loc) setSelectedLocation(loc);
+    }
+  };
+
+  const handleStepChange = useCallback(
+    (step: number) => {
+      if (!activePath || step < 0 || step >= activePath.steps.length) return;
+      setCurrentStep(step);
+      const s = activePath.steps[step];
+      if (s.locationId) {
+        const loc = mapLocations.find((l) => l.id === s.locationId);
+        setSelectedLocation(loc ?? null);
+      } else {
+        setSelectedLocation(null);
+      }
+    },
+    [activePath]
+  );
+
+  const stopPlaying = useCallback(() => {
+    setIsPlaying(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  const handlePlayPath = (path: MapPath) => {
+    stopPlaying();
+    setActivePath(path);
+    setCurrentStep(0);
+    setIsPlaying(true);
+  };
+
+  const handleTogglePlay = () => {
+    if (isPlaying) {
+      stopPlaying();
+    } else {
+      setIsPlaying(true);
+    }
+  };
+
+  const handleStop = () => {
+    stopPlaying();
+    setCurrentStep(0);
+    if (activePath?.steps[0]?.locationId) {
+      const loc = mapLocations.find((l) => l.id === activePath.steps[0].locationId);
+      setSelectedLocation(loc ?? null);
+    }
+  };
+
+  // Cinematic auto-advance
+  useEffect(() => {
+    if (!isPlaying || !activePath) return;
+
+    // Show first step location
+    handleStepChange(currentStep);
+
+    intervalRef.current = window.setInterval(() => {
+      setCurrentStep((prev) => {
+        const next = prev + 1;
+        if (next >= activePath.steps.length) {
+          stopPlaying();
+          return prev;
+        }
+        return next;
+      });
+    }, CINEMATIC_DELAY);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, activePath]);
+
+  // Update location card when step changes during playback
+  useEffect(() => {
+    if (activePath && currentStep >= 0) {
+      const s = activePath.steps[currentStep];
+      if (s?.locationId) {
+        const loc = mapLocations.find((l) => l.id === s.locationId);
+        setSelectedLocation(loc ?? null);
+      } else {
+        setSelectedLocation(null);
+      }
+    }
+  }, [currentStep, activePath]);
 
   return (
     <div className="min-h-screen pt-24 pb-16 islamic-pattern">
@@ -51,25 +155,6 @@ const MapPage = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex justify-center mb-6"
-        >
-          <button
-            onClick={() => setShowRoute((p) => !p)}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-body text-sm font-medium border transition-all duration-300 ${
-              showRoute
-                ? "bg-secondary text-secondary-foreground border-secondary shadow-md"
-                : "bg-card border-border text-muted-foreground hover:border-secondary/50 hover:text-secondary"
-            }`}
-          >
-            <Route size={16} />
-            {showRoute ? t("mapHideRoute") : t("mapShowRoute")}
-          </button>
-        </motion.div>
-
-        <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -79,15 +164,36 @@ const MapPage = () => {
             <ArabianMapSVG
               onLocationClick={handleLocationClick}
               selectedId={selectedLocation?.id ?? null}
-              showRoute={showRoute}
               activeCategories={activeCategories}
+              activePath={activePath}
+              activeStep={activePath ? currentStep : -1}
             />
           </div>
 
-          <LocationCard
-            location={selectedLocation}
-            onClose={() => setSelectedLocation(null)}
+          <MapPathSelector
+            activePath={activePath}
+            onSelectPath={handleSelectPath}
+            onPlayPath={handlePlayPath}
+            isPlaying={isPlaying}
           />
+
+          {!activePath && (
+            <LocationCard
+              location={selectedLocation}
+              onClose={() => setSelectedLocation(null)}
+            />
+          )}
+
+          {activePath && (
+            <MapStepNavigator
+              path={activePath}
+              currentStep={currentStep}
+              onStepChange={handleStepChange}
+              isPlaying={isPlaying}
+              onTogglePlay={handleTogglePlay}
+              onStop={handleStop}
+            />
+          )}
 
           <MapCategoryFilter
             activeCategories={activeCategories}
@@ -110,12 +216,6 @@ const MapPage = () => {
               {lang === "ar" ? cat.label : cat.labelEn}
             </div>
           ))}
-          {showRoute && (
-            <div className="flex items-center gap-2">
-              <span className="w-6 border-t-2 border-dashed border-secondary" />
-              {t("mapRouteLegend")}
-            </div>
-          )}
         </motion.div>
       </div>
     </div>
