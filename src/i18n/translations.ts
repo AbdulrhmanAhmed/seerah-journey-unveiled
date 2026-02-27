@@ -57,9 +57,18 @@ export const translations = {
     journeyMadinah: "العهد المدني",
     journeyDetails: "تفاصيل",
 
-    // Character Page
-    characterTitle: "الشمائل",
-    characterSubtitle: "استكشف الصفات النبيلة وتعاليم النبي ﷺ — قريباً بإذن الله.",
+    // Character / Shamail Page
+    characterTitle: "الشمائل المحمدية",
+    characterSubtitle: "استكشف صفات سيد الخلق ﷺ",
+    shamailTraitOfDay: "صفة اليوم",
+    shamailFromGuidance: "من هدي النبي ﷺ",
+    shamailTheySaid: "قالوا عنه",
+    shamailReflection: "تأمل",
+    shamailViewOnMap: "عرض الموقع على الخريطة",
+    shamailCategoryAll: "الكل",
+    shamailCategoryMoral: "الصفات الخُلقية",
+    shamailCategoryPhysical: "الصفات الخَلقية",
+    shamailCategorySocial: "التعاملات الاجتماعية",
 
     // Library Page
     libraryTitle: "المكتبة",
@@ -146,8 +155,17 @@ export const translations = {
     journeyMadinah: "Madinan Period",
     journeyDetails: "Details of",
 
-    characterTitle: "The Character",
-    characterSubtitle: "Explore the noble qualities and teachings of the Prophet ﷺ — coming soon, God willing.",
+    characterTitle: "Prophetic Traits",
+    characterSubtitle: "Discover the noble qualities of the Prophet ﷺ",
+    shamailTraitOfDay: "Trait of the Day",
+    shamailFromGuidance: "From the Prophet's Guidance ﷺ",
+    shamailTheySaid: "What They Said",
+    shamailReflection: "Reflection",
+    shamailViewOnMap: "View on Map",
+    shamailCategoryAll: "All",
+    shamailCategoryMoral: "Moral",
+    shamailCategoryPhysical: "Physical",
+    shamailCategorySocial: "Social",
 
     libraryTitle: "The Library",
     librarySubtitle: "A curated collection of verified Seerah sources is being prepared for you.",
