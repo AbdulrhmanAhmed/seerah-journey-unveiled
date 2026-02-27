@@ -14,16 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      location_events: {
+        Row: {
+          category: string
+          created_at: string
+          event_order: number
+          id: string
+          label: string
+          label_en: string
+          location_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          event_order?: number
+          id?: string
+          label: string
+          label_en: string
+          location_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          event_order?: number
+          id?: string
+          label?: string
+          label_en?: string
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_events_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "map_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      map_locations: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          is_active: boolean
+          name: string
+          name_arabic: string | null
+          name_en: string
+          primary_category: string
+          travel_data: Json | null
+          x: number
+          y: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id: string
+          is_active?: boolean
+          name: string
+          name_arabic?: string | null
+          name_en: string
+          primary_category?: string
+          travel_data?: Json | null
+          x?: number
+          y?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_arabic?: string | null
+          name_en?: string
+          primary_category?: string
+          travel_data?: Json | null
+          x?: number
+          y?: number
+        }
+        Relationships: []
+      }
+      path_steps: {
+        Row: {
+          coord_x: number
+          coord_y: number
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          label: string
+          label_en: string
+          location_id: string | null
+          path_id: string
+          segment_type: string
+          step_order: number
+        }
+        Insert: {
+          coord_x?: number
+          coord_y?: number
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          label: string
+          label_en: string
+          location_id?: string | null
+          path_id: string
+          segment_type?: string
+          step_order?: number
+        }
+        Update: {
+          coord_x?: number
+          coord_y?: number
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          label?: string
+          label_en?: string
+          location_id?: string | null
+          path_id?: string
+          segment_type?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "path_steps_path_id_fkey"
+            columns: ["path_id"]
+            isOneToOne: false
+            referencedRelation: "paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paths: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          is_active: boolean
+          line_color: string
+          name: string
+          name_en: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          line_color?: string
+          name: string
+          name_en: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          line_color?: string
+          name?: string
+          name_en?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +342,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

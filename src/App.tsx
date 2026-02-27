@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import { AuthProvider } from "@/hooks/useAuth";
+import AdminProtectedRoute from "@/components/AdminProtectedRoute";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import JourneyPage from "./pages/JourneyPage";
@@ -11,28 +13,40 @@ import CharacterPage from "./pages/CharacterPage";
 import MapPage from "./pages/MapPage";
 import LibraryPage from "./pages/LibraryPage";
 import NotFound from "./pages/NotFound";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminPathsPage from "./pages/AdminPathsPage";
+import AdminLocationsPage from "./pages/AdminLocationsPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Layout>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/journey" element={<JourneyPage />} />
-              <Route path="/character" element={<CharacterPage />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/library" element={<LibraryPage />} />
-              <Route path="*" element={<NotFound />} />
+              {/* Public routes */}
+              <Route path="/" element={<Layout><Index /></Layout>} />
+              <Route path="/journey" element={<Layout><JourneyPage /></Layout>} />
+              <Route path="/character" element={<Layout><CharacterPage /></Layout>} />
+              <Route path="/map" element={<Layout><MapPage /></Layout>} />
+              <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
+
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+              <Route path="/admin/paths" element={<AdminProtectedRoute><AdminPathsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
+
+              <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
-          </Layout>
-        </BrowserRouter>
-      </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </LanguageProvider>
   </QueryClientProvider>
 );
