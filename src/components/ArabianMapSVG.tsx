@@ -48,9 +48,7 @@ const ArabianMapSVG = ({
       const len = pathRef.current.getTotalLength();
       setPathLength(len);
       setAnimatedLength(0);
-      requestAnimationFrame(() => {
-        setAnimatedLength(len);
-      });
+      requestAnimationFrame(() => setAnimatedLength(len));
     }
   }, [pathD]);
 
@@ -78,9 +76,9 @@ const ArabianMapSVG = ({
   return (
     <svg viewBox="0 0 200 150" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
       <defs>
-        {/* Parchment texture filter */}
+        {/* Parchment texture */}
         <filter id="parchmentNoise">
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" stitchTiles="stitch" result="noise" />
           <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise" />
           <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" />
         </filter>
@@ -90,7 +88,6 @@ const ArabianMapSVG = ({
           <stop offset="100%" stopColor="hsl(46 56% 52%)" stopOpacity="0" />
         </radialGradient>
 
-        {/* Gold shimmer for active path */}
         <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="hsl(46 56% 52%)" stopOpacity="0.4">
             <animate attributeName="stop-opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" />
@@ -111,217 +108,263 @@ const ArabianMapSVG = ({
           </feMerge>
         </filter>
 
-        {/* Terrain shading gradient */}
-        <linearGradient id="terrainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="hsl(48 44% 88%)" />
-          <stop offset="100%" stopColor="hsl(48 44% 82%)" />
-        </linearGradient>
-
         {/* Water gradient */}
         <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(200 50% 85%)" />
-          <stop offset="100%" stopColor="hsl(200 50% 78%)" />
+          <stop offset="0%" stopColor="hsl(200 45% 82%)" />
+          <stop offset="100%" stopColor="hsl(200 50% 75%)" />
         </linearGradient>
 
-        {/* Gold border pattern */}
-        <pattern id="goldBorder" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-          <rect width="10" height="10" fill="none" />
-          <path d="M0 5 Q2.5 0 5 5 Q7.5 10 10 5" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.3" opacity="0.5" />
-        </pattern>
+        {/* Land gradient */}
+        <linearGradient id="landGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(42 35% 88%)" />
+          <stop offset="100%" stopColor="hsl(42 35% 82%)" />
+        </linearGradient>
+
+        {/* Desert gradient */}
+        <linearGradient id="desertGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(40 40% 86%)" />
+          <stop offset="50%" stopColor="hsl(38 35% 83%)" />
+          <stop offset="100%" stopColor="hsl(42 30% 80%)" />
+        </linearGradient>
+
+        {/* Fertile land */}
+        <linearGradient id="fertileGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(90 20% 82%)" />
+          <stop offset="100%" stopColor="hsl(100 20% 78%)" />
+        </linearGradient>
       </defs>
 
       {/* Parchment background */}
-      <rect x="0" y="0" width="200" height="150" fill="hsl(48 44% 92%)" filter="url(#parchmentNoise)" />
+      <rect x="0" y="0" width="200" height="150" fill="hsl(42 40% 90%)" filter="url(#parchmentNoise)" />
 
-      {/* Gold-foil decorative border */}
-      <rect x="1" y="1" width="198" height="148" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.5" opacity="0.4" rx="2" />
-      <rect x="3" y="3" width="194" height="144" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.3" opacity="0.25" rx="1.5" />
-      {/* Corner ornaments */}
-      {[
-        { x: 3, y: 3 }, { x: 197, y: 3 }, { x: 3, y: 147 }, { x: 197, y: 147 }
-      ].map((corner, i) => (
-        <g key={`corner-${i}`} transform={`translate(${corner.x}, ${corner.y}) scale(${i % 2 === 0 ? 1 : -1}, ${i < 2 ? 1 : -1})`}>
-          <path d="M0 0 Q3 0 3 3" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.4" opacity="0.5" />
-          <circle cx="0" cy="0" r="0.6" fill="hsl(46 56% 52%)" opacity="0.4" />
-        </g>
-      ))}
+      {/* Gold decorative border */}
+      <rect x="1" y="1" width="198" height="148" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.6" opacity="0.35" rx="2" />
+      <rect x="3" y="3" width="194" height="144" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.25" opacity="0.2" rx="1.5" strokeDasharray="4 2" />
 
-      {/* Animated clouds overlay */}
-      <g className="map-clouds" opacity="0.08">
-        <ellipse cx="40" cy="25" rx="18" ry="4" fill="hsl(0 0% 100%)">
-          <animateTransform attributeName="transform" type="translate" values="0,0;30,2;0,0" dur="60s" repeatCount="indefinite" />
+      {/* ===== WATER BODIES ===== */}
+      
+      {/* Mediterranean Sea */}
+      <path
+        d="M 0 0 L 200 0 L 200 18 Q 170 22, 145 20 Q 120 18, 100 20 Q 80 22, 65 18 Q 55 14, 48 16 Q 38 18, 30 14 Q 20 10, 10 12 Q 5 14, 0 12 Z"
+        fill="url(#waterGrad)" fillOpacity="0.5" stroke="hsl(200 35% 70%)" strokeWidth="0.3"
+      />
+
+      {/* Red Sea - geographically accurate shape */}
+      <path
+        d="M 33 42 Q 35 45, 38 50 Q 42 55, 48 60 Q 55 67, 60 72 
+           Q 65 78, 70 85 Q 73 90, 76 95 Q 78 100, 78 105 
+           Q 76 110, 72 115 Q 68 118, 62 120 
+           L 58 118 Q 62 115, 66 110 Q 70 105, 70 100 
+           Q 68 95, 65 90 Q 60 83, 55 77 Q 50 72, 45 66 
+           Q 40 60, 36 55 Q 32 50, 30 45 Q 29 42, 30 40 Z"
+        fill="url(#waterGrad)" fillOpacity="0.45" stroke="hsl(200 35% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Gulf of Suez */}
+      <path
+        d="M 30 40 Q 28 38, 26 34 Q 24 30, 25 26 L 28 28 Q 29 32, 30 36 Z"
+        fill="url(#waterGrad)" fillOpacity="0.4" stroke="hsl(200 35% 68%)" strokeWidth="0.2"
+      />
+
+      {/* Gulf of Aqaba */}
+      <path
+        d="M 33 42 Q 36 38, 40 34 Q 42 32, 44 30 L 46 32 Q 44 34, 41 37 Q 38 40, 35 43 Z"
+        fill="url(#waterGrad)" fillOpacity="0.4" stroke="hsl(200 35% 68%)" strokeWidth="0.2"
+      />
+
+      {/* Persian Gulf */}
+      <path
+        d="M 130 45 Q 135 42, 142 40 Q 150 38, 158 40 Q 165 42, 170 48 
+           Q 172 52, 168 56 Q 162 60, 155 62 Q 148 63, 142 60 
+           Q 138 58, 135 54 Q 132 50, 130 45 Z"
+        fill="url(#waterGrad)" fillOpacity="0.45" stroke="hsl(200 35% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Gulf of Oman */}
+      <path
+        d="M 170 48 Q 178 46, 185 48 Q 192 52, 200 55 L 200 62 Q 190 58, 180 55 Q 172 52, 170 48 Z"
+        fill="url(#waterGrad)" fillOpacity="0.4" stroke="hsl(200 35% 68%)" strokeWidth="0.2"
+      />
+
+      {/* Gulf of Aden */}
+      <path
+        d="M 62 120 Q 75 125, 90 128 Q 110 130, 130 128 Q 150 126, 170 125 
+           L 200 122 L 200 135 Q 170 132, 140 135 Q 110 138, 85 136 
+           Q 65 134, 50 132 Q 42 130, 40 128 Q 45 126, 55 122 Z"
+        fill="url(#waterGrad)" fillOpacity="0.4" stroke="hsl(200 35% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Arabian Sea / Indian Ocean bottom */}
+      <path
+        d="M 170 125 L 200 122 L 200 150 L 0 150 L 0 140 Q 15 138, 30 135 Q 42 132, 50 132 Q 65 134, 85 136 Q 110 138, 140 135 Q 170 132, 200 135 L 200 150"
+        fill="url(#waterGrad)" fillOpacity="0.3"
+      />
+
+      {/* ===== LANDMASSES ===== */}
+
+      {/* Egypt & Sinai */}
+      <path
+        d="M 0 12 Q 5 14, 10 12 Q 15 10, 22 14 Q 26 18, 28 24 L 26 30 Q 24 34, 25 38 
+           L 30 42 Q 28 45, 25 48 Q 18 55, 12 58 Q 5 60, 0 58 Z"
+        fill="url(#landGrad)" stroke="hsl(42 30% 72%)" strokeWidth="0.3"
+      />
+      {/* Nile river hint */}
+      <path d="M 18 14 Q 16 22, 14 30 Q 12 38, 10 46 Q 8 52, 6 56" fill="none" stroke="hsl(200 40% 72%)" strokeWidth="0.4" opacity="0.5" />
+
+      {/* Sinai Peninsula */}
+      <path
+        d="M 25 26 L 30 40 L 33 42 Q 36 38, 44 30 L 40 24 Q 35 22, 30 24 Z"
+        fill="hsl(40 35% 84%)" stroke="hsl(42 30% 72%)" strokeWidth="0.2"
+      />
+
+      {/* Levant (Syria, Palestine, Jordan) */}
+      <path
+        d="M 44 14 Q 50 12, 58 14 Q 65 16, 72 14 Q 78 12, 85 14 
+           L 90 18 Q 92 22, 90 28 Q 86 34, 80 38 Q 72 40, 65 38 
+           Q 58 36, 52 34 Q 48 30, 44 26 Q 42 20, 44 14 Z"
+        fill="url(#fertileGrad)" stroke="hsl(90 15% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Mesopotamia / Iraq */}
+      <path
+        d="M 85 14 Q 95 12, 108 14 L 120 18 Q 128 24, 130 32 
+           Q 130 38, 128 42 L 130 45 Q 128 48, 122 48 
+           Q 115 46, 108 42 Q 100 38, 95 34 Q 90 28, 90 22 Q 88 18, 85 14 Z"
+        fill="url(#fertileGrad)" stroke="hsl(90 15% 68%)" strokeWidth="0.3"
+      />
+      {/* Tigris & Euphrates hint */}
+      <path d="M 100 16 Q 105 24, 110 32 Q 115 38, 120 44" fill="none" stroke="hsl(200 40% 72%)" strokeWidth="0.3" opacity="0.4" />
+      <path d="M 95 18 Q 100 26, 108 34 Q 115 40, 125 46" fill="none" stroke="hsl(200 40% 72%)" strokeWidth="0.3" opacity="0.4" />
+
+      {/* Persia / Iran */}
+      <path
+        d="M 120 14 Q 140 10, 165 12 Q 185 16, 200 14 L 200 55 
+           Q 190 52, 180 50 Q 170 48, 165 42 Q 158 38, 148 38 
+           Q 140 38, 135 42 Q 130 38, 128 32 Q 128 24, 125 18 Z"
+        fill="hsl(38 28% 84%)" stroke="hsl(42 25% 70%)" strokeWidth="0.3"
+      />
+
+      {/* Arabian Peninsula - main body */}
+      <path
+        d="M 52 34 Q 58 36, 65 38 Q 72 40, 80 38 Q 90 34, 95 34 
+           Q 108 42, 122 48 Q 128 50, 135 54 Q 142 60, 148 63 
+           Q 155 66, 160 72 Q 165 80, 168 88 Q 170 96, 168 105 
+           Q 165 112, 158 118 Q 148 124, 135 128 Q 120 130, 105 130 
+           Q 90 128, 80 125 Q 72 122, 68 118 Q 62 120, 58 118 
+           Q 55 114, 60 108 Q 65 100, 70 95 Q 73 90, 76 85 
+           Q 70 82, 65 77 Q 58 70, 52 64 Q 46 58, 44 52 
+           Q 42 46, 44 40 Q 46 36, 52 34 Z"
+        fill="url(#desertGrad)" stroke="hsl(42 30% 70%)" strokeWidth="0.4"
+      />
+
+      {/* Hejaz mountains hint */}
+      <path d="M 70 65 Q 75 60, 78 68 Q 82 62, 85 70 Q 88 64, 90 72" fill="none" stroke="hsl(30 25% 72%)" strokeWidth="0.5" opacity="0.3" />
+      <path d="M 75 75 Q 78 70, 82 78 Q 85 72, 88 80" fill="none" stroke="hsl(30 25% 72%)" strokeWidth="0.4" opacity="0.25" />
+
+      {/* Rub al-Khali (Empty Quarter) desert pattern */}
+      <path d="M 110 85 Q 120 82, 130 85 Q 140 88, 145 92" fill="none" stroke="hsl(38 30% 75%)" strokeWidth="0.3" opacity="0.3" strokeDasharray="2 3" />
+      <path d="M 105 92 Q 115 89, 125 92 Q 135 95, 140 98" fill="none" stroke="hsl(38 30% 75%)" strokeWidth="0.3" opacity="0.25" strokeDasharray="2 3" />
+
+      {/* Horn of Africa / East Africa */}
+      <path
+        d="M 0 58 Q 5 60, 12 58 Q 18 55, 25 52 Q 30 55, 35 60 
+           Q 42 68, 50 78 Q 55 85, 58 92 Q 60 98, 58 105 
+           Q 55 112, 50 118 Q 45 124, 40 128 Q 35 132, 30 135 
+           Q 20 138, 10 140 Q 5 140, 0 140 Z"
+        fill="url(#fertileGrad)" stroke="hsl(90 15% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Horn tip (Somalia) */}
+      <path
+        d="M 68 118 Q 72 122, 80 125 Q 90 128, 105 130 
+           Q 120 130, 130 128 L 135 128 Q 148 124, 155 120 
+           Q 160 118, 165 115 L 170 125 Q 160 128, 148 130 
+           Q 130 134, 110 136 Q 90 136, 75 134 
+           Q 60 132, 50 128 Q 45 126, 42 124 
+           Q 48 122, 55 120 Q 60 120, 68 118 Z"
+        fill="hsl(95 18% 80%)" stroke="hsl(90 15% 68%)" strokeWidth="0.3"
+      />
+
+      {/* Animated clouds */}
+      <g opacity="0.06">
+        <ellipse cx="50" cy="30" rx="15" ry="3" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;25,1;0,0" dur="70s" repeatCount="indefinite" />
         </ellipse>
-        <ellipse cx="130" cy="45" rx="22" ry="5" fill="hsl(0 0% 100%)">
-          <animateTransform attributeName="transform" type="translate" values="0,0;-25,1;0,0" dur="80s" repeatCount="indefinite" />
+        <ellipse cx="140" cy="50" rx="18" ry="4" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;-20,1;0,0" dur="90s" repeatCount="indefinite" />
         </ellipse>
-        <ellipse cx="80" cy="70" rx="15" ry="3" fill="hsl(0 0% 100%)">
-          <animateTransform attributeName="transform" type="translate" values="0,0;20,-1;0,0" dur="50s" repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx="160" cy="90" rx="20" ry="4" fill="hsl(0 0% 100%)">
-          <animateTransform attributeName="transform" type="translate" values="0,0;-15,2;0,0" dur="70s" repeatCount="indefinite" />
+        <ellipse cx="90" cy="80" rx="12" ry="3" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;15,-1;0,0" dur="55s" repeatCount="indefinite" />
         </ellipse>
       </g>
 
-      {/* === WATER BODIES === */}
-      {/* Red Sea */}
-      <path
-        d="M 30 15 Q 25 30, 22 50 Q 18 65, 20 80 Q 22 90, 25 100 Q 28 108, 35 115 L 28 118 Q 18 108, 14 95 Q 10 80, 12 60 Q 14 40, 20 25 Q 24 15, 30 12 Z"
-        fill="url(#waterGrad)"
-        fillOpacity="0.4"
-        stroke="hsl(200 40% 70%)"
-        strokeWidth="0.3"
-      />
-      {/* Persian Gulf */}
-      <path
-        d="M 135 35 Q 140 32, 148 34 Q 155 36, 158 42 L 156 48 Q 152 52, 145 50 Q 140 48, 137 44 Z"
-        fill="url(#waterGrad)"
-        fillOpacity="0.4"
-        stroke="hsl(200 40% 70%)"
-        strokeWidth="0.3"
-      />
-      {/* Mediterranean Sea (top) */}
-      <path
-        d="M 10 5 L 80 5 Q 85 8, 80 12 L 40 15 Q 25 14, 15 10 Z"
-        fill="url(#waterGrad)"
-        fillOpacity="0.35"
-        stroke="hsl(200 40% 70%)"
-        strokeWidth="0.3"
-      />
-      {/* Gulf of Aden / Indian Ocean */}
-      <path
-        d="M 35 115 Q 50 120, 75 118 Q 100 115, 120 112 L 125 118 Q 100 125, 70 128 Q 45 130, 30 125 Z"
-        fill="url(#waterGrad)"
-        fillOpacity="0.35"
-        stroke="hsl(200 40% 70%)"
-        strokeWidth="0.3"
-      />
-      {/* Abyssinian coast water */}
-      <path
-        d="M 28 118 Q 25 125, 18 135 L 10 140 L 5 135 Q 10 125, 18 115 Z"
-        fill="url(#waterGrad)"
-        fillOpacity="0.35"
-        stroke="hsl(200 40% 70%)"
-        strokeWidth="0.3"
-      />
-
-      {/* === LANDMASSES === */}
-      {/* Arabian Peninsula - expanded */}
-      <path
-        d="M 50 30 Q 60 25, 80 28 L 110 32 Q 125 35, 135 40 L 140 50 Q 142 58, 138 68 L 130 80 Q 120 92, 108 102 L 95 110 Q 82 115, 70 115 L 55 112 Q 42 108, 35 100 L 30 90 Q 26 78, 25 65 L 24 50 Q 25 38, 35 32 Z"
-        fill="url(#terrainGrad)"
-        stroke="hsl(48 30% 72%)"
-        strokeWidth="0.4"
-        className="drop-shadow-sm"
-      />
-
-      {/* Terrain highlights - mountain ranges */}
-      <path d="M 45 55 Q 50 50, 55 52 Q 60 54, 58 58 Q 52 60, 45 55 Z" fill="hsl(48 30% 80%)" opacity="0.5" />
-      <path d="M 65 40 Q 72 36, 78 38 Q 82 42, 75 45 Q 68 44, 65 40 Z" fill="hsl(48 30% 80%)" opacity="0.4" />
-      
-      {/* Sham / Levant region */}
-      <path
-        d="M 40 10 Q 50 8, 65 10 L 80 14 Q 85 18, 82 24 L 70 28 Q 55 30, 45 28 L 38 22 Q 35 16, 40 10 Z"
-        fill="hsl(48 44% 88%)"
-        stroke="hsl(48 30% 75%)"
-        strokeWidth="0.3"
-      />
-
-      {/* Egypt / North Africa */}
-      <path
-        d="M 10 12 Q 20 10, 35 12 L 38 18 Q 35 28, 28 35 L 22 40 Q 15 38, 12 30 Q 10 22, 10 12 Z"
-        fill="hsl(48 44% 86%)"
-        stroke="hsl(48 30% 75%)"
-        strokeWidth="0.3"
-      />
-
-      {/* Persia (east) */}
-      <path
-        d="M 140 18 Q 155 15, 170 18 L 180 25 Q 185 35, 180 45 L 165 50 Q 155 48, 148 42 Q 140 35, 138 28 Z"
-        fill="hsl(48 44% 86%)"
-        stroke="hsl(48 30% 75%)"
-        strokeWidth="0.3"
-      />
-
-      {/* Abyssinia (Horn of Africa) */}
-      <path
-        d="M 20 115 Q 30 108, 45 110 L 60 115 Q 68 120, 65 128 L 50 135 Q 38 138, 28 135 L 18 128 Q 15 122, 20 115 Z"
-        fill="hsl(130 20% 82%)"
-        stroke="hsl(130 20% 68%)"
-        strokeWidth="0.3"
-      />
-
-      {/* Iraq / Mesopotamia */}
-      <path
-        d="M 110 15 Q 120 12, 135 14 L 140 20 Q 142 28, 138 32 L 125 35 Q 115 34, 108 28 Q 105 22, 110 15 Z"
-        fill="hsl(48 44% 86%)"
-        stroke="hsl(48 30% 75%)"
-        strokeWidth="0.3"
-      />
-
-      {/* === REGION LABELS === */}
-      <text x="80" y="60" className="font-body" fontSize="3.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionNajd")}</text>
-      <text x="45" y="78" className="font-body" fontSize="3.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionHijaz")}</text>
-      <text x="95" y="105" className="font-body" fontSize="3" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionYemen")}</text>
-      <text x="18" y="55" className="font-body" fontSize="2.5" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">{t("regionRedSea")}</text>
-      <text x="42" y="130" className="font-body" fontSize="2.5" fill="hsl(130 20% 55%)" textAnchor="middle" fontStyle="italic">{t("regionHornOfAfrica")}</text>
-      <text x="60" y="18" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
-        {lang === "ar" ? "بلاد الشام" : "Levant"}
-      </text>
-      <text x="165" y="30" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
-        {lang === "ar" ? "بلاد فارس" : "Persia"}
-      </text>
-      <text x="125" y="22" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
-        {lang === "ar" ? "العراق" : "Iraq"}
-      </text>
-      <text x="20" y="25" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
+      {/* ===== REGION LABELS ===== */}
+      <text x="15" y="25" className="font-body" fontSize="3" fill="hsl(42 25% 62%)" textAnchor="middle" fontStyle="italic">
         {lang === "ar" ? "مصر" : "Egypt"}
       </text>
-      <text x="147" y="44" className="font-body" fontSize="2" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">
-        {lang === "ar" ? "الخليج" : "Gulf"}
+      <text x="60" y="25" className="font-body" fontSize="3" fill="hsl(90 15% 55%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "بلاد الشام" : "Levant"}
       </text>
-      <text x="55" y="15" className="font-body" fontSize="2" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">
+      <text x="110" y="28" className="font-body" fontSize="3" fill="hsl(90 15% 55%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "العراق" : "Iraq"}
+      </text>
+      <text x="165" y="28" className="font-body" fontSize="3" fill="hsl(42 25% 62%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "بلاد فارس" : "Persia"}
+      </text>
+      <text x="50" y="68" className="font-body" fontSize="2.5" fill="hsl(200 35% 60%)" textAnchor="middle" fontStyle="italic" writingMode="tb">
+        {t("regionRedSea")}
+      </text>
+      <text x="85" y="62" className="font-body" fontSize="3.5" fill="hsl(42 25% 62%)" textAnchor="middle" fontStyle="italic">
+        {t("regionHijaz")}
+      </text>
+      <text x="115" y="70" className="font-body" fontSize="3.5" fill="hsl(42 25% 62%)" textAnchor="middle" fontStyle="italic">
+        {t("regionNajd")}
+      </text>
+      <text x="130" y="105" className="font-body" fontSize="3" fill="hsl(42 25% 62%)" textAnchor="middle" fontStyle="italic">
+        {t("regionYemen")}
+      </text>
+      <text x="148" y="52" className="font-body" fontSize="2.5" fill="hsl(200 35% 60%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "الخليج العربي" : "Persian Gulf"}
+      </text>
+      <text x="30" y="128" className="font-body" fontSize="2.5" fill="hsl(90 15% 52%)" textAnchor="middle" fontStyle="italic">
+        {t("regionHornOfAfrica")}
+      </text>
+      <text x="45" y="10" className="font-body" fontSize="2" fill="hsl(200 35% 60%)" textAnchor="middle" fontStyle="italic">
         {lang === "ar" ? "البحر المتوسط" : "Mediterranean"}
       </text>
+      <text x="120" y="135" className="font-body" fontSize="2.5" fill="hsl(200 35% 60%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "خليج عدن" : "Gulf of Aden"}
+      </text>
 
-      {/* City markers for major cities outside the peninsula */}
+      {/* Reference cities outside peninsula */}
       {[
-        { x: 55, y: 14, label: lang === "ar" ? "القدس" : "Jerusalem" },
-        { x: 160, y: 25, label: lang === "ar" ? "المدائن" : "Ctesiphon" },
-        { x: 20, y: 18, label: lang === "ar" ? "الإسكندرية" : "Alexandria" },
-        { x: 40, y: 125, label: lang === "ar" ? "أكسوم" : "Axum" },
-      ].map((city) => (
+        { x: 53.4, y: 30, label: lang === "ar" ? "القدس" : "Jerusalem", show: !mapLocations.find(l => l.id === "jerusalem") },
+        { x: 108, y: 22, label: lang === "ar" ? "بغداد" : "Baghdad", show: true },
+        { x: 155, y: 30, label: lang === "ar" ? "المدائن" : "Ctesiphon", show: true },
+        { x: 12, y: 18, label: lang === "ar" ? "الإسكندرية" : "Alexandria", show: true },
+        { x: 35, y: 124, label: lang === "ar" ? "أكسوم" : "Axum", show: true },
+      ].filter(c => c.show).map((city) => (
         <g key={city.label}>
-          <circle cx={city.x} cy={city.y} r="1" fill="hsl(48 30% 65%)" opacity="0.5" />
-          <text x={city.x} y={city.y - 2} textAnchor="middle" fontSize="2" fill="hsl(48 30% 58%)" className="font-body" fontStyle="italic">
+          <circle cx={city.x} cy={city.y} r="0.8" fill="hsl(42 25% 62%)" opacity="0.6" />
+          <text x={city.x} y={city.y - 2} textAnchor="middle" fontSize="2" fill="hsl(42 25% 55%)" className="font-body" fontStyle="italic">
             {city.label}
           </text>
         </g>
       ))}
 
-      {/* Active path segments with gold shimmer */}
+      {/* ===== ACTIVE PATH ===== */}
       {activePath && segments.map((seg, i) => (
         <g key={`seg-${i}`}>
-          {/* Gold shimmer glow underneath */}
-          <path
-            d={seg.d}
-            fill="none"
-            stroke="url(#goldShimmer)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.3"
-          />
+          <path d={seg.d} fill="none" stroke="url(#goldShimmer)" strokeWidth="2.5" strokeLinecap="round" opacity="0.25" />
           <path
             d={seg.d}
             fill="none"
             stroke={`hsl(${activePath.lineColor})`}
-            strokeWidth="0.8"
-            strokeDasharray={seg.isSea ? "1.5 1" : "none"}
+            strokeWidth="1"
+            strokeDasharray={seg.isSea ? "2 1.5" : "none"}
             strokeLinecap="round"
             className="transition-all duration-700 ease-in-out"
-            style={{
-              animation: "dash 3s linear infinite",
-              opacity: 0.9,
-            }}
+            style={{ animation: "dash 3s linear infinite", opacity: 0.9 }}
           />
         </g>
       ))}
@@ -334,36 +377,13 @@ const ArabianMapSVG = ({
             return (
               <g key={`step-${i}`}>
                 {isCurrentStep && (
-                  <circle
-                    cx={step.x}
-                    cy={step.y}
-                    r="3.5"
-                    fill="none"
-                    stroke={`hsl(${activePath.lineColor})`}
-                    strokeWidth="0.3"
-                    opacity="0.6"
-                  >
-                    <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
+                  <circle cx={step.x} cy={step.y} r="4" fill="none" stroke={`hsl(${activePath.lineColor})`} strokeWidth="0.3" opacity="0.6">
+                    <animate attributeName="r" values="2.5;5;2.5" dur="1.5s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.5s" repeatCount="indefinite" />
                   </circle>
                 )}
-                <circle
-                  cx={step.x}
-                  cy={step.y}
-                  r="1.5"
-                  fill={`hsl(${activePath.lineColor})`}
-                  stroke="hsl(60 33% 97%)"
-                  strokeWidth="0.3"
-                />
-                <text
-                  x={step.x}
-                  y={step.y + 0.5}
-                  textAnchor="middle"
-                  fontSize="1.2"
-                  fill="hsl(60 33% 97%)"
-                  fontWeight="700"
-                  className="font-body pointer-events-none"
-                >
+                <circle cx={step.x} cy={step.y} r="1.8" fill={`hsl(${activePath.lineColor})`} stroke="hsl(60 33% 97%)" strokeWidth="0.3" />
+                <text x={step.x} y={step.y + 0.6} textAnchor="middle" fontSize="1.4" fill="hsl(60 33% 97%)" fontWeight="700" className="font-body pointer-events-none">
                   {step.order}
                 </text>
               </g>
@@ -371,7 +391,7 @@ const ArabianMapSVG = ({
           }
         )}
 
-      {/* Location markers — hidden when a path is active */}
+      {/* ===== LOCATION MARKERS ===== */}
       {!activePath && visibleLocations.map((loc) => {
         const catConfig = categoryMap[loc.primaryCategory];
         const catColor = `hsl(${catConfig.colorHsl})`;
@@ -388,22 +408,22 @@ const ArabianMapSVG = ({
             aria-label={`${t("viewLocation")} ${locName}`}
             style={{ opacity: 1, transition: "opacity 0.3s ease" }}
           >
-            <circle cx={loc.x} cy={loc.y} r="3.5" fill="url(#goldGlow)">
-              <animate attributeName="r" values="2;4;2" dur="2.5s" repeatCount="indefinite" />
+            <circle cx={loc.x} cy={loc.y} r="4" fill="url(#goldGlow)">
+              <animate attributeName="r" values="2.5;5;2.5" dur="2.5s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite" />
             </circle>
 
             <circle
               cx={loc.x}
               cy={loc.y}
-              r="2.2"
+              r="2.5"
               fill={isSelected ? catColor : "hsl(60 33% 97%)"}
               stroke={catColor}
               strokeWidth="0.4"
               className="transition-all duration-200"
             />
 
-            <g transform={`translate(${loc.x - 1.2}, ${loc.y - 1.2}) scale(0.24)`}>
+            <g transform={`translate(${loc.x - 1.5}, ${loc.y - 1.5}) scale(0.3)`}>
               <path
                 d={iconPath}
                 fill="none"
@@ -416,9 +436,9 @@ const ArabianMapSVG = ({
 
             <text
               x={loc.x}
-              y={loc.y - 4}
+              y={loc.y - 5}
               textAnchor="middle"
-              fontSize="2.5"
+              fontSize="2.8"
               fontWeight="600"
               fill="hsl(160 90% 16%)"
               className="font-body pointer-events-none"
