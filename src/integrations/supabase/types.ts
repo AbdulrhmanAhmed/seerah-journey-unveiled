@@ -204,6 +204,66 @@ export type Database = {
         }
         Relationships: []
       }
+      shamail_traits: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          description_en: string | null
+          hadith_source: string | null
+          hadith_source_en: string | null
+          icon_name: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          map_location_id: string | null
+          reflection: string | null
+          reflection_en: string | null
+          story_example: string | null
+          story_example_en: string | null
+          title: string
+          title_en: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          hadith_source?: string | null
+          hadith_source_en?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          map_location_id?: string | null
+          reflection?: string | null
+          reflection_en?: string | null
+          story_example?: string | null
+          story_example_en?: string | null
+          title: string
+          title_en: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          hadith_source?: string | null
+          hadith_source_en?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          map_location_id?: string | null
+          reflection?: string | null
+          reflection_en?: string | null
+          story_example?: string | null
+          story_example_en?: string | null
+          title?: string
+          title_en?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

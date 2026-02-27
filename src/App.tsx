@@ -17,6 +17,7 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPathsPage from "./pages/AdminPathsPage";
 import AdminLocationsPage from "./pages/AdminLocationsPage";
+import AdminShamailPage from "./pages/AdminShamailPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/admin/paths" element={<AdminProtectedRoute><AdminPathsPage /></AdminProtectedRoute>} />
               <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/shamail" element={<AdminProtectedRoute><AdminShamailPage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
