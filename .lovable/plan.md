@@ -1,48 +1,69 @@
 
 
-# The Seerah Path — Phase 1 Implementation Plan
+## Multi-Path Interactive Map System — Plan
 
-## 1. Design System Setup
-- Define custom colors in Tailwind config: deep emerald (#064E3B), warm gold (#D4AF37), clean white (#FCFCFC), sand neutral (#F5F5DC)
-- Import Google Fonts: **Amiri** (serif for headings) and **Inter** (sans-serif for body)
-- Create CSS geometric Islamic patterns for decorative backgrounds/borders
-- Update CSS variables for the theme
+This is a large feature set. Following the agreed "frontend first, then Cloud" strategy, I'll split this into two phases.
 
-## 2. Global Navigation Hub
-- Sticky navbar with elegant glass-morphism effect
-- Logo "The Seerah Path" on the left using Amiri serif font
-- Four navigation pillars as premium styled buttons with icons:
-  - **The Journey** (Clock icon) → `/journey`
-  - **The Character** (Heart icon) → `/character`
-  - **The Map** (Compass icon) → `/map`
-  - **The Library** (BookOpen icon) → `/library`
-- Subtle gold hover effects and underline animations
-- Mobile hamburger menu with slide-out drawer
+---
 
-## 3. Hero Landing Page
-- Full-viewport hero section with a rich gradient background evoking a desert night sky (deep emerald to dark navy with star-like accents)
-- CSS-based geometric Islamic pattern overlay for atmosphere
-- Centered elegant greeting text: *"Peace be upon you, traveler. Explore the life of the Final Messenger ﷺ."*
-- "Start Your Exploration" CTA button with gold accent styling
-- Smooth scroll to the next content section on click
-- Fade-in entrance animation on page load
+### Phase 1: Frontend Multi-Path System (this implementation)
 
-## 4. Content Sections Below Hero
-- A brief introductory section about the Seerah Path mission
-- A "Four Pillars" overview grid showcasing each navigation area with icons, titles, and short descriptions
-- Each pillar card links to its respective route
+**1. Create path data file** (`src/data/mapPaths.ts`)
+- Define `PathStep` interface (step order, location ID or custom coords, optional event link)
+- Define `MapPath` interface (id, name/nameEn, description/descriptionEn, lineColor, pathType: "land" | "sea", steps array)
+- Pre-populate 3 paths:
+  - **The Hijrah** (Makkah → Cave Thawr → Quba → Madinah) — replaces current `hijrahRoute`
+  - **Journey to Ta'if** (Makkah → Ta'if → return)
+  - **Migration to Abyssinia** (Makkah → Red Sea coast → Abyssinia) — dashed line for sea segments
 
-## 5. Footer
-- "Sources & Authenticity" trust section explaining scholarly references
-- Site credits and copyright
-- Subtle Islamic geometric border pattern at the top of the footer
+**2. Add new map locations** for path completeness
+- Add **Cave Thawr** and **Quba** to `mapLocations.ts` with coordinates
 
-## 6. Routing & Placeholder Pages
-- Set up React Router routes for `/journey`, `/character`, `/map`, `/library`
-- Each route gets a minimal placeholder page with the section title, ready for Phase 2 expansion
+**3. Build Path Selector sidebar** (`src/components/MapPathSelector.tsx`)
+- Collapsible panel listing all paths with colored indicators
+- Single-select: clicking a path highlights it on the map
+- Shows path description and step count
+- "Play Path" cinematic button per path
 
-## 7. Responsive Design
-- Mobile-first layout with proper breakpoints
-- Collapsible navigation on mobile
-- Hero text and CTA scale appropriately across devices
+**4. Update `ArabianMapSVG.tsx`** for multi-path rendering
+- Remove hardcoded `hijrahRoute`; accept `activePath` prop
+- Draw animated SVG path for the selected journey
+- Dashed stroke for sea segments, solid for land
+- Animate path drawing with CSS `stroke-dashoffset` transition
+- Show step numbers along the path
+
+**5. Build Step Navigation** (`src/components/MapStepNavigator.tsx`)
+- "Next" / "Previous" buttons when a path is active
+- Current step indicator (e.g., "Step 2 of 4")
+- Clicking a step highlights the location and shows its card
+- Smooth visual transition between steps (pulse animation on active marker)
+
+**6. Cinematic "Play Path" mode**
+- Auto-advances through steps with 5-second pause at each
+- Shows location card with description at each stop
+- Progress bar showing journey completion
+- Play/Pause/Stop controls
+- Smooth ease-in-out transitions between steps
+
+**7. Update `MapPage.tsx`**
+- Replace single route toggle with path selector sidebar
+- Integrate step navigator and cinematic controls
+- Keep existing category filter working alongside paths
+
+---
+
+### Phase 2: Cloud + Admin (future, not in this implementation)
+- Supabase `paths` and `path_steps` tables
+- Admin Path Builder with drag-and-drop step sequencer
+- Coordinate picker on map
+- CSV bulk upload
+- Database-driven rendering
+
+---
+
+### Technical Notes
+- The current SVG viewBox is `0 0 100 100` with percentage-based coordinates — new locations and path coords will use the same system
+- Category icons on path steps will reuse existing `categoryIconPaths` from `ArabianMapSVG`
+- Cinematic mode uses `setInterval` + state management, no external libraries needed
+- Sea vs land path distinction uses the `pathType` field per path segment
 
