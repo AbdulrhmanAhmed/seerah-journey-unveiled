@@ -1,85 +1,91 @@
 
 
-## Grand Seerah Canvas — Implementation Plan
+## Admin Panel for Map Management
 
-This is a large vision. I'll break it into focused, sequential phases to deliver incrementally.
+This is a large feature requiring backend infrastructure. Since you don't have Supabase connected yet, I'll need to enable Lovable Cloud first, then build the database and admin UI.
 
----
+### Phase 1: Enable Lovable Cloud + Database
 
-### Phase 1: Zoomable Map Canvas
-
-**Install** `react-zoom-pan-pinch` and wrap the existing SVG map inside a `TransformWrapper` / `TransformComponent`.
-
-**Changes:**
-- `MapPage.tsx`: Wrap the map container with zoom/pan controls, add zoom buttons (+/−/reset)
-- `ArabianMapSVG.tsx`: Expand viewBox from `0 0 100 100` to `0 0 200 150` to cover a larger region (Abyssinia south to Jerusalem/Rome north). Add more geographic detail — coastlines, terrain shading, subtle animated clouds via CSS
-- Add parchment texture background and gold-foil decorative borders via CSS/SVG
-- Add subtle CSS cloud animation overlay
-
-### Phase 2: Database — Media Fields
-
-**Migration** to add media columns:
+**Tables to create:**
 
 ```text
-map_locations:
-  + image_url (text, nullable)
-  + gallery_urls (jsonb, default '[]')
-  + audio_url (text, nullable)
+paths
+├── id (uuid, PK)
+├── name (text) — Arabic
+├── name_en (text) — English
+├── description (text)
+├── description_en (text)
+├── line_color (text, HSL string)
+├── is_active (boolean, default true)
+├── created_at (timestamptz)
 
-path_steps:
-  + image_url (text, nullable)
-  + audio_url (text, nullable)
-  + custom_note (text, nullable)
-  + custom_note_en (text, nullable)
+path_steps
+├── id (uuid, PK)
+├── path_id (uuid, FK → paths)
+├── step_order (integer)
+├── label (text) — Arabic
+├── label_en (text) — English
+├── description (text)
+├── description_en (text)
+├── coord_x (float)
+├── coord_y (float)
+├── segment_type (text: "land" | "sea")
+├── location_id (text, nullable) — links to map location
+├── created_at (timestamptz)
+
+map_locations
+├── id (text, PK)
+├── name / name_en / name_arabic (text)
+├── x, y (float)
+├── description / description_en (text)
+├── primary_category (text)
+├── is_active (boolean, default true)
+├── travel_data (jsonb) — camel/car times
+├── created_at (timestamptz)
+
+location_events
+├── id (uuid, PK)
+├── location_id (text, FK → map_locations)
+├── label / label_en (text)
+├── category (text)
+├── event_order (integer)
 ```
 
-**Storage bucket** `seerah-media` for image/audio uploads.
+RLS: All tables public-read. Write operations require authenticated admin role (using `user_roles` table pattern).
 
-### Phase 3: Media-Rich Event UI
+### Phase 2: Admin Pages
 
-- `LocationCard.tsx`: Redesign as a full modal with:
-  - Header image from `image_url`
-  - Context gallery thumbnails from `gallery_urls`
-  - "Listen" button for `audio_url` playback
-- `ArabianMapSVG.tsx`: On hover over a marker, show a small polaroid-style image preview tooltip above the dot
-- Bounce animation on markers using CSS keyframes (no external library needed)
+**1. `/admin` — Admin Dashboard**
+- Protected route (requires login + admin role)
+- Navigation to: Paths Manager, Locations Manager, Categories overview
 
-### Phase 4: Path-Focus Mode Enhancement
+**2. `/admin/paths` — Path Manager**
+- List all paths with active/inactive toggle
+- Create/Edit path form: name (AR/EN), description (AR/EN), line color picker, is_active
+- For each path: step sequencer with drag-and-drop reordering
+- Each step: label (AR/EN), description (AR/EN), coordinates (x, y), segment type dropdown, optional location link
+- "Preview on Map" button — renders a mini SVG preview of the path
+- Delete path with confirmation
 
-- When path is selected: fade non-path events to 0 opacity (already done), add shimmering gold effect on path line via SVG animation
-- **Sequence Bar**: New `PathSequenceBar` component at bottom — horizontal scrollable strip of event thumbnails with step numbers
-- **Auto-Travel**: Enhance cinematic mode so the map auto-pans/zooms to each step using `react-zoom-pan-pinch`'s `zoomToElement` API, then shows the card, waits 5s, moves to next
+**3. `/admin/locations` — Location Manager**
+- List all map locations with edit/delete
+- Create/Edit location form: name (AR/EN), coordinates, description, primary category dropdown, travel data fields
+- Manage events per location: add/remove/reorder events with category assignment
+- Coordinate picker: click on a mini map to set x/y
 
-### Phase 5: Admin Media & Path Editor
+**4. CSV Bulk Upload** (on paths page)
+- Upload CSV with columns: `path_name, step_label, step_label_en, order, x, y, segment_type`
+- Preview parsed data before committing
+- Creates path + steps in one batch
 
-- `AdminLocationsPage.tsx`: Add image URL paste field + file upload to storage bucket for `image_url`, `gallery_urls`, `audio_url`
-- `AdminPathsPage.tsx`: Add `custom_note` / `custom_note_en` fields per step, add image URL field per step
-- **Visual Path Editor**: Mini map preview in admin where clicking assigns coordinates
+### Phase 3: Connect Public Map to Database
 
-### Phase 6: Connect Public Map to Database
+- Replace static `mapPaths` and `mapLocations` imports with Supabase queries (via TanStack Query)
+- Filter by `is_active = true` for public view
+- Keep existing map rendering, cinematic mode, and step navigation — just swap data source
 
-- Replace static `mapLocations` and `mapPaths` imports with database queries via TanStack Query
-- Filter by `is_active = true`
-- All existing rendering logic stays — only data source changes
-
----
-
-### Technical Details
-
-**Dependencies to add:** `react-zoom-pan-pinch`
-
-**Files to create:**
-- `src/components/PathSequenceBar.tsx` — thumbnail strip for active path
-- `src/components/MapHoverPreview.tsx` — polaroid tooltip on hover
-
-**Files to modify:**
-- `src/pages/MapPage.tsx` — zoom wrapper, sequence bar integration
-- `src/components/ArabianMapSVG.tsx` — expanded geography, hover previews, gold shimmer path, bounce markers
-- `src/components/LocationCard.tsx` — media-rich modal redesign
-- `src/components/MapStepNavigator.tsx` — integrate with zoom API
-- `src/pages/AdminPathsPage.tsx` — media fields, custom notes
-- `src/pages/AdminLocationsPage.tsx` — image upload, gallery, audio
-- 1 database migration for new columns + storage bucket
-
-**Execution order:** Phase 1 → 2 → 6 → 3 → 4 → 5 (database and zoom first, then UI enhancements)
+### Technical Notes
+- Admin auth: simple email/password login with `user_roles` table for admin check
+- No changes to map rendering logic — only the data source changes
+- All existing features (category filter, cinematic mode, path selector) work unchanged with database data
 

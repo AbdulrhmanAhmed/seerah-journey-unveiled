@@ -54,13 +54,10 @@ export type Database = {
       }
       map_locations: {
         Row: {
-          audio_url: string | null
           created_at: string
           description: string | null
           description_en: string | null
-          gallery_urls: Json
           id: string
-          image_url: string | null
           is_active: boolean
           name: string
           name_arabic: string | null
@@ -71,13 +68,10 @@ export type Database = {
           y: number
         }
         Insert: {
-          audio_url?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
-          gallery_urls?: Json
           id: string
-          image_url?: string | null
           is_active?: boolean
           name: string
           name_arabic?: string | null
@@ -88,13 +82,10 @@ export type Database = {
           y?: number
         }
         Update: {
-          audio_url?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
-          gallery_urls?: Json
           id?: string
-          image_url?: string | null
           is_active?: boolean
           name?: string
           name_arabic?: string | null
@@ -108,16 +99,12 @@ export type Database = {
       }
       path_steps: {
         Row: {
-          audio_url: string | null
           coord_x: number
           coord_y: number
           created_at: string
-          custom_note: string | null
-          custom_note_en: string | null
           description: string | null
           description_en: string | null
           id: string
-          image_url: string | null
           label: string
           label_en: string
           location_id: string | null
@@ -126,16 +113,12 @@ export type Database = {
           step_order: number
         }
         Insert: {
-          audio_url?: string | null
           coord_x?: number
           coord_y?: number
           created_at?: string
-          custom_note?: string | null
-          custom_note_en?: string | null
           description?: string | null
           description_en?: string | null
           id?: string
-          image_url?: string | null
           label: string
           label_en: string
           location_id?: string | null
@@ -144,16 +127,12 @@ export type Database = {
           step_order?: number
         }
         Update: {
-          audio_url?: string | null
           coord_x?: number
           coord_y?: number
           created_at?: string
-          custom_note?: string | null
-          custom_note_en?: string | null
           description?: string | null
           description_en?: string | null
           id?: string
-          image_url?: string | null
           label?: string
           label_en?: string
           location_id?: string | null
