@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Compass, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Compass, ZoomIn, ZoomOut } from "lucide-react";
 import { motion } from "framer-motion";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useLanguage } from "@/i18n/LanguageContext";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
 import LocationCard from "@/components/LocationCard";
@@ -16,6 +15,9 @@ import type { MapPath } from "@/data/mapPaths";
 import { Button } from "@/components/ui/button";
 
 const CINEMATIC_DELAY = 5000;
+const ZOOM_STEP = 0.25;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 3;
 
 const MapPage = () => {
   const { t, lang } = useLanguage();
@@ -26,7 +28,11 @@ const MapPage = () => {
   const [activePath, setActivePath] = useState<MapPath | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const intervalRef = useRef<number | null>(null);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM));
 
   const handleLocationClick = (location: MapLocation) => {
     setSelectedLocation((prev) => (prev?.id === location.id ? null : location));
@@ -83,11 +89,8 @@ const MapPage = () => {
   };
 
   const handleTogglePlay = () => {
-    if (isPlaying) {
-      stopPlaying();
-    } else {
-      setIsPlaying(true);
-    }
+    if (isPlaying) stopPlaying();
+    else setIsPlaying(true);
   };
 
   const handleStop = () => {
@@ -99,11 +102,9 @@ const MapPage = () => {
     }
   };
 
-  // Cinematic auto-advance
   useEffect(() => {
     if (!isPlaying || !activePath) return;
     handleStepChange(currentStep);
-
     intervalRef.current = window.setInterval(() => {
       setCurrentStep((prev) => {
         const next = prev + 1;
@@ -114,13 +115,9 @@ const MapPage = () => {
         return next;
       });
     }, CINEMATIC_DELAY);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [isPlaying, activePath]);
 
-  // Update location card when step changes during playback
   useEffect(() => {
     if (activePath && currentStep >= 0) {
       const s = activePath.steps[currentStep];
@@ -148,9 +145,7 @@ const MapPage = () => {
           <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
             {t("mapTitle")}
           </h1>
-          <p className="text-muted-foreground font-body">
-            {t("mapSubtitle")}
-          </p>
+          <p className="text-muted-foreground font-body">{t("mapSubtitle")}</p>
         </motion.div>
 
         <motion.div
@@ -159,61 +154,46 @@ const MapPage = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative max-w-5xl mx-auto rounded-2xl border border-border bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden"
         >
-          <TransformWrapper
-            initialScale={1}
-            minScale={0.5}
-            maxScale={5}
-            centerOnInit
-            wheel={{ step: 0.08 }}
-            panning={{ velocityDisabled: true }}
-          >
-            {({ zoomIn, zoomOut, resetTransform }) => (
-              <>
-                {/* Zoom controls */}
-                <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
-                    onClick={() => zoomIn()}
-                  >
-                    <ZoomIn size={16} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
-                    onClick={() => zoomOut()}
-                  >
-                    <ZoomOut size={16} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
-                    onClick={() => resetTransform()}
-                  >
-                    <RotateCcw size={16} />
-                  </Button>
-                </div>
+          {/* Zoom controls */}
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
+              onClick={handleZoomIn}
+              disabled={zoom >= MAX_ZOOM}
+            >
+              <ZoomIn size={16} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
+              onClick={handleZoomOut}
+              disabled={zoom <= MIN_ZOOM}
+            >
+              <ZoomOut size={16} />
+            </Button>
+          </div>
 
-                <TransformComponent
-                  wrapperStyle={{ width: "100%", height: "100%" }}
-                  contentStyle={{ width: "100%", height: "100%" }}
-                >
-                  <div className="aspect-[4/3] p-4 md:p-8">
-                    <ArabianMapSVG
-                      onLocationClick={handleLocationClick}
-                      selectedId={selectedLocation?.id ?? null}
-                      activeCategories={activeCategories}
-                      activePath={activePath}
-                      activeStep={activePath ? currentStep : -1}
-                    />
-                  </div>
-                </TransformComponent>
-              </>
-            )}
-          </TransformWrapper>
+          <div className="overflow-auto aspect-[4/3]">
+            <div
+              className="p-4 md:p-8 origin-center transition-transform duration-300 ease-out"
+              style={{
+                transform: `scale(${zoom})`,
+                width: `${100 / zoom}%`,
+                height: `${100 / zoom}%`,
+              }}
+            >
+              <ArabianMapSVG
+                onLocationClick={handleLocationClick}
+                selectedId={selectedLocation?.id ?? null}
+                activeCategories={activeCategories}
+                activePath={activePath}
+                activeStep={activePath ? currentStep : -1}
+              />
+            </div>
+          </div>
 
           <MapPathSelector
             activePath={activePath}
@@ -254,10 +234,7 @@ const MapPage = () => {
         >
           {categories.map((cat) => (
             <div key={cat.id} className="flex items-center gap-2">
-              <span
-                className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: `hsl(${cat.colorHsl})` }}
-              />
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `hsl(${cat.colorHsl})` }} />
               {lang === "ar" ? cat.label : cat.labelEn}
             </div>
           ))}
