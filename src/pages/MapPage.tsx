@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Compass } from "lucide-react";
+import { Compass, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useLanguage } from "@/i18n/LanguageContext";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
 import LocationCard from "@/components/LocationCard";
@@ -12,6 +13,7 @@ import { mapLocations } from "@/data/mapLocations";
 import type { MapLocation } from "@/data/mapLocations";
 import type { EventCategory } from "@/data/eventCategories";
 import type { MapPath } from "@/data/mapPaths";
+import { Button } from "@/components/ui/button";
 
 const CINEMATIC_DELAY = 5000;
 
@@ -44,7 +46,6 @@ const MapPage = () => {
     setActivePath(path);
     setCurrentStep(0);
     setSelectedLocation(null);
-    // Show location card for first step if path selected
     if (path?.steps[0]?.locationId) {
       const loc = mapLocations.find((l) => l.id === path.steps[0].locationId);
       if (loc) setSelectedLocation(loc);
@@ -101,8 +102,6 @@ const MapPage = () => {
   // Cinematic auto-advance
   useEffect(() => {
     if (!isPlaying || !activePath) return;
-
-    // Show first step location
     handleStepChange(currentStep);
 
     intervalRef.current = window.setInterval(() => {
@@ -158,17 +157,63 @@ const MapPage = () => {
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative max-w-4xl mx-auto rounded-2xl border border-border bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden"
+          className="relative max-w-5xl mx-auto rounded-2xl border border-border bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden"
         >
-          <div className="aspect-square md:aspect-[4/3] p-4 md:p-8">
-            <ArabianMapSVG
-              onLocationClick={handleLocationClick}
-              selectedId={selectedLocation?.id ?? null}
-              activeCategories={activeCategories}
-              activePath={activePath}
-              activeStep={activePath ? currentStep : -1}
-            />
-          </div>
+          <TransformWrapper
+            initialScale={1}
+            minScale={0.5}
+            maxScale={5}
+            centerOnInit
+            wheel={{ step: 0.08 }}
+            panning={{ velocityDisabled: true }}
+          >
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                {/* Zoom controls */}
+                <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
+                    onClick={() => zoomIn()}
+                  >
+                    <ZoomIn size={16} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
+                    onClick={() => zoomOut()}
+                  >
+                    <ZoomOut size={16} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border shadow-sm"
+                    onClick={() => resetTransform()}
+                  >
+                    <RotateCcw size={16} />
+                  </Button>
+                </div>
+
+                <TransformComponent
+                  wrapperStyle={{ width: "100%", height: "100%" }}
+                  contentStyle={{ width: "100%", height: "100%" }}
+                >
+                  <div className="aspect-[4/3] p-4 md:p-8">
+                    <ArabianMapSVG
+                      onLocationClick={handleLocationClick}
+                      selectedId={selectedLocation?.id ?? null}
+                      activeCategories={activeCategories}
+                      activePath={activePath}
+                      activeStep={activePath ? currentStep : -1}
+                    />
+                  </div>
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
 
           <MapPathSelector
             activePath={activePath}

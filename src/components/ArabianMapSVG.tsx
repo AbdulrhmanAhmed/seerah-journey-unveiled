@@ -35,7 +35,6 @@ const ArabianMapSVG = ({
   const [pathLength, setPathLength] = useState(0);
   const [animatedLength, setAnimatedLength] = useState(0);
 
-  // Build the SVG path string for the active path up to activeStep
   const getPathD = () => {
     if (!activePath) return "";
     const stepsToShow = activeStep >= 0 ? activePath.steps.slice(0, activeStep + 1) : activePath.steps;
@@ -44,15 +43,11 @@ const ArabianMapSVG = ({
 
   const pathD = getPathD();
 
-  // Determine if current segment is sea
-  const hasSeaSegment = activePath?.steps.some((s) => s.segmentType === "sea");
-
   useEffect(() => {
     if (pathRef.current) {
       const len = pathRef.current.getTotalLength();
       setPathLength(len);
       setAnimatedLength(0);
-      // Animate drawing
       requestAnimationFrame(() => {
         setAnimatedLength(len);
       });
@@ -63,7 +58,6 @@ const ArabianMapSVG = ({
     activeCategories.has(loc.primaryCategory)
   );
 
-  // Determine which steps have sea segments for dashed rendering
   const getSegmentPaths = () => {
     if (!activePath) return [];
     const stepsToShow = activeStep >= 0 ? activePath.steps.slice(0, activeStep + 1) : activePath.steps;
@@ -82,12 +76,33 @@ const ArabianMapSVG = ({
   const segments = getSegmentPaths();
 
   return (
-    <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 200 150" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
       <defs>
+        {/* Parchment texture filter */}
+        <filter id="parchmentNoise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
+          <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise" />
+          <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" />
+        </filter>
+
         <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="hsl(46 56% 52%)" stopOpacity="0.8" />
           <stop offset="100%" stopColor="hsl(46 56% 52%)" stopOpacity="0" />
         </radialGradient>
+
+        {/* Gold shimmer for active path */}
+        <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="hsl(46 56% 52%)" stopOpacity="0.4">
+            <animate attributeName="stop-opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" />
+          </stop>
+          <stop offset="50%" stopColor="hsl(46 80% 65%)" stopOpacity="0.9">
+            <animate attributeName="stop-opacity" values="0.9;0.4;0.9" dur="2s" repeatCount="indefinite" />
+          </stop>
+          <stop offset="100%" stopColor="hsl(46 56% 52%)" stopOpacity="0.4">
+            <animate attributeName="stop-opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" />
+          </stop>
+        </linearGradient>
+
         <filter id="stepGlow">
           <feGaussianBlur stdDeviation="0.5" result="blur" />
           <feMerge>
@@ -95,56 +110,220 @@ const ArabianMapSVG = ({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+
+        {/* Terrain shading gradient */}
+        <linearGradient id="terrainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(48 44% 88%)" />
+          <stop offset="100%" stopColor="hsl(48 44% 82%)" />
+        </linearGradient>
+
+        {/* Water gradient */}
+        <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(200 50% 85%)" />
+          <stop offset="100%" stopColor="hsl(200 50% 78%)" />
+        </linearGradient>
+
+        {/* Gold border pattern */}
+        <pattern id="goldBorder" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+          <rect width="10" height="10" fill="none" />
+          <path d="M0 5 Q2.5 0 5 5 Q7.5 10 10 5" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.3" opacity="0.5" />
+        </pattern>
       </defs>
 
-      {/* Peninsula */}
+      {/* Parchment background */}
+      <rect x="0" y="0" width="200" height="150" fill="hsl(48 44% 92%)" filter="url(#parchmentNoise)" />
+
+      {/* Gold-foil decorative border */}
+      <rect x="1" y="1" width="198" height="148" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.5" opacity="0.4" rx="2" />
+      <rect x="3" y="3" width="194" height="144" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.3" opacity="0.25" rx="1.5" />
+      {/* Corner ornaments */}
+      {[
+        { x: 3, y: 3 }, { x: 197, y: 3 }, { x: 3, y: 147 }, { x: 197, y: 147 }
+      ].map((corner, i) => (
+        <g key={`corner-${i}`} transform={`translate(${corner.x}, ${corner.y}) scale(${i % 2 === 0 ? 1 : -1}, ${i < 2 ? 1 : -1})`}>
+          <path d="M0 0 Q3 0 3 3" fill="none" stroke="hsl(46 56% 52%)" strokeWidth="0.4" opacity="0.5" />
+          <circle cx="0" cy="0" r="0.6" fill="hsl(46 56% 52%)" opacity="0.4" />
+        </g>
+      ))}
+
+      {/* Animated clouds overlay */}
+      <g className="map-clouds" opacity="0.08">
+        <ellipse cx="40" cy="25" rx="18" ry="4" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;30,2;0,0" dur="60s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="130" cy="45" rx="22" ry="5" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;-25,1;0,0" dur="80s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="80" cy="70" rx="15" ry="3" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;20,-1;0,0" dur="50s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="160" cy="90" rx="20" ry="4" fill="hsl(0 0% 100%)">
+          <animateTransform attributeName="transform" type="translate" values="0,0;-15,2;0,0" dur="70s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+
+      {/* === WATER BODIES === */}
+      {/* Red Sea */}
       <path
-        d="M 25 20 Q 30 18, 40 20 L 55 22 Q 62 24, 65 30 L 68 38 Q 70 42, 68 48 L 65 55 Q 62 62, 58 68 L 52 75 Q 48 80, 42 82 L 35 80 Q 30 78, 28 74 L 25 68 Q 22 62, 20 55 L 18 45 Q 17 35, 20 28 Z"
-        fill="hsl(48 44% 92%)"
-        stroke="hsl(48 30% 78%)"
+        d="M 30 15 Q 25 30, 22 50 Q 18 65, 20 80 Q 22 90, 25 100 Q 28 108, 35 115 L 28 118 Q 18 108, 14 95 Q 10 80, 12 60 Q 14 40, 20 25 Q 24 15, 30 12 Z"
+        fill="url(#waterGrad)"
+        fillOpacity="0.4"
+        stroke="hsl(200 40% 70%)"
+        strokeWidth="0.3"
+      />
+      {/* Persian Gulf */}
+      <path
+        d="M 135 35 Q 140 32, 148 34 Q 155 36, 158 42 L 156 48 Q 152 52, 145 50 Q 140 48, 137 44 Z"
+        fill="url(#waterGrad)"
+        fillOpacity="0.4"
+        stroke="hsl(200 40% 70%)"
+        strokeWidth="0.3"
+      />
+      {/* Mediterranean Sea (top) */}
+      <path
+        d="M 10 5 L 80 5 Q 85 8, 80 12 L 40 15 Q 25 14, 15 10 Z"
+        fill="url(#waterGrad)"
+        fillOpacity="0.35"
+        stroke="hsl(200 40% 70%)"
+        strokeWidth="0.3"
+      />
+      {/* Gulf of Aden / Indian Ocean */}
+      <path
+        d="M 35 115 Q 50 120, 75 118 Q 100 115, 120 112 L 125 118 Q 100 125, 70 128 Q 45 130, 30 125 Z"
+        fill="url(#waterGrad)"
+        fillOpacity="0.35"
+        stroke="hsl(200 40% 70%)"
+        strokeWidth="0.3"
+      />
+      {/* Abyssinian coast water */}
+      <path
+        d="M 28 118 Q 25 125, 18 135 L 10 140 L 5 135 Q 10 125, 18 115 Z"
+        fill="url(#waterGrad)"
+        fillOpacity="0.35"
+        stroke="hsl(200 40% 70%)"
+        strokeWidth="0.3"
+      />
+
+      {/* === LANDMASSES === */}
+      {/* Arabian Peninsula - expanded */}
+      <path
+        d="M 50 30 Q 60 25, 80 28 L 110 32 Q 125 35, 135 40 L 140 50 Q 142 58, 138 68 L 130 80 Q 120 92, 108 102 L 95 110 Q 82 115, 70 115 L 55 112 Q 42 108, 35 100 L 30 90 Q 26 78, 25 65 L 24 50 Q 25 38, 35 32 Z"
+        fill="url(#terrainGrad)"
+        stroke="hsl(48 30% 72%)"
         strokeWidth="0.4"
         className="drop-shadow-sm"
       />
-      {/* West coast water */}
+
+      {/* Terrain highlights - mountain ranges */}
+      <path d="M 45 55 Q 50 50, 55 52 Q 60 54, 58 58 Q 52 60, 45 55 Z" fill="hsl(48 30% 80%)" opacity="0.5" />
+      <path d="M 65 40 Q 72 36, 78 38 Q 82 42, 75 45 Q 68 44, 65 40 Z" fill="hsl(48 30% 80%)" opacity="0.4" />
+      
+      {/* Sham / Levant region */}
       <path
-        d="M 25 20 Q 22 30, 18 45 Q 17 55, 22 65 L 28 74 Q 30 78, 35 80 L 30 82 Q 24 78, 20 70 Q 14 58, 12 45 Q 11 32, 15 22 Z"
-        fill="hsl(200 50% 88%)"
-        fillOpacity="0.5"
-        stroke="hsl(200 40% 75%)"
-        strokeWidth="0.3"
-      />
-      {/* East coast water */}
-      <path
-        d="M 65 30 Q 70 32, 72 36 L 73 42 Q 72 48, 68 48 L 65 55 Q 68 50, 70 44 Q 72 38, 68 34 Z"
-        fill="hsl(200 50% 88%)"
-        fillOpacity="0.5"
-        stroke="hsl(200 40% 75%)"
+        d="M 40 10 Q 50 8, 65 10 L 80 14 Q 85 18, 82 24 L 70 28 Q 55 30, 45 28 L 38 22 Q 35 16, 40 10 Z"
+        fill="hsl(48 44% 88%)"
+        stroke="hsl(48 30% 75%)"
         strokeWidth="0.3"
       />
 
-      {/* Region labels */}
-      <text x="42" y="40" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionNajd")}</text>
-      <text x="30" y="55" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionHijaz")}</text>
-      <text x="55" y="70" className="font-body" fontSize="1.8" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionYemen")}</text>
-      <text x="15" y="40" className="font-body" fontSize="1.5" fill="hsl(200 40% 70%)" textAnchor="middle" fontStyle="italic">{t("regionRedSea")}</text>
-      <text x="58" y="82" className="font-body" fontSize="1.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionHornOfAfrica")}</text>
+      {/* Egypt / North Africa */}
+      <path
+        d="M 10 12 Q 20 10, 35 12 L 38 18 Q 35 28, 28 35 L 22 40 Q 15 38, 12 30 Q 10 22, 10 12 Z"
+        fill="hsl(48 44% 86%)"
+        stroke="hsl(48 30% 75%)"
+        strokeWidth="0.3"
+      />
 
-      {/* Active path segments */}
+      {/* Persia (east) */}
+      <path
+        d="M 140 18 Q 155 15, 170 18 L 180 25 Q 185 35, 180 45 L 165 50 Q 155 48, 148 42 Q 140 35, 138 28 Z"
+        fill="hsl(48 44% 86%)"
+        stroke="hsl(48 30% 75%)"
+        strokeWidth="0.3"
+      />
+
+      {/* Abyssinia (Horn of Africa) */}
+      <path
+        d="M 20 115 Q 30 108, 45 110 L 60 115 Q 68 120, 65 128 L 50 135 Q 38 138, 28 135 L 18 128 Q 15 122, 20 115 Z"
+        fill="hsl(130 20% 82%)"
+        stroke="hsl(130 20% 68%)"
+        strokeWidth="0.3"
+      />
+
+      {/* Iraq / Mesopotamia */}
+      <path
+        d="M 110 15 Q 120 12, 135 14 L 140 20 Q 142 28, 138 32 L 125 35 Q 115 34, 108 28 Q 105 22, 110 15 Z"
+        fill="hsl(48 44% 86%)"
+        stroke="hsl(48 30% 75%)"
+        strokeWidth="0.3"
+      />
+
+      {/* === REGION LABELS === */}
+      <text x="80" y="60" className="font-body" fontSize="3.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionNajd")}</text>
+      <text x="45" y="78" className="font-body" fontSize="3.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionHijaz")}</text>
+      <text x="95" y="105" className="font-body" fontSize="3" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionYemen")}</text>
+      <text x="18" y="55" className="font-body" fontSize="2.5" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">{t("regionRedSea")}</text>
+      <text x="42" y="130" className="font-body" fontSize="2.5" fill="hsl(130 20% 55%)" textAnchor="middle" fontStyle="italic">{t("regionHornOfAfrica")}</text>
+      <text x="60" y="18" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "بلاد الشام" : "Levant"}
+      </text>
+      <text x="165" y="30" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "بلاد فارس" : "Persia"}
+      </text>
+      <text x="125" y="22" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "العراق" : "Iraq"}
+      </text>
+      <text x="20" y="25" className="font-body" fontSize="2.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "مصر" : "Egypt"}
+      </text>
+      <text x="147" y="44" className="font-body" fontSize="2" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "الخليج" : "Gulf"}
+      </text>
+      <text x="55" y="15" className="font-body" fontSize="2" fill="hsl(200 40% 65%)" textAnchor="middle" fontStyle="italic">
+        {lang === "ar" ? "البحر المتوسط" : "Mediterranean"}
+      </text>
+
+      {/* City markers for major cities outside the peninsula */}
+      {[
+        { x: 55, y: 14, label: lang === "ar" ? "القدس" : "Jerusalem" },
+        { x: 160, y: 25, label: lang === "ar" ? "المدائن" : "Ctesiphon" },
+        { x: 20, y: 18, label: lang === "ar" ? "الإسكندرية" : "Alexandria" },
+        { x: 40, y: 125, label: lang === "ar" ? "أكسوم" : "Axum" },
+      ].map((city) => (
+        <g key={city.label}>
+          <circle cx={city.x} cy={city.y} r="1" fill="hsl(48 30% 65%)" opacity="0.5" />
+          <text x={city.x} y={city.y - 2} textAnchor="middle" fontSize="2" fill="hsl(48 30% 58%)" className="font-body" fontStyle="italic">
+            {city.label}
+          </text>
+        </g>
+      ))}
+
+      {/* Active path segments with gold shimmer */}
       {activePath && segments.map((seg, i) => (
-        <path
-          key={`seg-${i}`}
-          d={seg.d}
-          fill="none"
-          stroke={`hsl(${activePath.lineColor})`}
-          strokeWidth="0.6"
-          strokeDasharray={seg.isSea ? "1 0.8" : "none"}
-          strokeLinecap="round"
-          className="transition-all duration-700 ease-in-out"
-          style={{
-            animation: "dash 3s linear infinite",
-            opacity: 0.9,
-          }}
-        />
+        <g key={`seg-${i}`}>
+          {/* Gold shimmer glow underneath */}
+          <path
+            d={seg.d}
+            fill="none"
+            stroke="url(#goldShimmer)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity="0.3"
+          />
+          <path
+            d={seg.d}
+            fill="none"
+            stroke={`hsl(${activePath.lineColor})`}
+            strokeWidth="0.8"
+            strokeDasharray={seg.isSea ? "1.5 1" : "none"}
+            strokeLinecap="round"
+            className="transition-all duration-700 ease-in-out"
+            style={{
+              animation: "dash 3s linear infinite",
+              opacity: 0.9,
+            }}
+          />
+        </g>
       ))}
 
       {/* Step markers on path */}
@@ -158,29 +337,29 @@ const ArabianMapSVG = ({
                   <circle
                     cx={step.x}
                     cy={step.y}
-                    r="2.5"
+                    r="3.5"
                     fill="none"
                     stroke={`hsl(${activePath.lineColor})`}
                     strokeWidth="0.3"
                     opacity="0.6"
                   >
-                    <animate attributeName="r" values="1.5;3;1.5" dur="1.5s" repeatCount="indefinite" />
+                    <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.5s" repeatCount="indefinite" />
                   </circle>
                 )}
                 <circle
                   cx={step.x}
                   cy={step.y}
-                  r="1"
+                  r="1.5"
                   fill={`hsl(${activePath.lineColor})`}
                   stroke="hsl(60 33% 97%)"
-                  strokeWidth="0.2"
+                  strokeWidth="0.3"
                 />
                 <text
                   x={step.x}
-                  y={step.y + 0.4}
+                  y={step.y + 0.5}
                   textAnchor="middle"
-                  fontSize="0.9"
+                  fontSize="1.2"
                   fill="hsl(60 33% 97%)"
                   fontWeight="700"
                   className="font-body pointer-events-none"
@@ -204,27 +383,27 @@ const ArabianMapSVG = ({
           <g
             key={loc.id}
             onClick={() => onLocationClick(loc)}
-            className="cursor-pointer"
+            className="cursor-pointer map-marker-bounce"
             role="button"
             aria-label={`${t("viewLocation")} ${locName}`}
             style={{ opacity: 1, transition: "opacity 0.3s ease" }}
           >
-            <circle cx={loc.x} cy={loc.y} r="2.5" fill="url(#goldGlow)">
-              <animate attributeName="r" values="1.5;3;1.5" dur="2.5s" repeatCount="indefinite" />
+            <circle cx={loc.x} cy={loc.y} r="3.5" fill="url(#goldGlow)">
+              <animate attributeName="r" values="2;4;2" dur="2.5s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite" />
             </circle>
 
             <circle
               cx={loc.x}
               cy={loc.y}
-              r="1.6"
+              r="2.2"
               fill={isSelected ? catColor : "hsl(60 33% 97%)"}
               stroke={catColor}
-              strokeWidth="0.3"
+              strokeWidth="0.4"
               className="transition-all duration-200"
             />
 
-            <g transform={`translate(${loc.x - 1}, ${loc.y - 1}) scale(0.2)`}>
+            <g transform={`translate(${loc.x - 1.2}, ${loc.y - 1.2}) scale(0.24)`}>
               <path
                 d={iconPath}
                 fill="none"
@@ -237,9 +416,9 @@ const ArabianMapSVG = ({
 
             <text
               x={loc.x}
-              y={loc.y - 3}
+              y={loc.y - 4}
               textAnchor="middle"
-              fontSize="1.8"
+              fontSize="2.5"
               fontWeight="600"
               fill="hsl(160 90% 16%)"
               className="font-body pointer-events-none"
