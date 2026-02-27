@@ -1,91 +1,51 @@
 
 
-## Admin Panel for Map Management
+## خطة: قسم الشمائل المحمدية (Shamail Traits)
 
-This is a large feature requiring backend infrastructure. Since you don't have Supabase connected yet, I'll need to enable Lovable Cloud first, then build the database and admin UI.
+### المرحلة 1: قاعدة البيانات
+إنشاء جدول `shamail_traits` بالحقول التالية:
+- `id` (uuid, PK)
+- `title` / `title_en` (text) — اسم الصفة بالعربية والإنجليزية
+- `category` (text — Physical, Moral, Social)
+- `description` / `description_en` (text)
+- `hadith_source` / `hadith_source_en` (text)
+- `story_example` / `story_example_en` (text)
+- `reflection` / `reflection_en` (text) — سؤال التأمل
+- `icon_name` (text — اسم أيقونة Lucide)
+- `image_url` (text)
+- `map_location_id` (text, nullable — ربط بالخريطة)
+- `is_active` (boolean, default true)
+- `created_at` (timestamptz)
 
-### Phase 1: Enable Lovable Cloud + Database
+RLS: قراءة عامة، كتابة للأدمن فقط (نفس نمط الجداول الحالية).
 
-**Tables to create:**
+إدخال 5 صفات أولية (الرحمة، التواضع، الجمال، الوفاء، الشجاعة).
 
-```text
-paths
-├── id (uuid, PK)
-├── name (text) — Arabic
-├── name_en (text) — English
-├── description (text)
-├── description_en (text)
-├── line_color (text, HSL string)
-├── is_active (boolean, default true)
-├── created_at (timestamptz)
+### المرحلة 2: صفحة الشمائل العامة (`/character`)
+إعادة بناء `CharacterPage.tsx` بالكامل:
 
-path_steps
-├── id (uuid, PK)
-├── path_id (uuid, FK → paths)
-├── step_order (integer)
-├── label (text) — Arabic
-├── label_en (text) — English
-├── description (text)
-├── description_en (text)
-├── coord_x (float)
-├── coord_y (float)
-├── segment_type (text: "land" | "sea")
-├── location_id (text, nullable) — links to map location
-├── created_at (timestamptz)
+- **العنوان**: "الشمائل المحمدية" بخط ذهبي + عنوان فرعي "استكشف صفات سيد الخلق ﷺ"
+- **صفة اليوم**: بطاقة مميزة أعلى الصفحة تعرض صفة عشوائية تتغير كل 24 ساعة (بناءً على `Date.now()` mod عدد الصفات)
+- **فلتر الفئات**: 3 أزرار: الصفات الخُلقية، الصفات الخَلقية، التعاملات الاجتماعية
+- **شبكة البطاقات**: تصميم Glassmorphism بإطار أخضر زمردي، أيقونة Lucide ديناميكية، تأثير توهج ذهبي عند التمرير، ظهور متتابع (staggered animation) باستخدام Framer Motion
+- **النافذة التفصيلية (Dialog)**: عند النقر تُفتح نافذة ملء الشاشة تحتوي:
+  - اسم الصفة بخط كبير
+  - قسم "من هدي النبي ﷺ" — القصة
+  - قسم "قالوا عنه" — الحديث أو القول
+  - صندوق تأمل "كيف أتمثل بهذه الصفة اليوم؟"
+  - رابط للخريطة إن وُجد `map_location_id`
 
-map_locations
-├── id (text, PK)
-├── name / name_en / name_arabic (text)
-├── x, y (float)
-├── description / description_en (text)
-├── primary_category (text)
-├── is_active (boolean, default true)
-├── travel_data (jsonb) — camel/car times
-├── created_at (timestamptz)
+### المرحلة 3: إدارة الشمائل في لوحة التحكم
+إنشاء `AdminShamailPage.tsx` على مسار `/admin/shamail`:
+- جدول بجميع الصفات مع تعديل/حذف/تفعيل
+- نموذج إضافة/تعديل بجميع الحقول (AR/EN)
+- اختيار `map_location_id` من القائمة المنسدلة (جلب من `map_locations`)
+- إضافة رابط في `AdminLayout` والـ Dashboard
 
-location_events
-├── id (uuid, PK)
-├── location_id (text, FK → map_locations)
-├── label / label_en (text)
-├── category (text)
-├── event_order (integer)
-```
+### المرحلة 4: الترجمات
+إضافة مفاتيح الترجمة اللازمة في `translations.ts` (shamailTitle, shamailSubtitle, traitOfDay, categoryMoral, categoryPhysical, categorySocial, etc.)
 
-RLS: All tables public-read. Write operations require authenticated admin role (using `user_roles` table pattern).
-
-### Phase 2: Admin Pages
-
-**1. `/admin` — Admin Dashboard**
-- Protected route (requires login + admin role)
-- Navigation to: Paths Manager, Locations Manager, Categories overview
-
-**2. `/admin/paths` — Path Manager**
-- List all paths with active/inactive toggle
-- Create/Edit path form: name (AR/EN), description (AR/EN), line color picker, is_active
-- For each path: step sequencer with drag-and-drop reordering
-- Each step: label (AR/EN), description (AR/EN), coordinates (x, y), segment type dropdown, optional location link
-- "Preview on Map" button — renders a mini SVG preview of the path
-- Delete path with confirmation
-
-**3. `/admin/locations` — Location Manager**
-- List all map locations with edit/delete
-- Create/Edit location form: name (AR/EN), coordinates, description, primary category dropdown, travel data fields
-- Manage events per location: add/remove/reorder events with category assignment
-- Coordinate picker: click on a mini map to set x/y
-
-**4. CSV Bulk Upload** (on paths page)
-- Upload CSV with columns: `path_name, step_label, step_label_en, order, x, y, segment_type`
-- Preview parsed data before committing
-- Creates path + steps in one batch
-
-### Phase 3: Connect Public Map to Database
-
-- Replace static `mapPaths` and `mapLocations` imports with Supabase queries (via TanStack Query)
-- Filter by `is_active = true` for public view
-- Keep existing map rendering, cinematic mode, and step navigation — just swap data source
-
-### Technical Notes
-- Admin auth: simple email/password login with `user_roles` table for admin check
-- No changes to map rendering logic — only the data source changes
-- All existing features (category filter, cinematic mode, path selector) work unchanged with database data
+### ملاحظة تقنية
+- ميزة "تحميل البطاقة كصورة" تحتاج مكتبة إضافية (html-to-canvas) — يمكن إضافتها لاحقاً كمرحلة منفصلة
+- البيانات تُجلب عبر TanStack Query من قاعدة البيانات مباشرة
 
