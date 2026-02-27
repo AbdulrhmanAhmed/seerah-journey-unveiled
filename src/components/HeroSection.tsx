@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const stars = Array.from({ length: 40 }, (_, i) => ({
   id: i,
@@ -10,6 +11,8 @@ const stars = Array.from({ length: 40 }, (_, i) => ({
 }));
 
 const HeroSection = () => {
+  const { t } = useLanguage();
+
   const scrollToContent = () => {
     const el = document.getElementById("pillars-section");
     el?.scrollIntoView({ behavior: "smooth" });
@@ -42,22 +45,22 @@ const HeroSection = () => {
           <div className="mb-8">
             <div className="inline-block px-6 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-6">
               <span className="text-white/60 text-sm font-body tracking-widest">
-                بسم الله الرحمن الرحيم
+                {t("bismillah")}
               </span>
             </div>
           </div>
 
           <h1 className="font-serif-display text-4xl md:text-5xl lg:text-7xl text-white leading-tight mb-6">
-            السلام عليكم{" "}
-            <span className="italic">أيها المسافر</span>
+            {t("heroTitle")}{" "}
+            <span className="italic">{t("heroTitleItalic")}</span>
           </h1>
 
           <p className="font-body text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-4 leading-relaxed">
-            استكشف حياة خاتم الأنبياء والمرسلين ﷺ
+            {t("heroSubtitle")}
           </p>
 
           <p className="font-body text-sm text-white/40 max-w-xl mx-auto mb-12">
-            رحلة عبر السيرة النبوية الشريفة — رسالته، أخلاقه، والعالم الذي غيّره ﷺ
+            {t("heroDescription")}
           </p>
         </motion.div>
 
@@ -70,7 +73,7 @@ const HeroSection = () => {
             onClick={scrollToContent}
             className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-secondary text-secondary-foreground font-medium text-sm tracking-wide transition-all duration-300 hover:shadow-lg gold-glow hover:scale-105"
           >
-            ابدأ رحلتك
+            {t("heroButton")}
             <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
           </button>
         </motion.div>

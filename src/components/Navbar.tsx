@@ -3,24 +3,27 @@ import { Link, useLocation } from "react-router-dom";
 import { Clock, Heart, Compass, BookOpen, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
-const pillars = [
-  { name: "الرحلة", icon: Clock, path: "/journey" },
-  { name: "الشمائل", icon: Heart, path: "/character" },
-  { name: "الخريطة", icon: Compass, path: "/map" },
-  { name: "المكتبة", icon: BookOpen, path: "/library" },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const pillars = [
+    { name: t("navJourney"), icon: Clock, path: "/journey" },
+    { name: t("navCharacter"), icon: Heart, path: "/character" },
+    { name: t("navMap"), icon: Compass, path: "/map" },
+    { name: t("navLibrary"), icon: BookOpen, path: "/library" },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="font-serif-display text-xl md:text-2xl font-bold text-primary tracking-wide">
-            مسار السيرة
+            {t("siteName")}
           </Link>
 
           {/* Desktop Nav */}
@@ -42,16 +45,20 @@ const Navbar = () => {
                 <span>{name}</span>
               </Link>
             ))}
+            <LanguageSwitcher />
           </div>
 
           {/* Mobile Toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-foreground/70 hover:text-secondary transition-colors"
-            aria-label="القائمة"
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-1">
+            <LanguageSwitcher />
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 text-foreground/70 hover:text-secondary transition-colors"
+              aria-label={t("menuLabel")}
+            >
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 

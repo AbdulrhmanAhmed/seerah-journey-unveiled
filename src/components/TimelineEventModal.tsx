@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 
 interface TimelineEventModalProps {
@@ -14,7 +15,17 @@ interface TimelineEventModalProps {
 }
 
 const TimelineEventModal = ({ event, open, onOpenChange }: TimelineEventModalProps) => {
+  const { lang } = useLanguage();
+
   if (!event) return null;
+
+  const title = lang === "ar" ? event.title : event.titleEn;
+  const details = lang === "ar" ? event.details : event.detailsEn;
+  const year = lang === "ar" ? event.year : event.yearEn;
+  const hijriYear = lang === "ar" ? event.hijriYear : event.hijriYearEn;
+  const eraLabel = event.era === "makkah"
+    ? (lang === "ar" ? "العهد المكي" : "Makkan Period")
+    : (lang === "ar" ? "العهد المدني" : "Madinan Period");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,24 +38,24 @@ const TimelineEventModal = ({ event, open, onOpenChange }: TimelineEventModalPro
                 : "bg-primary/15 text-primary"
             }`}
           >
-            {event.era === "makkah" ? "العهد المكي" : "العهد المدني"}
+            {eraLabel}
           </span>
           <p className="font-body text-sm text-muted-foreground">
-            {event.year}
-            {event.hijriYear && (
-              <span className="me-2 text-secondary">({event.hijriYear})</span>
+            {year}
+            {hijriYear && (
+              <span className="me-2 text-secondary">({hijriYear})</span>
             )}
           </p>
           <DialogTitle className="font-serif-display text-2xl md:text-3xl text-foreground leading-snug">
-            {event.title}
+            {title}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            تفاصيل {event.title}
+            {lang === "ar" ? "تفاصيل" : "Details of"} {title}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-2">
           <p className="font-body text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
-            {event.details}
+            {details}
           </p>
         </div>
       </DialogContent>

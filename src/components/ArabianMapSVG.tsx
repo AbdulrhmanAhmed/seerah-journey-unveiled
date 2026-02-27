@@ -1,3 +1,4 @@
+import { useLanguage } from "@/i18n/LanguageContext";
 import { mapLocations, hijrahRoute } from "@/data/mapLocations";
 import { categoryMap } from "@/data/eventCategories";
 import type { MapLocation } from "@/data/mapLocations";
@@ -31,6 +32,8 @@ const ArabianMapSVG = ({
   showRoute,
   activeCategories,
 }: ArabianMapSVGProps) => {
+  const { t, lang } = useLanguage();
+
   const routePath = hijrahRoute
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
     .join(" ");
@@ -76,11 +79,11 @@ const ArabianMapSVG = ({
         strokeWidth="0.3"
       />
 
-      <text x="42" y="40" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">نجد</text>
-      <text x="30" y="55" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">الحجاز</text>
-      <text x="55" y="70" className="font-body" fontSize="1.8" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">اليمن</text>
-      <text x="15" y="40" className="font-body" fontSize="1.5" fill="hsl(200 40% 70%)" textAnchor="middle" fontStyle="italic">البحر الأحمر</text>
-      <text x="58" y="82" className="font-body" fontSize="1.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">القرن الأفريقي</text>
+      <text x="42" y="40" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionNajd")}</text>
+      <text x="30" y="55" className="font-body" fontSize="2" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionHijaz")}</text>
+      <text x="55" y="70" className="font-body" fontSize="1.8" fill="hsl(48 30% 70%)" textAnchor="middle" fontStyle="italic">{t("regionYemen")}</text>
+      <text x="15" y="40" className="font-body" fontSize="1.5" fill="hsl(200 40% 70%)" textAnchor="middle" fontStyle="italic">{t("regionRedSea")}</text>
+      <text x="58" y="82" className="font-body" fontSize="1.5" fill="hsl(48 30% 65%)" textAnchor="middle" fontStyle="italic">{t("regionHornOfAfrica")}</text>
 
       {showRoute && (
         <>
@@ -94,7 +97,7 @@ const ArabianMapSVG = ({
             style={{ animation: "dash 3s linear infinite" }}
           />
           <text x="31" y="56" fontSize="1.4" fill="hsl(46 56% 45%)" className="font-body" fontWeight="600">
-            مسار الهجرة
+            {t("mapHijrahRoute")}
           </text>
         </>
       )}
@@ -104,6 +107,7 @@ const ArabianMapSVG = ({
         const catColor = `hsl(${catConfig.colorHsl})`;
         const isSelected = selectedId === loc.id;
         const iconPath = categoryIconPaths[loc.primaryCategory];
+        const locName = lang === "ar" ? loc.name : loc.nameEn;
 
         return (
           <g
@@ -111,7 +115,7 @@ const ArabianMapSVG = ({
             onClick={() => onLocationClick(loc)}
             className="cursor-pointer"
             role="button"
-            aria-label={`عرض ${loc.name}`}
+            aria-label={`${t("viewLocation")} ${locName}`}
             style={{ opacity: 1, transition: "opacity 0.3s ease" }}
           >
             <circle cx={loc.x} cy={loc.y} r="2.5" fill="url(#goldGlow)">
@@ -151,7 +155,7 @@ const ArabianMapSVG = ({
               fill="hsl(160 90% 16%)"
               className="font-body pointer-events-none"
             >
-              {loc.name}
+              {locName}
             </text>
           </g>
         );

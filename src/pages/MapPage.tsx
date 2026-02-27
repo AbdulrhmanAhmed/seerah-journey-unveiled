@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Compass, Route } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 import ArabianMapSVG from "@/components/ArabianMapSVG";
 import LocationCard from "@/components/LocationCard";
 import MapCategoryFilter from "@/components/MapCategoryFilter";
@@ -9,6 +10,7 @@ import type { MapLocation } from "@/data/mapLocations";
 import type { EventCategory } from "@/data/eventCategories";
 
 const MapPage = () => {
+  const { t, lang } = useLanguage();
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [showRoute, setShowRoute] = useState(false);
   const [activeCategories, setActiveCategories] = useState<Set<EventCategory>>(
@@ -41,10 +43,10 @@ const MapPage = () => {
             <Compass size={28} className="text-secondary" />
           </div>
           <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
-            الخريطة
+            {t("mapTitle")}
           </h1>
           <p className="text-muted-foreground font-body">
-            استكشف الأراضي التي شكّلت الرسالة النبوية. انقر على أي موقع لتكتشف قصته.
+            {t("mapSubtitle")}
           </p>
         </motion.div>
 
@@ -63,7 +65,7 @@ const MapPage = () => {
             }`}
           >
             <Route size={16} />
-            {showRoute ? "إخفاء مسار الهجرة" : "عرض مسار الهجرة"}
+            {showRoute ? t("mapHideRoute") : t("mapShowRoute")}
           </button>
         </motion.div>
 
@@ -105,13 +107,13 @@ const MapPage = () => {
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: `hsl(${cat.colorHsl})` }}
               />
-              {cat.label}
+              {lang === "ar" ? cat.label : cat.labelEn}
             </div>
           ))}
           {showRoute && (
             <div className="flex items-center gap-2">
               <span className="w-6 border-t-2 border-dashed border-secondary" />
-              مسار الهجرة (٦٢٢ م)
+              {t("mapRouteLegend")}
             </div>
           )}
         </motion.div>

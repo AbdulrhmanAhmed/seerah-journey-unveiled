@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { timelineEvents } from "@/data/seerahTimeline";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
@@ -8,6 +9,7 @@ import TimelineEventModal from "@/components/TimelineEventModal";
 import YearQuickNav from "@/components/YearQuickNav";
 
 const JourneyPage = () => {
+  const { t } = useLanguage();
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -52,11 +54,10 @@ const JourneyPage = () => {
               <Clock size={28} className="text-secondary" />
             </div>
             <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">
-              الرحلة
+              {t("journeyTitle")}
             </h1>
             <p className="text-muted-foreground font-body">
-              تنقّل عبر حياة النبي محمد ﷺ — من المولد المبارك في
-              مكة إلى تأسيس أمة في المدينة.
+              {t("journeySubtitle")}
             </p>
           </motion.div>
         </div>
@@ -68,8 +69,7 @@ const JourneyPage = () => {
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
           style={{
-            background:
-              "linear-gradient(180deg, hsl(48 44% 95%) 0%, hsl(48 40% 92%) 100%)",
+            background: "linear-gradient(180deg, hsl(48 44% 95%) 0%, hsl(48 40% 92%) 100%)",
           }}
         >
           <div className="container mx-auto px-4 md:px-6">
@@ -80,7 +80,7 @@ const JourneyPage = () => {
               className="text-center mb-12"
             >
               <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-secondary bg-secondary/10 px-4 py-1.5 rounded-full">
-                العهد المكي · ٥٧٠–٦٢٢ م
+                {t("journeyMakkahEra")}
               </span>
             </motion.div>
 
@@ -105,8 +105,7 @@ const JourneyPage = () => {
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
           style={{
-            background:
-              "linear-gradient(180deg, hsl(160 40% 93%) 0%, hsl(160 50% 90%) 100%)",
+            background: "linear-gradient(180deg, hsl(160 40% 93%) 0%, hsl(160 50% 90%) 100%)",
           }}
         >
           <div className="container mx-auto px-4 md:px-6">
@@ -117,7 +116,7 @@ const JourneyPage = () => {
               className="text-center mb-12"
             >
               <span className="inline-block font-body text-xs font-semibold uppercase tracking-[0.2em] text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-                العهد المدني · ٦٢٢–٦٣٢ م
+                {t("journeyMadinahEra")}
               </span>
             </motion.div>
 

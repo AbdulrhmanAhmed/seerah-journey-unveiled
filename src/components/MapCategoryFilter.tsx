@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Filter, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { categories } from "@/data/eventCategories";
 import type { EventCategory } from "@/data/eventCategories";
 
@@ -14,6 +15,7 @@ interface MapCategoryFilterProps {
 }
 
 const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProps) => {
+  const { t, lang } = useLanguage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +23,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
       <button
         onClick={() => setOpen((p) => !p)}
         className="w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-muted-foreground hover:text-secondary transition-colors"
-        aria-label="تصفية الفئات"
+        aria-label={t("filterCategories")}
       >
         <Filter size={18} />
       </button>
@@ -36,7 +38,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
             className="absolute bottom-12 left-0 w-56 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-lg p-3"
           >
             <p className="font-body text-xs font-semibold text-muted-foreground mb-2">
-              تصفية حسب الفئة
+              {t("filterByCategory")}
             </p>
             <div className="space-y-1">
               {categories.map((cat) => {
@@ -46,7 +48,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
                   <button
                     key={cat.id}
                     onClick={() => onToggle(cat.id)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-right font-body text-sm transition-all duration-200 ${
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-start font-body text-sm transition-all duration-200 ${
                       active
                         ? "bg-secondary/10 text-foreground"
                         : "text-muted-foreground/50 hover:text-muted-foreground"
@@ -60,7 +62,7 @@ const MapCategoryFilter = ({ activeCategories, onToggle }: MapCategoryFilterProp
                     >
                       {Icon && <Icon size={14} />}
                     </span>
-                    <span className={active ? "font-medium" : ""}>{cat.label}</span>
+                    <span className={active ? "font-medium" : ""}>{lang === "ar" ? cat.label : cat.labelEn}</span>
                     <span
                       className={`ms-auto w-2 h-2 rounded-full transition-colors ${
                         active ? "" : "bg-muted"
