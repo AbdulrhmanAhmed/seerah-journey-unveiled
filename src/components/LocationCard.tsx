@@ -1,5 +1,6 @@
 import { X, Footprints, Car, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { categoryMap } from "@/data/eventCategories";
 import type { MapLocation } from "@/data/mapLocations";
 import type { EventCategory } from "@/data/eventCategories";
@@ -14,6 +15,7 @@ interface LocationCardProps {
 }
 
 const CategoryBadge = ({ category }: { category: EventCategory }) => {
+  const { lang } = useLanguage();
   const cat = categoryMap[category];
   const Icon = iconMap[cat.icon];
   return (
@@ -25,13 +27,21 @@ const CategoryBadge = ({ category }: { category: EventCategory }) => {
       }}
     >
       {Icon && <Icon size={10} />}
-      {cat.label}
+      {lang === "ar" ? cat.label : cat.labelEn}
     </span>
   );
 };
 
 const LocationCard = ({ location, onClose }: LocationCardProps) => {
+  const { t, lang } = useLanguage();
+
   if (!location) return null;
+
+  const name = lang === "ar" ? location.name : location.nameEn;
+  const description = lang === "ar" ? location.description : location.descriptionEn;
+  const camelDays = lang === "ar" ? location.travel.camelDays : location.travel.camelDaysEn;
+  const carHours = lang === "ar" ? location.travel.carHours : location.travel.carHoursEn;
+  const from = lang === "ar" ? location.travel.from : location.travel.fromEn;
 
   return (
     <AnimatePresence>
@@ -55,7 +65,7 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
           <div className="flex items-start justify-between mb-2">
             <div>
               <h3 className="font-serif-display text-xl text-foreground">
-                {location.name}
+                {name}
               </h3>
               <p className="font-body text-xs text-muted-foreground">{location.nameArabic}</p>
             </div>
@@ -68,12 +78,12 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
           </div>
 
           <p className="font-body text-sm text-muted-foreground leading-relaxed mb-3">
-            {location.description}
+            {description}
           </p>
 
           <div className="mb-3">
             <h4 className="font-body text-xs font-semibold text-secondary mb-2">
-              الأحداث الرئيسية
+              {t("locationEvents")}
             </h4>
             <ul className="space-y-1.5">
               {location.events.map((event, i) => (
@@ -82,7 +92,7 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
                   className="font-body text-xs text-muted-foreground flex items-start gap-2"
                 >
                   <CategoryBadge category={event.category} />
-                  <span className="pt-0.5">{event.label}</span>
+                  <span className="pt-0.5">{lang === "ar" ? event.label : event.labelEn}</span>
                 </li>
               ))}
             </ul>
@@ -91,15 +101,15 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
           {location.travel.distanceKm > 0 && (
             <div className="rounded-lg bg-muted/50 p-3 border border-border/50">
               <h4 className="font-body text-xs font-semibold text-foreground/70 mb-2">
-                المسافة من {location.travel.from}
+                {t("locationDistanceFrom")} {from}
               </h4>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <Footprints size={14} className="text-secondary" />
                   <div>
-                    <p className="font-body text-xs text-muted-foreground">بالجمل</p>
+                    <p className="font-body text-xs text-muted-foreground">{t("locationByCamel")}</p>
                     <p className="font-body text-sm font-semibold text-foreground">
-                      {location.travel.camelDays}
+                      {camelDays}
                     </p>
                   </div>
                 </div>
@@ -107,17 +117,17 @@ const LocationCard = ({ location, onClose }: LocationCardProps) => {
                 <div className="flex items-center gap-1.5">
                   <Car size={14} className="text-primary" />
                   <div>
-                    <p className="font-body text-xs text-muted-foreground">بالسيارة اليوم</p>
+                    <p className="font-body text-xs text-muted-foreground">{t("locationByCar")}</p>
                     <p className="font-body text-sm font-semibold text-foreground">
-                      {location.travel.carHours}
+                      {carHours}
                     </p>
                   </div>
                 </div>
                 <div className="w-px h-8 bg-border" />
                 <div>
-                  <p className="font-body text-xs text-muted-foreground">المسافة</p>
+                  <p className="font-body text-xs text-muted-foreground">{t("locationDistance")}</p>
                   <p className="font-body text-sm font-semibold text-foreground">
-                    {location.travel.distanceKm} كم
+                    {location.travel.distanceKm} {t("locationKm")}
                   </p>
                 </div>
               </div>

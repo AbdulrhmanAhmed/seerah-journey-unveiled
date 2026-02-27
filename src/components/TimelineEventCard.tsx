@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { ChevronLeft, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Swords, FileText, AlertCircle, Heart, Send } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 import { categoryMap } from "@/data/eventCategories";
 
@@ -14,7 +15,22 @@ interface TimelineEventCardProps {
 }
 
 const TimelineEventCard = ({ event, index, onLearnMore }: TimelineEventCardProps) => {
+  const { lang, isRtl } = useLanguage();
   const isRight = index % 2 === 0;
+  const Chevron = isRtl ? ChevronLeft : ChevronRight;
+
+  const title = lang === "ar" ? event.title : event.titleEn;
+  const summary = lang === "ar" ? event.summary : event.summaryEn;
+  const year = lang === "ar" ? event.year : event.yearEn;
+  const hijriYear = lang === "ar" ? event.hijriYear : event.hijriYearEn;
+  const eraLabel = event.era === "makkah"
+    ? (lang === "ar" ? "العهد المكي" : "Makkan Period")
+    : (lang === "ar" ? "العهد المدني" : "Madinan Period");
+  const readMore = lang === "ar" ? "اقرأ المزيد" : "Read More";
+
+  const cat = categoryMap[event.category];
+  const CatIcon = iconMap[cat.icon];
+  const catLabel = lang === "ar" ? cat.label : cat.labelEn;
 
   return (
     <div
@@ -39,47 +55,41 @@ const TimelineEventCard = ({ event, index, onLearnMore }: TimelineEventCardProps
                   : "bg-primary/15 text-primary"
               }`}
             >
-              {event.era === "makkah" ? "العهد المكي" : "العهد المدني"}
+              {eraLabel}
             </span>
-            {(() => {
-              const cat = categoryMap[event.category];
-              const CatIcon = iconMap[cat.icon];
-              return (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-body font-medium px-2 py-0.5 rounded-full"
-                  style={{
-                    backgroundColor: `hsl(${cat.colorHsl} / 0.12)`,
-                    color: `hsl(${cat.colorHsl})`,
-                  }}
-                >
-                  {CatIcon && <CatIcon size={10} />}
-                  {cat.label}
-                </span>
-              );
-            })()}
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-body font-medium px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: `hsl(${cat.colorHsl} / 0.12)`,
+                color: `hsl(${cat.colorHsl})`,
+              }}
+            >
+              {CatIcon && <CatIcon size={10} />}
+              {catLabel}
+            </span>
           </div>
 
           <p className="font-body text-sm text-muted-foreground mb-1">
-            {event.year}
-            {event.hijriYear && (
-              <span className="me-2 text-secondary">({event.hijriYear})</span>
+            {year}
+            {hijriYear && (
+              <span className="me-2 text-secondary">({hijriYear})</span>
             )}
           </p>
 
           <h3 className="font-serif-display text-xl md:text-2xl text-foreground mb-2 leading-snug">
-            {event.title}
+            {title}
           </h3>
 
           <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4">
-            {event.summary}
+            {summary}
           </p>
 
           <button
             onClick={() => onLearnMore(event)}
             className="inline-flex items-center gap-1.5 text-sm font-body font-medium text-secondary hover:text-secondary/80 transition-colors group/btn"
           >
-            اقرأ المزيد
-            <ChevronLeft size={14} className="transition-transform group-hover/btn:-translate-x-0.5" />
+            {readMore}
+            <Chevron size={14} className="transition-transform group-hover/btn:-translate-x-0.5" />
           </button>
         </div>
       </motion.div>

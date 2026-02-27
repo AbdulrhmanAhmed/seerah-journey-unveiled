@@ -1,25 +1,30 @@
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 
-const CharacterPage = () => (
-  <div className="pt-24 pb-16 min-h-screen islamic-pattern">
-    <div className="container mx-auto px-4 md:px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-2xl mx-auto text-center"
-      >
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
-          <Heart size={28} className="text-secondary" />
-        </div>
-        <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">الشمائل</h1>
-        <p className="text-muted-foreground font-body">
-          استكشف الصفات النبيلة وتعاليم النبي ﷺ — قريباً بإذن الله.
-        </p>
-      </motion.div>
+const CharacterPage = () => {
+  const { t } = useLanguage();
+
+  return (
+    <div className="pt-24 pb-16 min-h-screen islamic-pattern">
+      <div className="container mx-auto px-4 md:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-2xl mx-auto text-center"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-6">
+            <Heart size={28} className="text-secondary" />
+          </div>
+          <h1 className="font-serif-display text-4xl md:text-5xl text-foreground mb-4">{t("characterTitle")}</h1>
+          <p className="text-muted-foreground font-body">
+            {t("characterSubtitle")}
+          </p>
+        </motion.div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default CharacterPage;
