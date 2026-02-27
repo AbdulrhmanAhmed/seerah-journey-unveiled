@@ -158,6 +158,38 @@ export const mapLocations: MapLocation[] = [
     ],
     travel: { camelDays: "~يوم واحد", camelDaysEn: "~1 day", carHours: "~٣٠ دقيقة", carHoursEn: "~30 minutes", distanceKm: 22, from: "مكة", fromEn: "Makkah" },
   },
+  {
+    id: "cave-thawr",
+    name: "غار ثور",
+    nameEn: "Cave Thawr",
+    nameArabic: "غار ثور",
+    x: 38,
+    y: 64,
+    description: "الغار الذي اختبأ فيه النبي ﷺ وأبو بكر رضي الله عنه ثلاثة أيام أثناء الهجرة.",
+    descriptionEn: "The cave where the Prophet ﷺ and Abu Bakr hid for three days during the Hijrah.",
+    primaryCategory: "milestone",
+    events: [
+      { label: "الاختباء ثلاثة أيام (٦٢٢ م)", labelEn: "Three-day concealment (622 CE)", category: "milestone" },
+      { label: "نسج العنكبوت وعش الحمام", labelEn: "Spider's web and dove's nest", category: "milestone" },
+    ],
+    travel: { camelDays: "~ساعات", camelDaysEn: "~hours", carHours: "~٢٠ دقيقة", carHoursEn: "~20 minutes", distanceKm: 8, from: "مكة", fromEn: "Makkah" },
+  },
+  {
+    id: "quba",
+    name: "قباء",
+    nameEn: "Quba",
+    nameArabic: "قباء",
+    x: 36,
+    y: 49,
+    description: "موقع أول مسجد بُني في الإسلام — مسجد قباء، الذي أسسه النبي ﷺ عند وصوله من الهجرة.",
+    descriptionEn: "Site of the first mosque built in Islam — Quba Mosque, founded by the Prophet ﷺ upon arriving from the Hijrah.",
+    primaryCategory: "milestone",
+    events: [
+      { label: "بناء مسجد قباء (٦٢٢ م)", labelEn: "Building of Quba Mosque (622 CE)", category: "milestone" },
+      { label: "أول صلاة جمعة في الإسلام", labelEn: "First Friday prayer in Islam", category: "milestone" },
+    ],
+    travel: { camelDays: "~١٠ أيام", camelDaysEn: "~10 days", carHours: "~٤ ساعات", carHoursEn: "~4 hours", distanceKm: 440, from: "مكة", fromEn: "Makkah" },
+  },
 ];
 
 export const hijrahRoute = [
