@@ -264,6 +264,80 @@ export type Database = {
         }
         Relationships: []
       }
+      timeline_events: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          description_en: string | null
+          display_order: number
+          era: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_major: boolean
+          location_id: string | null
+          map_x: number
+          map_y: number
+          path_id: string | null
+          timeline_visible: boolean
+          title: string
+          title_en: string
+          year_ce: number
+          year_hijri: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          display_order?: number
+          era?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_major?: boolean
+          location_id?: string | null
+          map_x?: number
+          map_y?: number
+          path_id?: string | null
+          timeline_visible?: boolean
+          title: string
+          title_en: string
+          year_ce: number
+          year_hijri?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          display_order?: number
+          era?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_major?: boolean
+          location_id?: string | null
+          map_x?: number
+          map_y?: number
+          path_id?: string | null
+          timeline_visible?: boolean
+          title?: string
+          title_en?: string
+          year_ce?: number
+          year_hijri?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_events_path_id_fkey"
+            columns: ["path_id"]
+            isOneToOne: false
+            referencedRelation: "paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
