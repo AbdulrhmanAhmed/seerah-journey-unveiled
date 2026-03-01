@@ -326,7 +326,7 @@ const InteractiveJourneyPage = () => {
   }, [visibleEvents]);
 
   return (
-    <div className="flex flex-col bg-background overflow-hidden" dir={isAr ? "rtl" : "ltr"} style={{ height: "calc(100vh - 4rem)" }}>
+    <div className="flex flex-col bg-background overflow-hidden pt-16 md:pt-20" dir={isAr ? "rtl" : "ltr"} style={{ height: "100vh" }}>
       {/* Full-screen Map */}
       <div className="flex-1 relative">
         <svg
