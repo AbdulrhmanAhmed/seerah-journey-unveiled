@@ -7,6 +7,7 @@ export const translations = {
     navJourney: "الرحلة",
     navCharacter: "الشمائل",
     navMap: "الخريطة",
+    navInteractiveJourney: "الرحلة التفاعلية",
     navLibrary: "المكتبة",
     menuLabel: "القائمة",
 
@@ -110,6 +111,7 @@ export const translations = {
     navJourney: "Journey",
     navCharacter: "Character",
     navMap: "Map",
+    navInteractiveJourney: "Interactive Journey",
     navLibrary: "Library",
     menuLabel: "Menu",
 
