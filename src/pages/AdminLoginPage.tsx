@@ -11,6 +11,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -18,12 +19,24 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const { error } = await signIn(email, password);
-    setIsLoading(false);
-    if (error) {
-      toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    if (isSignUp) {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.auth.signUp({ email, password });
+      setIsLoading(false);
+      if (error) {
+        toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Account created!", description: "You can now sign in." });
+        setIsSignUp(false);
+      }
     } else {
-      navigate("/admin");
+      const { error } = await signIn(email, password);
+      setIsLoading(false);
+      if (error) {
+        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+      } else {
+        navigate("/admin");
+      }
     }
   };
 
@@ -53,8 +66,11 @@ export default function AdminLoginPage() {
               required
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
+            <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={() => setIsSignUp(!isSignUp)}>
+              {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+            </button>
           </form>
         </CardContent>
       </Card>
