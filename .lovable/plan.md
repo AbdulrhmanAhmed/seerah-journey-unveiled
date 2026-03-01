@@ -1,41 +1,27 @@
 
 
-## Plan: Populate 250 Timeline Events
+## Issues Identified
 
-**Current state:** 17 events in `timeline_events` table. Need 233 more to reach 250.
+1. **No Navbar**: InteractiveJourneyPage is rendered without the `Layout` wrapper (line 41 of App.tsx), so no Navbar appears.
+2. **Map zooms into events**: Lines 257-263 zoom the viewBox to the major event's coordinates, making the map too zoomed in. User wants the full map always visible.
+3. **Too many markers on map**: `visibleEvents` shows ALL events up to `currentYear`, so by the end there are 255 dots. During auto-play, only the last ~3 events should be visible on the map.
+4. **All 255 events have `timeline_visible=true`** — the query fetches all of them correctly, but they all pile up on the map.
 
-**Approach:** Insert events in batches using the data insert tool. Events will be historically accurate, covering the full 570–632 AD range with proper bilingual content, coordinates, era, and category assignments.
+## Plan
 
-### Event Distribution (233 new events across categories)
+### 1. Add Navbar to InteractiveJourneyPage
+- In `App.tsx`, wrap `InteractiveJourneyPage` with `<Layout>` (same as other routes)
+- Adjust the page's layout to account for navbar height (add `pt-16` or similar top padding)
 
-| Period | Years | Approx. New Events |
-|--------|-------|-------------------|
-| Pre-Prophethood | 570–609 | ~25 (childhood, youth, trade journeys, notable Makkah events) |
-| Early Makkah | 610–614 | ~30 (early converts, secret preaching, persecution begins) |
-| Mid Makkah | 615–618 | ~30 (Abyssinia migrations, boycott details, notable conversions) |
-| Late Makkah | 619–622 | ~30 (Ta'if, Isra/Mi'raj, Aqabah pledges, Hijrah preparations) |
-| Early Madinah | 622–624 | ~30 (mosque building, brotherhood pact, early expeditions, Badr) |
-| Mid Madinah | 625–628 | ~40 (Uhud, Banu Nadir, Trench, Hudaybiyyah, diplomatic letters) |
-| Late Madinah | 629–632 | ~48 (Khaybar, Mu'tah, Conquest, Hunayn, delegations, farewell) |
+### 2. Remove event-based zoom — keep full map view
+- Delete the `useEffect` at lines 257-263 that sets viewBox based on `majorEvent`
+- Keep only the era-based viewBox (lines 248-254) which shows the broader region
 
-### Event Categories Used
-- `milestone`, `battle`, `contract`, `challenge`, `marriage`, `diplomacy`
+### 3. Limit visible markers on map
+- Change `visibleEvents` logic: during auto-play OR in general, only show events from the **current year** plus the **last 2-3 previous event-years** on the map (not all historical events)
+- This keeps the map clean with only ~3-5 recent markers visible at any time
+- The floating preview card continues to show the current year's major event
 
-### Data per Event
-- Bilingual titles and descriptions (Arabic + English)
-- `year_ce`, `year_hijri`, `era` (makkah/madinah)
-- `map_x`, `map_y` coordinates matching the location
-- `category`, `is_major` flag, `timeline_visible: true`
-- Sequential `display_order`
-
-### Implementation Steps
-
-1. **Insert events in ~8 batch SQL statements** (30 rows each) using the data insert tool
-2. **Update the fallback array** in `InteractiveJourneyPage.tsx` to include a broader sample (~15-20 key events) for resilience
-3. **Verify the count** reaches 250 with a query
-
-### Technical Notes
-- All RLS policies already in place — public SELECT is enabled
-- The existing page code fetches all `timeline_visible = true` events, so no query changes needed
-- Map coordinates will cluster around key locations (Makkah, Madinah, Badr, Uhud, Ta'if, Hudaybiyyah, Khaybar, Tabuk)
+### 4. Adjust page container
+- Change from `min-h-screen` to account for the navbar, using `calc(100vh - 5rem)` or flex layout within the Layout wrapper
 
