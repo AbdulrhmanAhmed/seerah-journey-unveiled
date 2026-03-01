@@ -18,6 +18,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPathsPage from "./pages/AdminPathsPage";
 import AdminLocationsPage from "./pages/AdminLocationsPage";
 import AdminShamailPage from "./pages/AdminShamailPage";
+import AdminTimelinePage from "./pages/AdminTimelinePage";
+import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,7 @@ const App = () => (
               <Route path="/character" element={<Layout><CharacterPage /></Layout>} />
               <Route path="/map" element={<Layout><MapPage /></Layout>} />
               <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
+              <Route path="/interactive-journey" element={<InteractiveJourneyPage />} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -43,6 +46,7 @@ const App = () => (
               <Route path="/admin/paths" element={<AdminProtectedRoute><AdminPathsPage /></AdminProtectedRoute>} />
               <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
               <Route path="/admin/shamail" element={<AdminProtectedRoute><AdminShamailPage /></AdminProtectedRoute>} />
+              <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
