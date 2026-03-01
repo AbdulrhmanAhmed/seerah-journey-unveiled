@@ -38,7 +38,7 @@ const App = () => (
               <Route path="/character" element={<Layout><CharacterPage /></Layout>} />
               <Route path="/map" element={<Layout><MapPage /></Layout>} />
               <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
-              <Route path="/interactive-journey" element={<InteractiveJourneyPage />} />
+              <Route path="/interactive-journey" element={<Layout><InteractiveJourneyPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />

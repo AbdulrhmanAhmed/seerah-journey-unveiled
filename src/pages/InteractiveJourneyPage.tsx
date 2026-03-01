@@ -224,10 +224,13 @@ const InteractiveJourneyPage = () => {
     };
   }, []);
 
-  const visibleEvents = useMemo(
-    () => events.filter((e) => e.year_ce <= currentYear),
-    [events, currentYear]
-  );
+  // Only show events from the current year and the 2 previous event-years (last ~3 groups)
+  const visibleEvents = useMemo(() => {
+    const pastEvents = events.filter((e) => e.year_ce <= currentYear);
+    const uniqueYears = [...new Set(pastEvents.map((e) => e.year_ce))].sort((a, b) => b - a);
+    const recentYears = uniqueYears.slice(0, 3);
+    return pastEvents.filter((e) => recentYears.includes(e.year_ce));
+  }, [events, currentYear]);
 
   const currentYearEvents = useMemo(
     () => events.filter((e) => e.year_ce === currentYear),
@@ -253,14 +256,6 @@ const InteractiveJourneyPage = () => {
     }
   }, [era]);
 
-  // Focus on specific event location
-  useEffect(() => {
-    if (majorEvent) {
-      const cx = majorEvent.map_x;
-      const cy = majorEvent.map_y;
-      setViewBox(`${cx - 20} ${cy - 18} 40 36`);
-    }
-  }, [majorEvent?.id]);
 
   // Autoplay
   const stopPlaying = useCallback(() => {
@@ -331,7 +326,7 @@ const InteractiveJourneyPage = () => {
   }, [visibleEvents]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background overflow-hidden" dir={isAr ? "rtl" : "ltr"}>
+    <div className="flex flex-col bg-background overflow-hidden" dir={isAr ? "rtl" : "ltr"} style={{ height: "calc(100vh - 4rem)" }}>
       {/* Full-screen Map */}
       <div className="flex-1 relative">
         <svg
@@ -588,7 +583,7 @@ const InteractiveJourneyPage = () => {
             </motion.div>
           </div>
           <div className="text-xs text-muted-foreground w-24 text-end">
-            {visibleEvents.length} {isAr ? "حدث" : "events"}
+            {events.filter((e) => e.year_ce <= currentYear).length} {isAr ? "حدث" : "events"}
           </div>
         </div>
 
