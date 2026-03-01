@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -40,6 +39,142 @@ const categoryColors: Record<string, string> = {
   diplomacy: "160 50% 40%",
 };
 
+const fallbackTimelineEvents: TimelineEvent[] = [
+  {
+    id: "fb-570",
+    year_ce: 570,
+    year_hijri: null,
+    era: "makkah",
+    title: "حادثة الفيل ومولد النبي ﷺ",
+    title_en: "Year of the Elephant & Birth of the Prophet ﷺ",
+    description: "بداية الرحلة التاريخية في مكة.",
+    description_en: "The historical journey begins in Makkah.",
+    category: "milestone",
+    location_id: "makkah",
+    path_id: null,
+    image_url: null,
+    map_x: 38.5,
+    map_y: 62,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 1,
+  },
+  {
+    id: "fb-610",
+    year_ce: 610,
+    year_hijri: null,
+    era: "makkah",
+    title: "نزول الوحي في غار حراء",
+    title_en: "First Revelation in Cave Hira",
+    description: "نقطة التحول الكبرى ببداية البعثة.",
+    description_en: "The major turning point with the beginning of revelation.",
+    category: "milestone",
+    location_id: "makkah",
+    path_id: null,
+    image_url: null,
+    map_x: 38.5,
+    map_y: 62,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 2,
+  },
+  {
+    id: "fb-622",
+    year_ce: 622,
+    year_hijri: "1",
+    era: "madinah",
+    title: "الهجرة الكبرى",
+    title_en: "The Great Hijrah",
+    description: "انتقال مركز الرسالة من مكة إلى المدينة.",
+    description_en: "The mission center moved from Makkah to Madinah.",
+    category: "milestone",
+    location_id: "madinah",
+    path_id: null,
+    image_url: null,
+    map_x: 37,
+    map_y: 47.5,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 3,
+  },
+  {
+    id: "fb-624",
+    year_ce: 624,
+    year_hijri: "2",
+    era: "madinah",
+    title: "غزوة بدر",
+    title_en: "Battle of Badr",
+    description: "أول معركة فاصلة في التاريخ الإسلامي.",
+    description_en: "The first decisive battle in Islamic history.",
+    category: "battle",
+    location_id: "badr",
+    path_id: null,
+    image_url: null,
+    map_x: 36,
+    map_y: 55,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 4,
+  },
+  {
+    id: "fb-628",
+    year_ce: 628,
+    year_hijri: "6",
+    era: "madinah",
+    title: "صلح الحديبية",
+    title_en: "Treaty of Hudaybiyyah",
+    description: "معاهدة مهدت للفتح المبين.",
+    description_en: "A treaty that paved the way for clear victory.",
+    category: "contract",
+    location_id: "hudaybiyyah",
+    path_id: null,
+    image_url: null,
+    map_x: 37,
+    map_y: 63,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 5,
+  },
+  {
+    id: "fb-630",
+    year_ce: 630,
+    year_hijri: "8",
+    era: "madinah",
+    title: "فتح مكة",
+    title_en: "Conquest of Makkah",
+    description: "عودة إلى مكة في مشهد تاريخي عظيم.",
+    description_en: "A historic return to Makkah.",
+    category: "milestone",
+    location_id: "makkah",
+    path_id: null,
+    image_url: null,
+    map_x: 38.5,
+    map_y: 62,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 6,
+  },
+  {
+    id: "fb-632",
+    year_ce: 632,
+    year_hijri: "11",
+    era: "madinah",
+    title: "وفاة النبي ﷺ",
+    title_en: "Passing of the Prophet ﷺ",
+    description: "ختام الرحلة المباركة في المدينة.",
+    description_en: "The blessed journey concludes in Madinah.",
+    category: "milestone",
+    location_id: "madinah",
+    path_id: null,
+    image_url: null,
+    map_x: 37,
+    map_y: 47.5,
+    is_major: true,
+    timeline_visible: true,
+    display_order: 7,
+  },
+];
+
 const InteractiveJourneyPage = () => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
@@ -50,34 +185,44 @@ const InteractiveJourneyPage = () => {
   const [viewBox, setViewBox] = useState("0 0 100 100");
   const [hoveredEvent, setHoveredEvent] = useState<TimelineEvent | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
+  const [events, setEvents] = useState<TimelineEvent[]>(fallbackTimelineEvents);
+  const [paths, setPaths] = useState<any[]>([]);
 
-  const { data: events = [] } = useQuery({
-    queryKey: ["timeline-events"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("timeline_events")
-        .select("*")
-        .eq("is_active", true)
-        .eq("timeline_visible", true)
-        .order("display_order");
-      if (error) throw error;
-      return data as TimelineEvent[];
-    },
-  });
+  useEffect(() => {
+    let mounted = true;
 
-  // Paths for drawing journey lines
-  const { data: paths = [] } = useQuery({
-    queryKey: ["timeline-paths"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("paths")
-        .select("*, path_steps(*)")
-        .eq("is_active", true)
-        .order("created_at");
-      if (error) throw error;
-      return data;
-    },
-  });
+    const loadData = async () => {
+      const [eventsRes, pathsRes] = await Promise.all([
+        supabase
+          .from("timeline_events")
+          .select("*")
+          .eq("is_active", true)
+          .eq("timeline_visible", true)
+          .order("display_order"),
+        supabase
+          .from("paths")
+          .select("*, path_steps(*)")
+          .eq("is_active", true)
+          .order("created_at"),
+      ]);
+
+      if (!mounted) return;
+
+      if (!eventsRes.error && eventsRes.data && eventsRes.data.length > 0) {
+        setEvents(eventsRes.data as TimelineEvent[]);
+      }
+
+      if (!pathsRes.error && pathsRes.data) {
+        setPaths(pathsRes.data as any[]);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const visibleEvents = useMemo(
     () => events.filter((e) => e.year_ce <= currentYear),
