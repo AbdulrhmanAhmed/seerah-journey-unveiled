@@ -61,6 +61,7 @@ const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title }: EventsS
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="absolute top-0 bottom-0 z-30 w-80 md:w-96 bg-card/95 backdrop-blur-xl border-border shadow-2xl flex flex-col"
           style={{ [isAr ? "left" : "right"]: 0 }}
+          onWheelCapture={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
