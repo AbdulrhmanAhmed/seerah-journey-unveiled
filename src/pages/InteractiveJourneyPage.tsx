@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import EventDetailModal, { type EventDetailData, type RelatedEvent } from "@/components/EventDetailModal";
 
 const MIN_YEAR = 570;
 const MAX_YEAR = 632;
@@ -187,6 +188,9 @@ const InteractiveJourneyPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [events, setEvents] = useState<TimelineEvent[]>(fallbackTimelineEvents);
   const [paths, setPaths] = useState<any[]>([]);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailEvent, setDetailEvent] = useState<EventDetailData | null>(null);
+  const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -306,6 +310,51 @@ const InteractiveJourneyPage = () => {
     setCurrentYear(MIN_YEAR);
     setSelectedEvent(null);
   };
+
+  const openEventDetail = useCallback(async (eventId: string) => {
+    const { data } = await supabase
+      .from("timeline_events")
+      .select("*")
+      .eq("id", eventId)
+      .single();
+
+    if (!data) return;
+
+    const eventData: EventDetailData = {
+      id: data.id,
+      title: data.title,
+      title_en: data.title_en,
+      description: data.description,
+      description_en: data.description_en,
+      full_story: (data as any).full_story || null,
+      full_story_en: (data as any).full_story_en || null,
+      year_ce: data.year_ce,
+      year_hijri: data.year_hijri,
+      era: data.era,
+      category: data.category,
+      image_url: data.image_url,
+      location_id: data.location_id,
+      quran_references: (data as any).quran_references || [],
+      hadith_references: (data as any).hadith_references || [],
+      related_event_ids: (data as any).related_event_ids || [],
+    };
+
+    setDetailEvent(eventData);
+
+    // Fetch related events
+    const relIds = eventData.related_event_ids || [];
+    if (relIds.length > 0) {
+      const { data: relData } = await supabase
+        .from("timeline_events")
+        .select("id, title, title_en, year_ce, category")
+        .in("id", relIds);
+      setRelatedEvents((relData || []) as RelatedEvent[]);
+    } else {
+      setRelatedEvents([]);
+    }
+
+    setDetailModalOpen(true);
+  }, []);
 
   // Get active paths for current year
   const activePathLines = useMemo(() => {
@@ -531,6 +580,15 @@ const InteractiveJourneyPage = () => {
                     className="rounded-lg w-full h-32 object-cover"
                   />
                 )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2 text-secondary border-secondary/30 hover:bg-secondary/10"
+                  onClick={() => openEventDetail(majorEvent.id)}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {isAr ? "اقرأ المزيد" : "Learn More"}
+                </Button>
               </div>
             </motion.div>
           )}
@@ -621,6 +679,16 @@ const InteractiveJourneyPage = () => {
           </div>
         </div>
       </div>
+      <EventDetailModal
+        event={detailEvent}
+        relatedEvents={relatedEvents}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onRelatedEventClick={(id) => {
+          setDetailModalOpen(false);
+          setTimeout(() => openEventDetail(id), 300);
+        }}
+      />
     </div>
   );
 };
