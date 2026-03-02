@@ -272,6 +272,9 @@ export type Database = {
           description_en: string | null
           display_order: number
           era: string
+          full_story: string | null
+          full_story_en: string | null
+          hadith_references: Json
           id: string
           image_url: string | null
           is_active: boolean
@@ -280,6 +283,8 @@ export type Database = {
           map_x: number
           map_y: number
           path_id: string | null
+          quran_references: Json
+          related_event_ids: Json
           timeline_visible: boolean
           title: string
           title_en: string
@@ -293,6 +298,9 @@ export type Database = {
           description_en?: string | null
           display_order?: number
           era?: string
+          full_story?: string | null
+          full_story_en?: string | null
+          hadith_references?: Json
           id?: string
           image_url?: string | null
           is_active?: boolean
@@ -301,6 +309,8 @@ export type Database = {
           map_x?: number
           map_y?: number
           path_id?: string | null
+          quran_references?: Json
+          related_event_ids?: Json
           timeline_visible?: boolean
           title: string
           title_en: string
@@ -314,6 +324,9 @@ export type Database = {
           description_en?: string | null
           display_order?: number
           era?: string
+          full_story?: string | null
+          full_story_en?: string | null
+          hadith_references?: Json
           id?: string
           image_url?: string | null
           is_active?: boolean
@@ -322,6 +335,8 @@ export type Database = {
           map_x?: number
           map_y?: number
           path_id?: string | null
+          quran_references?: Json
+          related_event_ids?: Json
           timeline_visible?: boolean
           title?: string
           title_en?: string
