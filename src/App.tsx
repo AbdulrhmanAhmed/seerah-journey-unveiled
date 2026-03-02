@@ -20,6 +20,7 @@ import AdminLocationsPage from "./pages/AdminLocationsPage";
 import AdminShamailPage from "./pages/AdminShamailPage";
 import AdminTimelinePage from "./pages/AdminTimelinePage";
 import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
+import BattleOfBadrPage from "./pages/BattleOfBadrPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/map" element={<Layout><MapPage /></Layout>} />
               <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
               <Route path="/interactive-journey" element={<Layout><InteractiveJourneyPage /></Layout>} />
+              <Route path="/battle-of-badr" element={<Layout><BattleOfBadrPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
