@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Edit, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import LeafletMapPicker from "@/components/LeafletMapPicker";
 
 interface TimelineEventRow {
   id: string;
@@ -65,6 +66,8 @@ function EventForm({
     image_url: initial?.image_url ?? "",
     map_x: initial?.map_x ?? 38.5,
     map_y: initial?.map_y ?? 62,
+    lat: (initial as any)?.lat ?? 21.4225,
+    lng: (initial as any)?.lng ?? 39.8262,
     is_major: initial?.is_major ?? false,
     timeline_visible: initial?.timeline_visible ?? true,
     is_active: initial?.is_active ?? true,
@@ -126,13 +129,22 @@ function EventForm({
           </Select>
         </div>
         <div>
-          <label className="text-sm font-medium">Map X</label>
-          <Input type="number" step="0.1" value={form.map_x} onChange={(e) => setForm({ ...form, map_x: parseFloat(e.target.value) || 0 })} />
+          <label className="text-sm font-medium">Latitude</label>
+          <Input type="number" step="0.0001" value={form.lat} onChange={(e) => setForm({ ...form, lat: parseFloat(e.target.value) || 0 })} />
         </div>
         <div>
-          <label className="text-sm font-medium">Map Y</label>
-          <Input type="number" step="0.1" value={form.map_y} onChange={(e) => setForm({ ...form, map_y: parseFloat(e.target.value) || 0 })} />
+          <label className="text-sm font-medium">Longitude</label>
+          <Input type="number" step="0.0001" value={form.lng} onChange={(e) => setForm({ ...form, lng: parseFloat(e.target.value) || 0 })} />
         </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium mb-2 block">📍 Click on map to pick coordinates</label>
+        <LeafletMapPicker
+          lat={form.lat}
+          lng={form.lng}
+          onPick={(lat, lng) => setForm({ ...form, lat, lng })}
+          height="200px"
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

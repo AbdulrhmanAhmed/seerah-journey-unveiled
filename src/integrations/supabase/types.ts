@@ -120,6 +120,8 @@ export type Database = {
           image_url: string | null
           label: string
           label_en: string
+          lat: number
+          lng: number
           location_id: string | null
           path_id: string
           segment_type: string
@@ -138,6 +140,8 @@ export type Database = {
           image_url?: string | null
           label: string
           label_en: string
+          lat?: number
+          lng?: number
           location_id?: string | null
           path_id: string
           segment_type?: string
@@ -156,6 +160,8 @@ export type Database = {
           image_url?: string | null
           label?: string
           label_en?: string
+          lat?: number
+          lng?: number
           location_id?: string | null
           path_id?: string
           segment_type?: string
@@ -279,6 +285,8 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_major: boolean
+          lat: number
+          lng: number
           location_id: string | null
           map_x: number
           map_y: number
@@ -305,6 +313,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_major?: boolean
+          lat?: number
+          lng?: number
           location_id?: string | null
           map_x?: number
           map_y?: number
@@ -331,6 +341,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_major?: boolean
+          lat?: number
+          lng?: number
           location_id?: string | null
           map_x?: number
           map_y?: number

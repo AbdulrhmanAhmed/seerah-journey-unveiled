@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit, GripVertical, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import LeafletMapPicker from "@/components/LeafletMapPicker";
 
 interface PathRow {
   id: string;
@@ -32,6 +33,8 @@ interface StepRow {
   description_en: string;
   coord_x: number;
   coord_y: number;
+  lat: number;
+  lng: number;
   segment_type: string;
   location_id: string | null;
 }
@@ -122,6 +125,8 @@ function StepEditor({ pathId }: { pathId: string }) {
         label_en: "New Step",
         coord_x: 40,
         coord_y: 55,
+        lat: 21.4225,
+        lng: 39.8262,
         segment_type: "land",
       });
       if (error) throw error;
@@ -140,6 +145,8 @@ function StepEditor({ pathId }: { pathId: string }) {
           description_en: step.description_en,
           coord_x: step.coord_x,
           coord_y: step.coord_y,
+          lat: (step as any).lat ?? 21.4225,
+          lng: (step as any).lng ?? 39.8262,
           segment_type: step.segment_type,
           location_id: step.location_id,
           step_order: step.step_order,
@@ -196,12 +203,12 @@ function StepEditor({ pathId }: { pathId: string }) {
               </div>
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <label className="text-xs">X</label>
-                  <Input type="number" step="0.1" value={editingStep.coord_x} onChange={(e) => setEditingStep({ ...editingStep, coord_x: parseFloat(e.target.value) || 0 })} />
+                  <label className="text-xs">Latitude</label>
+                  <Input type="number" step="0.0001" value={(editingStep as any).lat ?? 21.4225} onChange={(e) => setEditingStep({ ...editingStep, lat: parseFloat(e.target.value) || 0 } as any)} />
                 </div>
                 <div>
-                  <label className="text-xs">Y</label>
-                  <Input type="number" step="0.1" value={editingStep.coord_y} onChange={(e) => setEditingStep({ ...editingStep, coord_y: parseFloat(e.target.value) || 0 })} />
+                  <label className="text-xs">Longitude</label>
+                  <Input type="number" step="0.0001" value={(editingStep as any).lng ?? 39.8262} onChange={(e) => setEditingStep({ ...editingStep, lng: parseFloat(e.target.value) || 0 } as any)} />
                 </div>
                 <div>
                   <label className="text-xs">Segment</label>
@@ -218,6 +225,12 @@ function StepEditor({ pathId }: { pathId: string }) {
                   <Input value={editingStep.location_id ?? ""} onChange={(e) => setEditingStep({ ...editingStep, location_id: e.target.value || null })} placeholder="optional" />
                 </div>
               </div>
+              <LeafletMapPicker
+                lat={(editingStep as any).lat ?? 21.4225}
+                lng={(editingStep as any).lng ?? 39.8262}
+                onPick={(lat, lng) => setEditingStep({ ...editingStep, lat, lng } as any)}
+                height="180px"
+              />
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => updateStep.mutate(editingStep)}>Save</Button>
                 <Button size="sm" variant="ghost" onClick={() => setEditingStep(null)}>Cancel</Button>
@@ -229,7 +242,7 @@ function StepEditor({ pathId }: { pathId: string }) {
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
                 <span className="text-xs bg-muted px-2 py-0.5 rounded">{step.step_order}</span>
                 <span className="text-sm font-medium">{step.label_en}</span>
-                <span className="text-xs text-muted-foreground">({step.coord_x}, {step.coord_y})</span>
+                <span className="text-xs text-muted-foreground">({(step as any).lat?.toFixed(4) ?? step.coord_y}, {(step as any).lng?.toFixed(4) ?? step.coord_x})</span>
                 <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{step.segment_type}</span>
               </div>
               <div className="flex gap-1">
