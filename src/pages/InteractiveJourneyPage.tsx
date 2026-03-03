@@ -195,6 +195,7 @@ const InteractiveJourneyPage = () => {
         direction: "top",
         offset: [0, -14],
         className: "seerah-tooltip",
+        permanent: true,
       });
 
       marker.on("click", () => {
