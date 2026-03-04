@@ -144,19 +144,47 @@ const InteractiveJourneyPage = () => {
   // Load data
   useEffect(() => {
     let mounted = true;
+
     const loadData = async () => {
-      const [eventsRes, pathsRes] = await Promise.all([
-        supabase.from("timeline_events").select("*").eq("is_active", true).eq("timeline_visible", true).order("display_order"),
-        supabase.from("paths").select("*, path_steps(*)").eq("is_active", true).order("created_at"),
-      ]);
-      if (!mounted) return;
-      if (!eventsRes.error && eventsRes.data && eventsRes.data.length > 0) {
-        setEvents(eventsRes.data as TimelineEvent[]);
+      try {
+        const { data: eventsData, error: eventsError } = await supabase
+          .from("timeline_events")
+          .select("*")
+          .eq("is_active", true)
+          .eq("timeline_visible", true)
+          .order("display_order");
+
+        if (!mounted) return;
+
+        if (eventsError) {
+          console.error("Failed to load timeline events:", eventsError.message);
+        } else {
+          setEvents((eventsData ?? []) as TimelineEvent[]);
+        }
+
+        const { data: pathsData, error: pathsError } = await supabase
+          .from("paths")
+          .select("*, path_steps(*)")
+          .eq("is_active", true)
+          .order("created_at");
+
+        if (!mounted) return;
+
+        if (pathsError) {
+          console.error("Failed to load paths:", pathsError.message);
+        } else {
+          setPaths((pathsData ?? []) as any[]);
+        }
+      } catch (error) {
+        console.error("Unexpected load error:", error);
       }
-      if (!pathsRes.error && pathsRes.data) setPaths(pathsRes.data as any[]);
     };
+
     loadData();
-    return () => { mounted = false; };
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Visible events: current year + 2 previous event-years
