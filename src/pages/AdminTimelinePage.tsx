@@ -28,6 +28,8 @@ interface TimelineEventRow {
   image_url: string | null;
   map_x: number;
   map_y: number;
+  lat: number;
+  lng: number;
   is_major: boolean;
   timeline_visible: boolean;
   is_active: boolean;
@@ -179,7 +181,16 @@ function EventForm({
         </div>
       </div>
       <Button
-        onClick={() => onSave(form as any)}
+        onClick={() => {
+          const payload = {
+            ...form,
+            location_id: form.location_id || null,
+            path_id: form.path_id || null,
+            image_url: form.image_url || null,
+            year_hijri: form.year_hijri || null,
+          };
+          onSave(payload as any);
+        }}
         disabled={saving || !form.title || !form.title_en}
         className="w-full"
       >
