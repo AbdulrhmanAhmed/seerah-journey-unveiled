@@ -38,12 +38,12 @@ interface TimelineEvent {
 }
 
 const categoryColors: Record<string, string> = {
-  milestone: "#C6A020",
-  battle: "#DC2626",
-  contract: "#3B82F6",
-  challenge: "#EA580C",
-  marriage: "#DB2777",
-  diplomacy: "#059669",
+  milestone: "#E6B422",
+  battle: "#EF4444",
+  contract: "#60A5FA",
+  challenge: "#F97316",
+  marriage: "#F472B6",
+  diplomacy: "#34D399",
 };
 
 const categoryColorsHsl: Record<string, string> = {
@@ -74,8 +74,8 @@ function createCategoryIcon(category: string, isMajor: boolean, isCurrentYear: b
     html: `<div style="
       width:${size}px;height:${size}px;
       display:flex;align-items:center;justify-content:center;
-      background:${color};border:2px solid #fff;
-      border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);
+      background:${color};border:2.5px solid #fff;
+      border-radius:50%;box-shadow:0 2px 12px rgba(0,0,0,0.4), 0 0 6px ${color}80;
       font-size:${size * 0.45}px;cursor:pointer;
       ${pulse}
     ">${icon}</div>`,
@@ -253,8 +253,8 @@ const InteractiveJourneyPage = () => {
       const positions: L.LatLngExpression[] = steps.map((s: any) => [s.lat || 21.4225, s.lng || 39.8262] as L.LatLngExpression);
       const polyline = L.polyline(positions, {
         color: `hsl(${p.line_color})`,
-        weight: 3,
-        opacity: 0.8,
+        weight: 4,
+        opacity: 0.9,
         dashArray: steps.some((s: any) => s.segment_type === "sea") ? "8 6" : undefined,
       });
       polyline.addTo(polylinesLayer);
@@ -372,7 +372,7 @@ const InteractiveJourneyPage = () => {
           style={{
             width: "100%",
             height: "100%",
-            filter: "sepia(25%) saturate(85%) brightness(105%)",
+            filter: "sepia(15%) saturate(110%) brightness(102%) contrast(105%)",
           }}
         />
 
