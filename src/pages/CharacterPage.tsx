@@ -60,9 +60,12 @@ const CharacterPage = () => {
   const [traits, setTraits] = useState<Trait[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [fetchError, setFetchError] = useState(false);
+
   useEffect(() => {
     const fetchTraits = async () => {
       try {
+        setFetchError(false);
         const { data, error } = await supabase
           .from("shamail_traits")
           .select("*")
@@ -70,11 +73,14 @@ const CharacterPage = () => {
           .order("created_at");
         if (error) {
           console.error("[CharacterPage] Fetch error:", error);
+          setFetchError(true);
         } else {
+          console.log("[CharacterPage] Loaded", data?.length, "traits");
           setTraits((data || []) as Trait[]);
         }
       } catch (err) {
         console.error("[CharacterPage] Exception:", err);
+        setFetchError(true);
       } finally {
         setIsLoading(false);
       }
