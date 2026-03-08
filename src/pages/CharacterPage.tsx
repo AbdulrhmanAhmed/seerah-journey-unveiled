@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import {
   Heart, Star, Shield, Users, BookOpen, Eye, Smile, Crown,
   Hand, Sparkles, Sun, Moon, Feather, Gem, Award, MapPin,
-  type LucideIcon,
+  type LucideIcon, type LucideProps,
 } from "lucide-react";
 
 const iconMap: Record<string, LucideIcon> = {
@@ -19,10 +19,12 @@ const iconMap: Record<string, LucideIcon> = {
   feather: Feather, gem: Gem, award: Award, "map-pin": MapPin,
 };
 
-const DynIcon = ({ name, ...props }: { name: string } & React.ComponentProps<LucideIcon>) => {
+type DynIconProps = Omit<LucideProps, "ref"> & { name: string };
+const DynIcon = forwardRef<SVGSVGElement, DynIconProps>(({ name, ...props }, ref) => {
   const Icon = iconMap[name] || Heart;
-  return <Icon {...props} />;
-};
+  return <Icon ref={ref} {...props} />;
+});
+DynIcon.displayName = "DynIcon";
 
 type Trait = {
   id: string;
