@@ -63,16 +63,17 @@ const CharacterPage = () => {
   useEffect(() => {
     const fetchTraits = async () => {
       try {
-        const { data, error } = await supabase
-          .from("shamail_traits")
-          .select("*")
-          .eq("is_active", true)
-          .order("created_at");
-        if (error) {
-          console.error("[CharacterPage] Fetch error:", error);
-        } else {
-          setTraits((data || []) as Trait[]);
-        }
+        console.log("[CharacterPage] Starting fetch, URL:", import.meta.env.VITE_SUPABASE_URL);
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/shamail_traits?is_active=eq.true&order=created_at&select=*`;
+        const res = await fetch(url, {
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        });
+        const data = await res.json();
+        console.log("[CharacterPage] Raw fetch result:", data?.length, "traits");
+        setTraits((data || []) as Trait[]);
       } catch (err) {
         console.error("[CharacterPage] Exception:", err);
       } finally {
