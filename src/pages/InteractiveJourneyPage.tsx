@@ -404,6 +404,25 @@ const InteractiveJourneyPage = () => {
           }}
         />
 
+        {/* Data status */}
+        {isLoadingData && (
+          <div className="absolute top-4 right-4 z-[1000] px-3 py-2 rounded-md bg-card/90 border border-border text-xs text-muted-foreground">
+            {isAr ? "جارِ تحميل الأحداث..." : "Loading events..."}
+          </div>
+        )}
+
+        {fetchError && !isLoadingData && (
+          <div className="absolute top-4 right-4 z-[1000] px-3 py-2 rounded-md bg-card/95 border border-border text-xs text-foreground flex items-center gap-2">
+            <span>{isAr ? "تعذر تحميل البيانات" : "Unable to load data"}</span>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-2 py-0.5 rounded bg-primary text-primary-foreground"
+            >
+              {isAr ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        )}
+
         {/* Era indicator */}
         <div className="absolute top-4 left-4 z-[1000]">
           <motion.div key={era} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="px-4 py-2 rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-sm">
