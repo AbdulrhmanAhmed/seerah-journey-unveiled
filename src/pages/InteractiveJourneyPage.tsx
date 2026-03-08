@@ -97,6 +97,8 @@ const InteractiveJourneyPage = () => {
   const polylinesLayerRef = useRef<L.LayerGroup | null>(null);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailEvent, setDetailEvent] = useState<EventDetailData | null>(null);
   const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([]);
@@ -144,39 +146,63 @@ const InteractiveJourneyPage = () => {
   // Load data
   useEffect(() => {
     let mounted = true;
+    const abortController = new AbortController();
+    const timeoutId = window.setTimeout(() => abortController.abort(), 12000);
 
     const loadData = async () => {
       try {
-        const { data: eventsData, error: eventsError } = await supabase
-          .from("timeline_events")
-          .select("*")
-          .eq("is_active", true)
-          .eq("timeline_visible", true)
-          .order("display_order");
+        setFetchError(false);
+
+        const [eventsResp, pathsResp] = await Promise.all([
+          supabase
+            .from("timeline_events")
+            .select("*")
+            .eq("is_active", true)
+            .eq("timeline_visible", true)
+            .order("display_order")
+            .abortSignal(abortController.signal),
+          supabase
+            .from("paths")
+            .select("*, path_steps(*)")
+            .eq("is_active", true)
+            .order("created_at")
+            .abortSignal(abortController.signal),
+        ]);
 
         if (!mounted) return;
 
-        if (eventsError) {
-          console.error("Failed to load timeline events:", eventsError.message);
+        if (eventsResp.error) {
+          console.error("[InteractiveJourneyPage] Failed to load timeline events:", eventsResp.error.message);
+          setFetchError(true);
         } else {
-          setEvents((eventsData ?? []) as TimelineEvent[]);
+          setEvents((eventsResp.data ?? []) as TimelineEvent[]);
         }
 
-        const { data: pathsData, error: pathsError } = await supabase
-          .from("paths")
-          .select("*, path_steps(*)")
-          .eq("is_active", true)
-          .order("created_at");
-
-        if (!mounted) return;
-
-        if (pathsError) {
-          console.error("Failed to load paths:", pathsError.message);
+        if (pathsResp.error) {
+          console.error("[InteractiveJourneyPage] Failed to load paths:", pathsResp.error.message);
+          setFetchError(true);
         } else {
-          setPaths((pathsData ?? []) as any[]);
+          setPaths((pathsResp.data ?? []) as any[]);
         }
+
+        console.log(
+          "[InteractiveJourneyPage] Loaded",
+          (eventsResp.data ?? []).length,
+          "events and",
+          (pathsResp.data ?? []).length,
+          "paths"
+        );
       } catch (error) {
-        console.error("Unexpected load error:", error);
+        if (!mounted) return;
+        const isAbort = error instanceof DOMException && error.name === "AbortError";
+        console.error(
+          isAbort ? "[InteractiveJourneyPage] Request timed out" : "[InteractiveJourneyPage] Unexpected load error:",
+          error
+        );
+        setFetchError(true);
+      } finally {
+        window.clearTimeout(timeoutId);
+        if (mounted) setIsLoadingData(false);
       }
     };
 
@@ -184,6 +210,8 @@ const InteractiveJourneyPage = () => {
 
     return () => {
       mounted = false;
+      window.clearTimeout(timeoutId);
+      abortController.abort();
     };
   }, []);
 
@@ -376,6 +404,25 @@ const InteractiveJourneyPage = () => {
           }}
         />
 
+        {/* Data status */}
+        {isLoadingData && (
+          <div className="absolute top-4 right-4 z-[1000] px-3 py-2 rounded-md bg-card/90 border border-border text-xs text-muted-foreground">
+            {isAr ? "جارِ تحميل الأحداث..." : "Loading events..."}
+          </div>
+        )}
+
+        {fetchError && !isLoadingData && (
+          <div className="absolute top-4 right-4 z-[1000] px-3 py-2 rounded-md bg-card/95 border border-border text-xs text-foreground flex items-center gap-2">
+            <span>{isAr ? "تعذر تحميل البيانات" : "Unable to load data"}</span>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-2 py-0.5 rounded bg-primary text-primary-foreground"
+            >
+              {isAr ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        )}
+
         {/* Era indicator */}
         <div className="absolute top-4 left-4 z-[1000]">
           <motion.div key={era} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="px-4 py-2 rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-sm">
@@ -426,8 +473,8 @@ const InteractiveJourneyPage = () => {
               }}
               className="gap-1 text-xs"
             >
-              <ChevronRight className="h-3.5 w-3.5" />
-              {currentYearEvents.length} {isAr ? "حدث" : "events"}
+               <ChevronRight className="h-3.5 w-3.5" />
+               {isLoadingData ? (isAr ? "..." : "...") : currentYearEvents.length} {isAr ? "حدث" : "events"}
             </Button>
           </div>
         </div>
