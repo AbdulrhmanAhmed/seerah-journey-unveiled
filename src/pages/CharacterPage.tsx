@@ -63,6 +63,10 @@ const CharacterPage = () => {
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    const abortController = new AbortController();
+    const timeoutId = window.setTimeout(() => abortController.abort(), 12000);
+
     const fetchTraits = async () => {
       try {
         setFetchError(false);
@@ -70,22 +74,40 @@ const CharacterPage = () => {
           .from("shamail_traits")
           .select("*")
           .eq("is_active", true)
-          .order("created_at");
+          .order("created_at")
+          .abortSignal(abortController.signal);
+
+        if (!isMounted) return;
+
         if (error) {
           console.error("[CharacterPage] Fetch error:", error);
           setFetchError(true);
-        } else {
-          console.log("[CharacterPage] Loaded", data?.length, "traits");
-          setTraits((data || []) as Trait[]);
+          return;
         }
+
+        console.log("[CharacterPage] Loaded", data?.length, "traits");
+        setTraits((data || []) as Trait[]);
       } catch (err) {
-        console.error("[CharacterPage] Exception:", err);
+        if (!isMounted) return;
+        const isAbort = err instanceof DOMException && err.name === "AbortError";
+        console.error(
+          isAbort ? "[CharacterPage] Request timed out" : "[CharacterPage] Exception:",
+          err
+        );
         setFetchError(true);
       } finally {
-        setIsLoading(false);
+        window.clearTimeout(timeoutId);
+        if (isMounted) setIsLoading(false);
       }
     };
+
     fetchTraits();
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, []);
 
   const filtered = useMemo(
