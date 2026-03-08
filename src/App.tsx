@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
               <Route path="/interactive-journey" element={<Layout><InteractiveJourneyPage /></Layout>} />
               <Route path="/battle-of-badr" element={<Layout><BattleOfBadrPage /></Layout>} />
+              <Route path="/event/:id" element={<Layout><EventDetailPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />

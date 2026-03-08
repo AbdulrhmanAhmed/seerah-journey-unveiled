@@ -162,46 +162,6 @@ const JourneyPage = () => {
         open={modalOpen}
         onOpenChange={setModalOpen}
       />
-
-      <EventDetailModal
-        event={detailEvent}
-        relatedEvents={relatedEvents}
-        open={detailModalOpen}
-        onOpenChange={setDetailModalOpen}
-        onRelatedEventClick={(id) => {
-          setDetailModalOpen(false);
-          // For related event clicks, open directly from DB
-          setTimeout(async () => {
-            const { data } = await supabase
-              .from("timeline_events")
-              .select("*")
-              .eq("id", id)
-              .single();
-            if (data) {
-              const eventData: EventDetailData = {
-                id: data.id,
-                title: data.title,
-                title_en: data.title_en,
-                description: data.description,
-                description_en: data.description_en,
-                full_story: (data as any).full_story || null,
-                full_story_en: (data as any).full_story_en || null,
-                year_ce: data.year_ce,
-                year_hijri: data.year_hijri,
-                era: data.era,
-                category: data.category,
-                image_url: data.image_url,
-                location_id: data.location_id,
-                quran_references: (data as any).quran_references || [],
-                hadith_references: (data as any).hadith_references || [],
-                related_event_ids: (data as any).related_event_ids || [],
-              };
-              setDetailEvent(eventData);
-              setDetailModalOpen(true);
-            }
-          }, 300);
-        }}
-      />
     </div>
   );
 };
