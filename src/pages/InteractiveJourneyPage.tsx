@@ -97,6 +97,8 @@ const InteractiveJourneyPage = () => {
   const polylinesLayerRef = useRef<L.LayerGroup | null>(null);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailEvent, setDetailEvent] = useState<EventDetailData | null>(null);
   const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([]);
