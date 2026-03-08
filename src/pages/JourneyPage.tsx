@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -6,7 +7,6 @@ import { timelineEvents } from "@/data/seerahTimeline";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
 import TimelineEventModal from "@/components/TimelineEventModal";
-import EventDetailModal, { type EventDetailData, type RelatedEvent } from "@/components/EventDetailModal";
 import YearQuickNav from "@/components/YearQuickNav";
 import { supabase } from "@/integrations/supabase/client";
 
