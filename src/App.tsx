@@ -21,6 +21,7 @@ import AdminShamailPage from "./pages/AdminShamailPage";
 import AdminTimelinePage from "./pages/AdminTimelinePage";
 import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 import BattleOfBadrPage from "./pages/BattleOfBadrPage";
+import EventDetailPage from "./pages/EventDetailPage";
 
 const queryClient = new QueryClient();
 
