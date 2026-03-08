@@ -169,6 +169,18 @@ const CharacterPage = () => {
           ))}
         </div>
 
+        {/* Error state */}
+        {fetchError && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground font-body mb-4">
+              {isAr ? "تعذر تحميل البيانات. حاول مرة أخرى." : "Unable to load content. Please try again."}
+            </p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-body">
+              {isAr ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        )}
+
         {/* Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
