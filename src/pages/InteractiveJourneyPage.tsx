@@ -146,39 +146,63 @@ const InteractiveJourneyPage = () => {
   // Load data
   useEffect(() => {
     let mounted = true;
+    const abortController = new AbortController();
+    const timeoutId = window.setTimeout(() => abortController.abort(), 12000);
 
     const loadData = async () => {
       try {
-        const { data: eventsData, error: eventsError } = await supabase
-          .from("timeline_events")
-          .select("*")
-          .eq("is_active", true)
-          .eq("timeline_visible", true)
-          .order("display_order");
+        setFetchError(false);
+
+        const [eventsResp, pathsResp] = await Promise.all([
+          supabase
+            .from("timeline_events")
+            .select("*")
+            .eq("is_active", true)
+            .eq("timeline_visible", true)
+            .order("display_order")
+            .abortSignal(abortController.signal),
+          supabase
+            .from("paths")
+            .select("*, path_steps(*)")
+            .eq("is_active", true)
+            .order("created_at")
+            .abortSignal(abortController.signal),
+        ]);
 
         if (!mounted) return;
 
-        if (eventsError) {
-          console.error("Failed to load timeline events:", eventsError.message);
+        if (eventsResp.error) {
+          console.error("[InteractiveJourneyPage] Failed to load timeline events:", eventsResp.error.message);
+          setFetchError(true);
         } else {
-          setEvents((eventsData ?? []) as TimelineEvent[]);
+          setEvents((eventsResp.data ?? []) as TimelineEvent[]);
         }
 
-        const { data: pathsData, error: pathsError } = await supabase
-          .from("paths")
-          .select("*, path_steps(*)")
-          .eq("is_active", true)
-          .order("created_at");
-
-        if (!mounted) return;
-
-        if (pathsError) {
-          console.error("Failed to load paths:", pathsError.message);
+        if (pathsResp.error) {
+          console.error("[InteractiveJourneyPage] Failed to load paths:", pathsResp.error.message);
+          setFetchError(true);
         } else {
-          setPaths((pathsData ?? []) as any[]);
+          setPaths((pathsResp.data ?? []) as any[]);
         }
+
+        console.log(
+          "[InteractiveJourneyPage] Loaded",
+          (eventsResp.data ?? []).length,
+          "events and",
+          (pathsResp.data ?? []).length,
+          "paths"
+        );
       } catch (error) {
-        console.error("Unexpected load error:", error);
+        if (!mounted) return;
+        const isAbort = error instanceof DOMException && error.name === "AbortError";
+        console.error(
+          isAbort ? "[InteractiveJourneyPage] Request timed out" : "[InteractiveJourneyPage] Unexpected load error:",
+          error
+        );
+        setFetchError(true);
+      } finally {
+        window.clearTimeout(timeoutId);
+        if (mounted) setIsLoadingData(false);
       }
     };
 
@@ -186,6 +210,8 @@ const InteractiveJourneyPage = () => {
 
     return () => {
       mounted = false;
+      window.clearTimeout(timeoutId);
+      abortController.abort();
     };
   }, []);
 
