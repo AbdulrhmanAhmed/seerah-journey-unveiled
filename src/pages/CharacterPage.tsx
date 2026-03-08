@@ -58,18 +58,22 @@ const CharacterPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedTrait, setSelectedTrait] = useState<Trait | null>(null);
 
-  const { data: traits = [], isLoading } = useQuery({
+  const { data: traits = [], isLoading, error: queryError } = useQuery({
     queryKey: ["shamail-traits"],
     queryFn: async () => {
+      console.log("[CharacterPage] Fetching shamail_traits...");
       const { data, error } = await supabase
         .from("shamail_traits")
         .select("*")
         .eq("is_active", true)
         .order("created_at");
+      console.log("[CharacterPage] Result:", { data, error });
       if (error) throw error;
       return data as Trait[];
     },
   });
+
+  console.log("[CharacterPage] Render state:", { isLoading, traitsCount: traits.length, queryError });
 
   const filtered = useMemo(
     () => (activeCategory === "all" ? traits : traits.filter((t) => t.category === activeCategory)),
