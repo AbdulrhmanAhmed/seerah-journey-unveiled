@@ -1,7 +1,6 @@
-import { useState, useMemo, forwardRef } from "react";
+import { useState, useMemo, forwardRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +16,7 @@ const iconMap: Record<string, LucideIcon> = {
   "book-open": BookOpen, eye: Eye, smile: Smile, crown: Crown,
   hand: Hand, sparkles: Sparkles, sun: Sun, moon: Moon,
   feather: Feather, gem: Gem, award: Award, "map-pin": MapPin,
+  "hand-heart": Hand,
 };
 
 type DynIconProps = Omit<LucideProps, "ref"> & { name: string };
@@ -57,19 +57,30 @@ const CharacterPage = () => {
   const isAr = lang === "ar";
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedTrait, setSelectedTrait] = useState<Trait | null>(null);
+  const [traits, setTraits] = useState<Trait[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: traits = [], isLoading } = useQuery({
-    queryKey: ["shamail-traits"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("shamail_traits")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at");
-      if (error) throw error;
-      return data as Trait[];
-    },
-  });
+  useEffect(() => {
+    const fetchTraits = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("shamail_traits")
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at");
+        if (error) {
+          console.error("[CharacterPage] Fetch error:", error);
+        } else {
+          setTraits((data || []) as Trait[]);
+        }
+      } catch (err) {
+        console.error("[CharacterPage] Exception:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTraits();
+  }, []);
 
   const filtered = useMemo(
     () => (activeCategory === "all" ? traits : traits.filter((t) => t.category === activeCategory)),
