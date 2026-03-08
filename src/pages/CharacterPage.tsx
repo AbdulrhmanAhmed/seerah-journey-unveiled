@@ -1,30 +1,27 @@
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { LucideProps } from "lucide-react";
-import dynamicIconImports from "lucide-react/dynamicIconImports";
+import {
+  Heart, Star, Shield, Users, BookOpen, Eye, Smile, Crown,
+  Hand, Sparkles, Sun, Moon, Feather, Gem, Award, MapPin,
+  type LucideIcon,
+} from "lucide-react";
 
-// Dynamic Lucide icon loader
-interface DynIconProps extends Omit<LucideProps, "ref"> {
-  name: string;
-}
-const fallbackIcon = <div className="w-7 h-7 rounded bg-muted" />;
+const iconMap: Record<string, LucideIcon> = {
+  heart: Heart, star: Star, shield: Shield, users: Users,
+  "book-open": BookOpen, eye: Eye, smile: Smile, crown: Crown,
+  hand: Hand, sparkles: Sparkles, sun: Sun, moon: Moon,
+  feather: Feather, gem: Gem, award: Award, "map-pin": MapPin,
+};
 
-const DynIcon = ({ name, ...props }: DynIconProps) => {
-  const key = name as keyof typeof dynamicIconImports;
-  if (!dynamicIconImports[key]) return fallbackIcon;
-  const Icon = lazy(dynamicIconImports[key]);
-  return (
-    <Suspense fallback={fallbackIcon}>
-      <Icon {...props} />
-    </Suspense>
-  );
+const DynIcon = ({ name, ...props }: { name: string } & React.ComponentProps<LucideIcon>) => {
+  const Icon = iconMap[name] || Heart;
+  return <Icon {...props} />;
 };
 
 type Trait = {
