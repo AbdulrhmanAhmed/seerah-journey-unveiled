@@ -60,9 +60,12 @@ const CharacterPage = () => {
   const [traits, setTraits] = useState<Trait[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [fetchError, setFetchError] = useState(false);
+
   useEffect(() => {
     const fetchTraits = async () => {
       try {
+        setFetchError(false);
         const { data, error } = await supabase
           .from("shamail_traits")
           .select("*")
@@ -70,11 +73,14 @@ const CharacterPage = () => {
           .order("created_at");
         if (error) {
           console.error("[CharacterPage] Fetch error:", error);
+          setFetchError(true);
         } else {
+          console.log("[CharacterPage] Loaded", data?.length, "traits");
           setTraits((data || []) as Trait[]);
         }
       } catch (err) {
         console.error("[CharacterPage] Exception:", err);
+        setFetchError(true);
       } finally {
         setIsLoading(false);
       }
@@ -162,6 +168,18 @@ const CharacterPage = () => {
             </button>
           ))}
         </div>
+
+        {/* Error state */}
+        {fetchError && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground font-body mb-4">
+              {isAr ? "تعذر تحميل البيانات. حاول مرة أخرى." : "Unable to load content. Please try again."}
+            </p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-body">
+              {isAr ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        )}
 
         {/* Grid */}
         {isLoading ? (
