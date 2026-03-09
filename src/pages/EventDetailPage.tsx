@@ -123,8 +123,8 @@ const EventDetailPage = () => {
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
-  const quranRefs = (event.quran_references as QuranRef[]) || [];
-  const hadithRefs = (event.hadith_references as HadithRef[]) || [];
+  const quranRefs = (event.quran_references as unknown as QuranRef[]) || [];
+  const hadithRefs = (event.hadith_references as unknown as HadithRef[]) || [];
 
   return (
     <div className="min-h-screen">

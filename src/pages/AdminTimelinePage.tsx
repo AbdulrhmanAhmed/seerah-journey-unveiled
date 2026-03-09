@@ -179,10 +179,10 @@ function EventForm({
   });
 
   const [quranRefs, setQuranRefs] = useState<QuranRef[]>(
-    (initial?.quran_references as QuranRef[] | undefined) || []
+    (initial?.quran_references as unknown as QuranRef[] | undefined) || []
   );
   const [hadithRefs, setHadithRefs] = useState<HadithRef[]>(
-    (initial?.hadith_references as HadithRef[] | undefined) || []
+    (initial?.hadith_references as unknown as HadithRef[] | undefined) || []
   );
   const [relatedIds, setRelatedIds] = useState<string>(
     ((initial?.related_event_ids as string[] | undefined) || []).join(", ")
