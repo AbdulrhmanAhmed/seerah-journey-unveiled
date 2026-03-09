@@ -85,7 +85,7 @@ const EventDetailPage = () => {
       }
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id]);
 
   if (loading) {
     return (

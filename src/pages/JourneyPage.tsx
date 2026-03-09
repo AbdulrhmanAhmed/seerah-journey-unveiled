@@ -8,6 +8,7 @@ import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
 import TimelineEventModal from "@/components/TimelineEventModal";
 import YearQuickNav from "@/components/YearQuickNav";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const JourneyPage = () => {
