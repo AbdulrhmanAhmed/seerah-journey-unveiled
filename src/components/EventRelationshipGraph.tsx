@@ -415,18 +415,48 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
               const isHighlighted = highlightedEdges.has(key);
               const opacity = hasActive ? (isHighlighted ? 0.85 : 0.06) : hasSearch ? 0.08 : 0.2;
               const sourceCategory = s.category;
+              const pathD = bezierPath(s.x, s.y, t.x, t.y);
+              const color = categoryColors[sourceCategory] || "hsl(160, 50%, 40%)";
 
               return (
-                <path
-                  key={key}
-                  d={bezierPath(s.x, s.y, t.x, t.y)}
-                  fill="none"
-                  stroke={isHighlighted ? `url(#edge-grad-${sourceCategory})` : "hsl(160, 20%, 40%)"}
-                  strokeWidth={isHighlighted ? 2.5 : 0.8}
-                  opacity={opacity}
-                  className="transition-all duration-300"
-                  strokeLinecap="round"
-                />
+                <g key={key}>
+                  <path
+                    id={`edge-path-${key}`}
+                    d={pathD}
+                    fill="none"
+                    stroke={isHighlighted ? `url(#edge-grad-${sourceCategory})` : "hsl(160, 20%, 40%)"}
+                    strokeWidth={isHighlighted ? 2.5 : 0.8}
+                    opacity={opacity}
+                    className="transition-all duration-300"
+                    strokeLinecap="round"
+                  />
+                  {/* Particle trails on highlighted edges */}
+                  {isHighlighted && (
+                    <>
+                      {[0, 0.33, 0.66].map((delay, i) => (
+                        <circle key={i} r={3} fill={color} opacity={0}>
+                          <animateMotion
+                            dur="2s"
+                            repeatCount="indefinite"
+                            begin={`${delay * 2}s`}
+                            path={pathD}
+                          />
+                          <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.1;0.8;1" dur="2s" repeatCount="indefinite" begin={`${delay * 2}s`} />
+                          <animate attributeName="r" values="1.5;3.5;1.5" dur="2s" repeatCount="indefinite" begin={`${delay * 2}s`} />
+                        </circle>
+                      ))}
+                      {/* Faint glow trail */}
+                      <circle r={6} fill={color} opacity={0} filter="url(#node-glow)">
+                        <animateMotion
+                          dur="3s"
+                          repeatCount="indefinite"
+                          path={pathD}
+                        />
+                        <animate attributeName="opacity" values="0;0.15;0.15;0" keyTimes="0;0.1;0.8;1" dur="3s" repeatCount="indefinite" />
+                      </circle>
+                    </>
+                  )}
+                </g>
               );
             })}
 
