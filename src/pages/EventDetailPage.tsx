@@ -10,12 +10,14 @@ import {
   Calendar,
   BookMarked,
   Loader2,
+  Network,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { timelineEvents } from "@/data/seerahTimeline";
+import EventRelationshipGraph from "@/components/EventRelationshipGraph";
 
 interface QuranRef {
   surah: string;
