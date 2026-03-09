@@ -56,14 +56,21 @@ const EventDetailPage = () => {
   const isAr = lang === "ar";
   const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
   const { data: event, isLoading } = useQuery({
     queryKey: ["event-detail", id],
     queryFn: async () => {
+      const identifier = id!;
+      const column = isUuid(identifier) ? "id" : "slug";
+
       const { data, error } = await supabase
         .from("timeline_events")
         .select("*")
-        .eq("id", id!)
-        .single();
+        .eq(column, identifier)
+        .maybeSingle();
+
       if (error) throw error;
       return data;
     },
