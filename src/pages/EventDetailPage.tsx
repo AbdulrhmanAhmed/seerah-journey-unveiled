@@ -15,6 +15,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import { timelineEvents } from "@/data/seerahTimeline";
 
 interface QuranRef {
   surah: string;
@@ -120,13 +121,34 @@ const EventDetailPage = () => {
     );
   }
 
+  const identifier = id ?? "";
+  const localFallback =
+    identifier && !isUuid(identifier)
+      ? timelineEvents.find((e) => e.id === identifier)
+      : event?.slug
+        ? timelineEvents.find((e) => e.id === event.slug)
+        : undefined;
+
   const title = isAr ? event.title : event.title_en;
   const description = isAr ? event.description : event.description_en;
   const fullStory = isAr ? event.full_story : event.full_story_en;
+
+  const effectiveDescription =
+    (description ?? "").trim() ||
+    (localFallback ? (isAr ? localFallback.summary : localFallback.summaryEn) : "");
+
+  const effectiveFullStory =
+    (fullStory ?? "").trim() ||
+    (localFallback ? (isAr ? localFallback.details : localFallback.detailsEn) : "");
+
   const eraLabel =
     event.era === "makkah"
-      ? isAr ? "العهد المكي" : "Makkan Period"
-      : isAr ? "العهد المدني" : "Madinan Period";
+      ? isAr
+        ? "العهد المكي"
+        : "Makkan Period"
+      : isAr
+        ? "العهد المدني"
+        : "Madinan Period";
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
@@ -186,19 +208,19 @@ const EventDetailPage = () => {
       {/* Content */}
       <div className="container mx-auto px-4 md:px-6 max-w-3xl py-8 md:py-12 space-y-10">
         {/* Description / Summary */}
-        {description && (
+        {effectiveDescription && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="font-body text-base md:text-lg text-muted-foreground leading-relaxed"
           >
-            {description}
+            {effectiveDescription}
           </motion.p>
         )}
 
         {/* Full Story */}
-        {fullStory && (
+        {effectiveFullStory && (
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -211,7 +233,7 @@ const EventDetailPage = () => {
               {isAr ? "القصة الكاملة" : "Full Story"}
             </h2>
             <div className="font-body text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-line rounded-xl border border-border bg-card p-6">
-              {fullStory}
+              {effectiveFullStory}
             </div>
           </motion.section>
         )}
@@ -240,9 +262,7 @@ const EventDetailPage = () => {
                   className="rounded-xl border border-secondary/20 bg-secondary/5 p-5"
                 >
                   <p className="font-body text-xs text-secondary font-semibold mb-2">
-                    {isAr
-                      ? `سورة ${ref.surah} — آية ${ref.ayah}`
-                      : `Surah ${ref.surahEn} — Ayah ${ref.ayah}`}
+                    {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surahEn} — Ayah ${ref.ayah}`}
                   </p>
                   <p className="font-serif-display text-lg text-foreground leading-relaxed">
                     {isAr ? ref.textAr : ref.textEn}
@@ -288,6 +308,38 @@ const EventDetailPage = () => {
           </motion.section>
         )}
 
+        {/* Sources & Documentation */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.4 }}
+        >
+          <Separator className="mb-6" />
+          <h2 className="font-serif-display text-xl md:text-2xl text-foreground mb-4 flex items-center gap-2">
+            <BookMarked className="h-5 w-5 text-secondary" />
+            {isAr ? "المصادر والتوثيق" : "Sources & Documentation"}
+          </h2>
+          <p className="font-body text-sm md:text-base text-muted-foreground leading-relaxed">
+            {isAr
+              ? "جميع المحتوى في Seerah Path مبني على مصادر علمية موثوقة. نعتمد على أعمال كلاسيكية مثل الرحيق المختوم، وسيرة ابن هشام، ومصنفات الحديث المعتمدة."
+              : "All content in Seerah Path is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections."}
+          </p>
+          <ul className="mt-4 space-y-1 ps-5 list-disc font-body text-sm text-muted-foreground">
+            <li>{isAr ? "الرحيق المختوم (Ar-Raheeq Al-Makhtum)" : "The Sealed Nectar (Ar-Raheeq Al-Makhtum)"}</li>
+            <li>{isAr ? "سيرة ابن هشام" : "Ibn Hisham's Seerah"}</li>
+            <li>{isAr ? "صحيح البخاري" : "Sahih al-Bukhari"}</li>
+            <li>{isAr ? "صحيح مسلم" : "Sahih Muslim"}</li>
+          </ul>
+          {(quranRefs.length === 0 || hadithRefs.length === 0) && (
+            <p className="mt-4 font-body text-xs text-muted-foreground">
+              {isAr
+                ? "ستظهر هنا المراجع الخاصة بالحدث (الآيات والأحاديث) عند إضافتها من لوحة الإدارة."
+                : "Event-specific Quran/Hadith references will appear here once added from the Admin panel."}
+            </p>
+          )}
+        </motion.section>
+
         {/* Related Events */}
         {relatedEvents.length > 0 && (
           <motion.section
@@ -324,7 +376,7 @@ const EventDetailPage = () => {
         )}
 
         {/* No detailed content message */}
-        {!fullStory && quranRefs.length === 0 && hadithRefs.length === 0 && (
+        {!effectiveFullStory && quranRefs.length === 0 && hadithRefs.length === 0 && (
           <p className="mt-8 text-center font-body text-xs text-muted-foreground">
             {isAr ? "صفحة مفصلة ستتوفر قريباً إن شاء الله" : "A detailed page will be available soon, in shaa Allah."}
           </p>
