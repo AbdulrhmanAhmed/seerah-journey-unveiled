@@ -9,6 +9,7 @@ export const translations = {
     navMap: "الخريطة",
     navInteractiveJourney: "الرحلة التفاعلية",
     navLibrary: "المكتبة",
+    navGraph: "شبكة الأحداث",
     menuLabel: "القائمة",
 
     // Hero
