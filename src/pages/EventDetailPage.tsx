@@ -61,16 +61,19 @@ const EventDetailPage = () => {
     if (!id) return;
     setLoading(true);
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("timeline_events")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
-      if (!data) {
-        navigate("/journey", { replace: true });
+      if (error || !data) {
+        setEvent(null);
+        setRelatedEvents([]);
+        setLoading(false);
         return;
       }
+
       setEvent(data);
 
       const relIds = (data.related_event_ids as string[]) || [];
@@ -85,7 +88,7 @@ const EventDetailPage = () => {
       }
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -101,14 +104,41 @@ const EventDetailPage = () => {
     );
   }
 
-  if (!event) return null;
+  if (!event) {
+    return (
+      <div className="min-h-screen pt-24 pb-16">
+        <div className="container mx-auto px-4 md:px-6 max-w-3xl space-y-4">
+          <h1 className="font-serif-display text-2xl md:text-3xl text-foreground">
+            {isAr ? "الحدث غير موجود" : "Event not found"}
+          </h1>
+          <p className="font-body text-muted-foreground">
+            {isAr
+              ? "لم نعثر على هذا الحدث. جرّب العودة إلى صفحة الرحلة واختيار حدث آخر."
+              : "We couldn't find this event. Go back to the Journey and choose another one."}
+          </p>
+          <button
+            onClick={() => navigate("/journey")}
+            className="inline-flex items-center gap-2 font-body text-secondary hover:text-secondary/80 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {isAr ? "العودة إلى الرحلة" : "Back to Journey"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const title = isAr ? event.title : event.title_en;
   const description = isAr ? event.description : event.description_en;
   const fullStory = isAr ? event.full_story : event.full_story_en;
-  const eraLabel = event.era === "makkah"
-    ? (isAr ? "العهد المكي" : "Makkan Period")
-    : (isAr ? "العهد المدني" : "Madinan Period");
+  const eraLabel =
+    event.era === "makkah"
+      ? isAr
+        ? "العهد المكي"
+        : "Makkan Period"
+      : isAr
+        ? "العهد المدني"
+        : "Madinan Period";
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
@@ -129,9 +159,10 @@ const EventDetailPage = () => {
           <div
             className="w-full h-48 md:h-64"
             style={{
-              background: event.era === "makkah"
-                ? "linear-gradient(135deg, hsl(48 44% 92%), hsl(46 56% 82%))"
-                : "linear-gradient(135deg, hsl(160 40% 90%), hsl(160 50% 80%))",
+              background:
+                event.era === "makkah"
+                  ? "linear-gradient(135deg, hsl(48 44% 92%), hsl(46 56% 82%))"
+                  : "linear-gradient(135deg, hsl(160 40% 90%), hsl(160 50% 80%))",
             }}
           />
         )}
@@ -166,9 +197,7 @@ const EventDetailPage = () => {
                 )}
               </p>
 
-              <h1 className="font-serif-display text-3xl md:text-4xl lg:text-5xl text-foreground leading-tight">
-                {title}
-              </h1>
+              <h1 className="font-serif-display text-3xl md:text-4xl lg:text-5xl text-foreground leading-tight">{title}</h1>
             </motion.div>
           </div>
         </div>
@@ -215,9 +244,7 @@ const EventDetailPage = () => {
                   <p className="font-body text-xs text-secondary font-semibold mb-2">
                     {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surah} — Ayah ${ref.ayah}`}
                   </p>
-                  <p className="font-serif-display text-lg text-foreground leading-relaxed">
-                    {isAr ? ref.text : ref.text_en}
-                  </p>
+                  <p className="font-serif-display text-lg text-foreground leading-relaxed">{isAr ? ref.text : ref.text_en}</p>
                 </div>
               ))}
             </div>
@@ -235,12 +262,8 @@ const EventDetailPage = () => {
             <div className="space-y-4">
               {hadithRefs.map((ref, i) => (
                 <div key={i} className="rounded-xl border border-border bg-muted/30 p-5">
-                  <p className="font-body text-xs text-secondary font-semibold mb-2">
-                    {ref.source}
-                  </p>
-                  <p className="font-body text-sm md:text-base text-foreground leading-relaxed italic">
-                    {isAr ? ref.text : ref.text_en}
-                  </p>
+                  <p className="font-body text-xs text-secondary font-semibold mb-2">{ref.source}</p>
+                  <p className="font-body text-sm md:text-base text-foreground leading-relaxed italic">{isAr ? ref.text : ref.text_en}</p>
                 </div>
               ))}
             </div>
@@ -266,10 +289,13 @@ const EventDetailPage = () => {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{
                       backgroundColor:
-                        re.category === "milestone" ? "hsl(var(--secondary))" :
-                        re.category === "battle" ? "hsl(var(--destructive))" :
-                        re.category === "contract" ? "hsl(200 60% 50%)" :
-                        "hsl(var(--secondary))",
+                        re.category === "milestone"
+                          ? "hsl(var(--secondary))"
+                          : re.category === "battle"
+                            ? "hsl(var(--destructive))"
+                            : re.category === "contract"
+                              ? "hsl(200 60% 50%)"
+                              : "hsl(var(--secondary))",
                     }}
                   />
                   <div>
@@ -319,9 +345,7 @@ const EventDetailPage = () => {
             <div className="flex items-start gap-3">
               <Scroll className="h-4 w-4 text-secondary mt-1 flex-shrink-0" />
               <div>
-                <p className="font-body text-sm font-semibold text-foreground">
-                  {isAr ? "سيرة ابن هشام" : "Ibn Hisham's Seerah"}
-                </p>
+                <p className="font-body text-sm font-semibold text-foreground">{isAr ? "سيرة ابن هشام" : "Ibn Hisham's Seerah"}</p>
                 <p className="font-body text-xs text-muted-foreground">
                   {isAr ? "عبد الملك بن هشام" : "Abdul-Malik Ibn Hisham"}
                 </p>
@@ -330,20 +354,18 @@ const EventDetailPage = () => {
             <div className="flex items-start gap-3">
               <Scroll className="h-4 w-4 text-secondary mt-1 flex-shrink-0" />
               <div>
-                <p className="font-body text-sm font-semibold text-foreground">
-                  {isAr ? "صحيح البخاري" : "Sahih al-Bukhari"}
-                </p>
+                <p className="font-body text-sm font-semibold text-foreground">{isAr ? "صحيح البخاري" : "Sahih al-Bukhari"}</p>
                 <p className="font-body text-xs text-muted-foreground">
-                  {isAr ? "الإمام محمد بن إسماعيل البخاري" : "Imam Muhammad ibn Ismail al-Bukhari"}
+                  {isAr
+                    ? "الإمام محمد بن إسماعيل البخاري"
+                    : "Imam Muhammad ibn Ismail al-Bukhari"}
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <Scroll className="h-4 w-4 text-secondary mt-1 flex-shrink-0" />
               <div>
-                <p className="font-body text-sm font-semibold text-foreground">
-                  {isAr ? "صحيح مسلم" : "Sahih Muslim"}
-                </p>
+                <p className="font-body text-sm font-semibold text-foreground">{isAr ? "صحيح مسلم" : "Sahih Muslim"}</p>
                 <p className="font-body text-xs text-muted-foreground">
                   {isAr ? "الإمام مسلم بن الحجاج" : "Imam Muslim ibn al-Hajjaj"}
                 </p>

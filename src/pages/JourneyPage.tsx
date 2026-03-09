@@ -8,33 +8,60 @@ import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
 import TimelineEventModal from "@/components/TimelineEventModal";
 import YearQuickNav from "@/components/YearQuickNav";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const JourneyPage = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  const handleLearnMore = useCallback(async (event: TimelineEvent) => {
-    // Try to find a matching DB event by title to get its ID
-    const { data } = await supabase
-      .from("timeline_events")
-      .select("id")
-      .or(`title.eq.${event.title},title_en.eq.${event.titleEn}`)
-      .limit(1)
-      .maybeSingle();
+  const handleLearnMore = useCallback(
+    async (event: TimelineEvent) => {
+      const isAr = lang === "ar";
 
-    if (data) {
-      navigate(`/event/${data.id}`);
-    } else {
-      // Fallback to simple modal
+      const pgQuote = (value: string) =>
+        `"${value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`;
+
+      const { data, error } = await supabase
+        .from("timeline_events")
+        .select("id")
+        .eq("is_active", true)
+        .eq("timeline_visible", true)
+        .or(`title.eq.${pgQuote(event.title)},title_en.eq.${pgQuote(event.titleEn)}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        toast({
+          title: isAr ? "تعذّر فتح الحدث" : "Couldn't open event",
+          description: isAr
+            ? "حدث خطأ أثناء جلب صفحة الحدث. سيتم عرض التفاصيل المختصرة."
+            : "There was an error loading the event page. Showing the short version instead.",
+        });
+      }
+
+      if (data?.id) {
+        navigate(`/event/${data.id}`);
+        return;
+      }
+
+      toast({
+        title: isAr ? "لا توجد صفحة مفصلة بعد" : "No detailed page yet",
+        description: isAr
+          ? "لم نعثر على هذا الحدث في قاعدة البيانات."
+          : "We couldn't find this event in the database.",
+      });
+
+      // Fallback to the existing modal so the click never becomes a no-op.
       setSelectedEvent(event);
       setModalOpen(true);
-    }
-  }, [navigate]);
+    },
+    [lang, navigate],
+  );
 
   useEffect(() => {
     const handleScroll = () => {
