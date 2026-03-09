@@ -10,12 +10,14 @@ import {
   Calendar,
   BookMarked,
   Loader2,
+  Network,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { timelineEvents } from "@/data/seerahTimeline";
+import EventRelationshipGraph from "@/components/EventRelationshipGraph";
 
 interface QuranRef {
   surah: string;
@@ -86,12 +88,34 @@ const EventDetailPage = () => {
       if (relatedIds.length === 0) return [];
       const { data, error } = await supabase
         .from("timeline_events")
-        .select("id, title, title_en, year_ce, year_hijri, era")
+        .select("id, title, title_en, year_ce, year_hijri, era, slug, category")
         .in("id", relatedIds);
       if (error) throw error;
       return data;
     },
     enabled: relatedIds.length > 0,
+  });
+
+  // Fetch nearby events for graph (current + related + their connections)
+  const { data: graphEvents = [] } = useQuery({
+    queryKey: ["graph-events-local", event?.id],
+    queryFn: async () => {
+      if (!event) return [];
+      // Get a wider set: events from same era or within ±10 years
+      const { data, error } = await supabase
+        .from("timeline_events")
+        .select("id, title, title_en, slug, year_ce, era, category, related_event_ids")
+        .eq("is_active", true)
+        .gte("year_ce", event.year_ce - 10)
+        .lte("year_ce", event.year_ce + 10)
+        .order("year_ce");
+      if (error) throw error;
+      return (data || []).map((e) => ({
+        ...e,
+        related_event_ids: (e.related_event_ids as string[]) || [],
+      }));
+    },
+    enabled: !!event && relatedIds.length > 0,
   });
 
   if (isLoading) {
@@ -349,15 +373,36 @@ const EventDetailPage = () => {
             transition={{ duration: 0.4 }}
           >
             <Separator className="mb-6" />
-            <h2 className="font-serif-display text-xl md:text-2xl text-foreground mb-4 flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-secondary" />
-              {isAr ? "أحداث مرتبطة" : "Related Events"}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif-display text-xl md:text-2xl text-foreground flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-secondary" />
+                {isAr ? "أحداث مرتبطة" : "Related Events"}
+              </h2>
+              <Link
+                to={`/event-graph?highlight=${event.id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-body text-secondary hover:text-secondary/80 transition-colors"
+              >
+                <Network size={14} />
+                {isAr ? "الشبكة الكاملة" : "Full Network"}
+              </Link>
+            </div>
+
+            {/* Compact Graph */}
+            {graphEvents.length > 0 && (
+              <div className="mb-6">
+                <EventRelationshipGraph
+                  events={graphEvents}
+                  highlightEventId={event.id}
+                  compact
+                />
+              </div>
+            )}
+
             <div className="grid gap-3 sm:grid-cols-2">
               {relatedEvents.map((re) => (
                 <Link
                   key={re.id}
-                  to={`/event/${re.id}`}
+                  to={`/event/${re.slug || re.id}`}
                   className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-secondary/30 transition-all group"
                 >
                   <span className="w-3 h-3 rounded-full flex-shrink-0 bg-secondary" />
