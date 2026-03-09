@@ -47,6 +47,9 @@ type Trait = {
 
 const categories = [
   { key: "all", ar: "الكل", en: "All" },
+  { key: "Leadership", ar: "القيادة", en: "As a Leader" },
+  { key: "Family", ar: "الأسرة", en: "As a Father" },
+  { key: "Teaching", ar: "التعليم", en: "As a Teacher" },
   { key: "Moral", ar: "الصفات الخُلقية", en: "Moral" },
   { key: "Physical", ar: "الصفات الخَلقية", en: "Physical" },
   { key: "Social", ar: "التعاملات الاجتماعية", en: "Social" },
