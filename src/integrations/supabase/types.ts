@@ -293,6 +293,7 @@ export type Database = {
           path_id: string | null
           quran_references: Json
           related_event_ids: Json
+          slug: string | null
           timeline_visible: boolean
           title: string
           title_en: string
@@ -321,6 +322,7 @@ export type Database = {
           path_id?: string | null
           quran_references?: Json
           related_event_ids?: Json
+          slug?: string | null
           timeline_visible?: boolean
           title: string
           title_en: string
@@ -349,6 +351,7 @@ export type Database = {
           path_id?: string | null
           quran_references?: Json
           related_event_ids?: Json
+          slug?: string | null
           timeline_visible?: boolean
           title?: string
           title_en?: string
