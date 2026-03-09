@@ -114,6 +114,7 @@ export const translations = {
     navMap: "Map",
     navInteractiveJourney: "Interactive Journey",
     navLibrary: "Library",
+    navGraph: "Event Graph",
     menuLabel: "Menu",
 
     bismillah: "In the Name of God, the Most Gracious, the Most Merciful",
