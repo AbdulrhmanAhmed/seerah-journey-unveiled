@@ -16,6 +16,7 @@ const Navbar = () => {
     { name: t("navCharacter"), icon: Heart, path: "/character" },
     { name: t("navMap"), icon: Compass, path: "/map" },
     { name: t("navInteractiveJourney"), icon: Map, path: "/interactive-journey" },
+    { name: t("navGraph"), icon: Network, path: "/event-graph" },
     { name: t("navLibrary"), icon: BookOpen, path: "/library" },
   ];
 
