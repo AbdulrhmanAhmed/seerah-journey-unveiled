@@ -88,12 +88,34 @@ const EventDetailPage = () => {
       if (relatedIds.length === 0) return [];
       const { data, error } = await supabase
         .from("timeline_events")
-        .select("id, title, title_en, year_ce, year_hijri, era")
+        .select("id, title, title_en, year_ce, year_hijri, era, slug, category")
         .in("id", relatedIds);
       if (error) throw error;
       return data;
     },
     enabled: relatedIds.length > 0,
+  });
+
+  // Fetch nearby events for graph (current + related + their connections)
+  const { data: graphEvents = [] } = useQuery({
+    queryKey: ["graph-events-local", event?.id],
+    queryFn: async () => {
+      if (!event) return [];
+      // Get a wider set: events from same era or within ±10 years
+      const { data, error } = await supabase
+        .from("timeline_events")
+        .select("id, title, title_en, slug, year_ce, era, category, related_event_ids")
+        .eq("is_active", true)
+        .gte("year_ce", event.year_ce - 10)
+        .lte("year_ce", event.year_ce + 10)
+        .order("year_ce");
+      if (error) throw error;
+      return (data || []).map((e) => ({
+        ...e,
+        related_event_ids: (e.related_event_ids as string[]) || [],
+      }));
+    },
+    enabled: !!event && relatedIds.length > 0,
   });
 
   if (isLoading) {
