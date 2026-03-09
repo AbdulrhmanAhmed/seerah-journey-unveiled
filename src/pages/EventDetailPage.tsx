@@ -101,7 +101,29 @@ const EventDetailPage = () => {
     );
   }
 
-  if (!event) return null;
+  if (!event) {
+    return (
+      <div className="min-h-screen pt-24 pb-16">
+        <div className="container mx-auto px-4 md:px-6 max-w-3xl space-y-4">
+          <h1 className="font-serif-display text-2xl md:text-3xl text-foreground">
+            {isAr ? "الحدث غير موجود" : "Event not found"}
+          </h1>
+          <p className="font-body text-muted-foreground">
+            {isAr
+              ? "لم نعثر على هذا الحدث. جرّب العودة إلى صفحة الرحلة واختيار حدث آخر."
+              : "We couldn't find this event. Go back to the Journey and choose another one."}
+          </p>
+          <button
+            onClick={() => navigate("/journey")}
+            className="inline-flex items-center gap-2 font-body text-secondary hover:text-secondary/80 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {isAr ? "العودة إلى الرحلة" : "Back to Journey"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const title = isAr ? event.title : event.title_en;
   const description = isAr ? event.description : event.description_en;
