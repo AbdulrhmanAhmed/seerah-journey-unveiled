@@ -20,47 +20,11 @@ const JourneyPage = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
 
   const handleLearnMore = useCallback(
-    async (event: TimelineEvent) => {
-      const isAr = lang === "ar";
-
-      const pgQuote = (value: string) =>
-        `"${value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"")}"`;
-
-      const { data, error } = await supabase
-        .from("timeline_events")
-        .select("id")
-        .eq("is_active", true)
-        .eq("timeline_visible", true)
-        .or(`title.eq.${pgQuote(event.title)},title_en.eq.${pgQuote(event.titleEn)}`)
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        toast({
-          title: isAr ? "تعذّر فتح الحدث" : "Couldn't open event",
-          description: isAr
-            ? "حدث خطأ أثناء جلب صفحة الحدث. سيتم عرض التفاصيل المختصرة."
-            : "There was an error loading the event page. Showing the short version instead.",
-        });
-      }
-
-      if (data?.id) {
-        navigate(`/event/${data.id}`);
-        return;
-      }
-
-      toast({
-        title: isAr ? "لا توجد صفحة مفصلة بعد" : "No detailed page yet",
-        description: isAr
-          ? "لم نعثر على هذا الحدث في قاعدة البيانات."
-          : "We couldn't find this event in the database.",
-      });
-
-      // Fallback to the existing modal so the click never becomes a no-op.
-      setSelectedEvent(event);
-      setModalOpen(true);
+    (event: TimelineEvent) => {
+      // Navigate to the rich detail page using the local event id
+      navigate(`/event/${event.id}`);
     },
-    [lang, navigate],
+    [navigate],
   );
 
   useEffect(() => {
