@@ -373,15 +373,36 @@ const EventDetailPage = () => {
             transition={{ duration: 0.4 }}
           >
             <Separator className="mb-6" />
-            <h2 className="font-serif-display text-xl md:text-2xl text-foreground mb-4 flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-secondary" />
-              {isAr ? "أحداث مرتبطة" : "Related Events"}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif-display text-xl md:text-2xl text-foreground flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-secondary" />
+                {isAr ? "أحداث مرتبطة" : "Related Events"}
+              </h2>
+              <Link
+                to={`/event-graph?highlight=${event.id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-body text-secondary hover:text-secondary/80 transition-colors"
+              >
+                <Network size={14} />
+                {isAr ? "الشبكة الكاملة" : "Full Network"}
+              </Link>
+            </div>
+
+            {/* Compact Graph */}
+            {graphEvents.length > 0 && (
+              <div className="mb-6">
+                <EventRelationshipGraph
+                  events={graphEvents}
+                  highlightEventId={event.id}
+                  compact
+                />
+              </div>
+            )}
+
             <div className="grid gap-3 sm:grid-cols-2">
               {relatedEvents.map((re) => (
                 <Link
                   key={re.id}
-                  to={`/event/${re.id}`}
+                  to={`/event/${re.slug || re.id}`}
                   className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-secondary/30 transition-all group"
                 >
                   <span className="w-3 h-3 rounded-full flex-shrink-0 bg-secondary" />
