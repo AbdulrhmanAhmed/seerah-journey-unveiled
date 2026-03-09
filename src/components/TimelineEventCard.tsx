@@ -46,7 +46,15 @@ const TimelineEventCard = ({ event, index, onLearnMore }: TimelineEventCardProps
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`w-full md:w-[calc(50%-2rem)] ${isRight ? "md:pl-0" : "md:pr-0"}`}
       >
-        <div className="group relative rounded-xl border border-border bg-card/80 backdrop-blur-sm p-5 md:p-6 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all duration-300 cursor-pointer">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onLearnMore(event)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") onLearnMore(event);
+          }}
+          className="group relative rounded-xl border border-border bg-card/80 backdrop-blur-sm p-5 md:p-6 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all duration-300 cursor-pointer"
+        >
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span
               className={`inline-block text-xs font-body font-semibold px-2.5 py-0.5 rounded-full ${
@@ -71,21 +79,21 @@ const TimelineEventCard = ({ event, index, onLearnMore }: TimelineEventCardProps
 
           <p className="font-body text-sm text-muted-foreground mb-1">
             {year}
-            {hijriYear && (
-              <span className="me-2 text-secondary">({hijriYear})</span>
-            )}
+            {hijriYear && <span className="me-2 text-secondary">({hijriYear})</span>}
           </p>
 
           <h3 className="font-serif-display text-xl md:text-2xl text-foreground mb-2 leading-snug">
             {title}
           </h3>
 
-          <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4">
-            {summary}
-          </p>
+          <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4">{summary}</p>
 
           <button
-            onClick={() => onLearnMore(event)}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLearnMore(event);
+            }}
             className="inline-flex items-center gap-1.5 text-sm font-body font-medium text-secondary hover:text-secondary/80 transition-colors group/btn"
           >
             {readMore}
