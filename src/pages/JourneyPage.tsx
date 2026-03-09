@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const JourneyPage = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
