@@ -292,7 +292,30 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
 
   const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 3));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 0.3));
-  const handleReset = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+  const handleReset = useCallback(() => {
+    if (!containerRef.current || nodes.length === 0) { setZoom(compact ? 1 : 0.55); setPan({ x: 0, y: 0 }); return; }
+    const rect = containerRef.current.getBoundingClientRect();
+    const xs = nodes.map(n => n.x);
+    const ys = nodes.map(n => n.y);
+    const minX = Math.min(...xs) - 40;
+    const maxX = Math.max(...xs) + 40;
+    const minY = Math.min(...ys) - 40;
+    const maxY = Math.max(...ys) + 40;
+    const bw = maxX - minX;
+    const bh = maxY - minY;
+    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 1.5) * 0.9;
+    setZoom(fitZoom);
+    setPan({ x: (rect.width - bw * fitZoom) / 2 - minX * fitZoom, y: (rect.height - bh * fitZoom) / 2 - minY * fitZoom });
+  }, [nodes, compact]);
+
+  // Auto-fit on initial load
+  useEffect(() => {
+    if (!initialFitDone && nodes.length > 0 && containerRef.current) {
+      // Small delay to ensure container is rendered
+      const timer = setTimeout(() => { handleReset(); setInitialFitDone(true); }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [initialFitDone, nodes, handleReset]);
 
   // Center on highlighted event or first search match
   useEffect(() => {
