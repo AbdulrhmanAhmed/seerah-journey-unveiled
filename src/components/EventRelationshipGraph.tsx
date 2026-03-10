@@ -187,8 +187,8 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ screenX: number; screenY: number; node: Node } | null>(null);
 
-  const graphWidth = compact ? 800 : 1400;
-  const graphHeight = compact ? 500 : 800;
+  const graphWidth = compact ? 800 : 2400;
+  const graphHeight = compact ? 500 : 1400;
 
   const { nodes, edges } = useMemo(
     () => computeLayout(events, graphWidth, graphHeight),
