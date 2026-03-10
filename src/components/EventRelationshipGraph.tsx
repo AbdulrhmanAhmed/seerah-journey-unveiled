@@ -142,7 +142,7 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
       const dx = t.x - s.x;
       const dy = t.y - s.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const idealDist = 100;
+      const idealDist = 160;
       if (dist > idealDist) {
         const force = (dist - idealDist) / dist * 0.05;
         s.x += dx * force;
