@@ -118,15 +118,15 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
   });
 
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  for (let iter = 0; iter < 60; iter++) {
+  for (let iter = 0; iter < 120; iter++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const dx = nodes[j].x - nodes[i].x;
         const dy = nodes[j].y - nodes[i].y;
         const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-        const minDist = 50;
+        const minDist = 90;
         if (dist < minDist) {
-          const force = (minDist - dist) / dist * 0.3;
+          const force = (minDist - dist) / dist * 0.5;
           nodes[i].x -= dx * force;
           nodes[i].y -= dy * force;
           nodes[j].x += dx * force;
