@@ -99,13 +99,13 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
     const idx = yearCounters.get(e.year_ce) || 0;
     yearCounters.set(e.year_ce, idx + 1);
 
-    const verticalSpread = count > 1 ? (idx / (count - 1) - 0.5) * (height - padding * 2) * 0.6 : 0;
+    const verticalSpread = count > 1 ? (idx / (count - 1) - 0.5) * (height - padding * 2) * 0.85 : 0;
     const conns = connectionCount.get(e.id) || 0;
 
     return {
       id: e.id,
-      x: padding + yearFraction * (width - padding * 2) + (Math.random() - 0.5) * 30,
-      y: height / 2 + verticalSpread + (Math.random() - 0.5) * 40,
+      x: padding + yearFraction * (width - padding * 2) + (Math.random() - 0.5) * 50,
+      y: height / 2 + verticalSpread + (Math.random() - 0.5) * 60,
       title: e.title_en,
       titleAr: e.title,
       slug: e.slug,
