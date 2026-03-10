@@ -99,13 +99,13 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
     const idx = yearCounters.get(e.year_ce) || 0;
     yearCounters.set(e.year_ce, idx + 1);
 
-    const verticalSpread = count > 1 ? (idx / (count - 1) - 0.5) * (height - padding * 2) * 0.6 : 0;
+    const verticalSpread = count > 1 ? (idx / (count - 1) - 0.5) * (height - padding * 2) * 0.85 : 0;
     const conns = connectionCount.get(e.id) || 0;
 
     return {
       id: e.id,
-      x: padding + yearFraction * (width - padding * 2) + (Math.random() - 0.5) * 30,
-      y: height / 2 + verticalSpread + (Math.random() - 0.5) * 40,
+      x: padding + yearFraction * (width - padding * 2) + (Math.random() - 0.5) * 50,
+      y: height / 2 + verticalSpread + (Math.random() - 0.5) * 60,
       title: e.title_en,
       titleAr: e.title,
       slug: e.slug,
@@ -118,15 +118,15 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
   });
 
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  for (let iter = 0; iter < 60; iter++) {
+  for (let iter = 0; iter < 120; iter++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const dx = nodes[j].x - nodes[i].x;
         const dy = nodes[j].y - nodes[i].y;
         const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-        const minDist = 50;
+        const minDist = 90;
         if (dist < minDist) {
-          const force = (minDist - dist) / dist * 0.3;
+          const force = (minDist - dist) / dist * 0.5;
           nodes[i].x -= dx * force;
           nodes[i].y -= dy * force;
           nodes[j].x += dx * force;
@@ -142,7 +142,7 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
       const dx = t.x - s.x;
       const dy = t.y - s.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const idealDist = 100;
+      const idealDist = 160;
       if (dist > idealDist) {
         const force = (dist - idealDist) / dist * 0.05;
         s.x += dx * force;
@@ -181,14 +181,15 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(compact ? 1 : 0.55);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [initialFitDone, setInitialFitDone] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ screenX: number; screenY: number; node: Node } | null>(null);
 
-  const graphWidth = compact ? 800 : 1400;
-  const graphHeight = compact ? 500 : 800;
+  const graphWidth = compact ? 800 : 2400;
+  const graphHeight = compact ? 500 : 1400;
 
   const { nodes, edges } = useMemo(
     () => computeLayout(events, graphWidth, graphHeight),
@@ -291,7 +292,30 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
 
   const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 3));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 0.3));
-  const handleReset = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+  const handleReset = useCallback(() => {
+    if (!containerRef.current || nodes.length === 0) { setZoom(compact ? 1 : 0.55); setPan({ x: 0, y: 0 }); return; }
+    const rect = containerRef.current.getBoundingClientRect();
+    const xs = nodes.map(n => n.x);
+    const ys = nodes.map(n => n.y);
+    const minX = Math.min(...xs) - 40;
+    const maxX = Math.max(...xs) + 40;
+    const minY = Math.min(...ys) - 40;
+    const maxY = Math.max(...ys) + 40;
+    const bw = maxX - minX;
+    const bh = maxY - minY;
+    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 1.5) * 0.9;
+    setZoom(fitZoom);
+    setPan({ x: (rect.width - bw * fitZoom) / 2 - minX * fitZoom, y: (rect.height - bh * fitZoom) / 2 - minY * fitZoom });
+  }, [nodes, compact]);
+
+  // Auto-fit on initial load
+  useEffect(() => {
+    if (!initialFitDone && nodes.length > 0 && containerRef.current) {
+      // Small delay to ensure container is rendered
+      const timer = setTimeout(() => { handleReset(); setInitialFitDone(true); }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [initialFitDone, nodes, handleReset]);
 
   // Center on highlighted event or first search match
   useEffect(() => {
