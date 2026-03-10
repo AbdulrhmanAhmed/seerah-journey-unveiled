@@ -181,8 +181,9 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(compact ? 1 : 0.55);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [initialFitDone, setInitialFitDone] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ screenX: number; screenY: number; node: Node } | null>(null);
