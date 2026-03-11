@@ -31,7 +31,7 @@ const categoryColors: Record<string, string> = {
   diplomacy: "hsl(160, 50%, 40%)",
 };
 
-interface Node {
+interface GraphNode {
   id: string;
   x: number;
   y: number;
@@ -50,8 +50,130 @@ interface Edge {
   target: string;
 }
 
-function computeLayout(events: GraphEvent[], width: number, height: number): { nodes: Node[]; edges: Edge[] } {
-  const eventMap = new Map(events.map((e) => [e.id, e]));
+interface Cluster {
+  id: string;
+  nodes: GraphNode[];
+  hull: { x: number; y: number }[];
+  centroid: { x: number; y: number };
+  color: string;
+  label: string;
+}
+
+// --- Convex Hull (Graham Scan) ---
+function convexHull(points: { x: number; y: number }[]): { x: number; y: number }[] {
+  if (points.length < 3) return points;
+  const pts = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  const cross = (O: { x: number; y: number }, A: { x: number; y: number }, B: { x: number; y: number }) =>
+    (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+  const lower: { x: number; y: number }[] = [];
+  for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
+  const upper: { x: number; y: number }[] = [];
+  for (const p of pts.reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
+  lower.pop(); upper.pop();
+  return lower.concat(upper);
+}
+
+function expandHull(hull: { x: number; y: number }[], padding: number): { x: number; y: number }[] {
+  const cx = hull.reduce((s, p) => s + p.x, 0) / hull.length;
+  const cy = hull.reduce((s, p) => s + p.y, 0) / hull.length;
+  return hull.map(p => {
+    const dx = p.x - cx, dy = p.y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { x: p.x + (dx / dist) * padding, y: p.y + (dy / dist) * padding };
+  });
+}
+
+function smoothHullPath(hull: { x: number; y: number }[]): string {
+  if (hull.length < 3) return "";
+  const n = hull.length;
+  const pts = [...hull, hull[0], hull[1]];
+  let d = `M ${hull[0].x} ${hull[0].y}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d + " Z";
+}
+
+function computeClusters(nodes: GraphNode[], edges: Edge[], isAr: boolean): Cluster[] {
+  const eraGroups = new globalThis.Map<string, GraphNode[]>();
+  nodes.forEach(n => {
+    const group = eraGroups.get(n.era) || [];
+    group.push(n);
+    eraGroups.set(n.era, group);
+  });
+
+  const clusters: Cluster[] = [];
+
+  eraGroups.forEach((eraNodes, era) => {
+    const nodeIds = new Set(eraNodes.map(n => n.id));
+    const adj = new globalThis.Map<string, Set<string>>();
+    eraNodes.forEach(n => adj.set(n.id, new Set()));
+    edges.forEach(e => {
+      if (nodeIds.has(e.source) && nodeIds.has(e.target)) {
+        adj.get(e.source)?.add(e.target);
+        adj.get(e.target)?.add(e.source);
+      }
+    });
+
+    const visited = new Set<string>();
+    const nodeById = new globalThis.Map(eraNodes.map(n => [n.id, n]));
+
+    eraNodes.forEach(startNode => {
+      if (visited.has(startNode.id)) return;
+      const component: GraphNode[] = [];
+      const queue = [startNode.id];
+      visited.add(startNode.id);
+      while (queue.length) {
+        const cur = queue.shift()!;
+        component.push(nodeById.get(cur)!);
+        adj.get(cur)?.forEach(nb => {
+          if (!visited.has(nb)) { visited.add(nb); queue.push(nb); }
+        });
+      }
+
+      if (component.length < 3) return;
+
+      const points = component.map(n => ({ x: n.x, y: n.y }));
+      const hull = expandHull(convexHull(points), 35);
+      const cx = component.reduce((s, n) => s + n.x, 0) / component.length;
+      const cy = component.reduce((s, n) => s + n.y, 0) / component.length;
+
+      const catCount = new globalThis.Map<string, number>();
+      component.forEach(n => catCount.set(n.category, (catCount.get(n.category) || 0) + 1));
+      const domCat = [...catCount.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      const color = categoryColors[domCat] || "hsl(160, 50%, 40%)";
+
+      const years = component.map(n => n.year).sort((a, b) => a - b);
+      const minY = years[0], maxY = years[years.length - 1];
+      const yearStr = minY === maxY ? `${minY}` : `${minY}–${maxY}`;
+
+      const catConfig = categoryMap[domCat as keyof typeof categoryMap];
+      const catLabel = catConfig ? (isAr ? catConfig.label : catConfig.labelEn) : domCat;
+
+      clusters.push({
+        id: `${era}-${domCat}-${minY}`,
+        nodes: component,
+        hull,
+        centroid: { x: cx, y: cy },
+        color,
+        label: `${catLabel} ${yearStr}`,
+      });
+    });
+  });
+
+  return clusters;
+}
+
+function computeLayout(events: GraphEvent[], width: number, height: number): { nodes: GraphNode[]; edges: Edge[] } {
+  const eventMap = new globalThis.Map(events.map((e) => [e.id, e]));
   const edges: Edge[] = [];
   const edgeSet = new Set<string>();
 
@@ -75,7 +197,7 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
 
   const connectedEvents = events.filter((e) => connectedIds.has(e.id));
 
-  const connectionCount = new Map<string, number>();
+  const connectionCount = new globalThis.Map<string, number>();
   edges.forEach((e) => {
     connectionCount.set(e.source, (connectionCount.get(e.source) || 0) + 1);
     connectionCount.set(e.target, (connectionCount.get(e.target) || 0) + 1);
@@ -86,14 +208,14 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
   const maxYear = sorted[sorted.length - 1]?.year_ce || 632;
   const yearRange = Math.max(maxYear - minYear, 1);
 
-  const yearGroups = new Map<number, number>();
+  const yearGroups = new globalThis.Map<number, number>();
   sorted.forEach((e) => {
     yearGroups.set(e.year_ce, (yearGroups.get(e.year_ce) || 0) + 1);
   });
-  const yearCounters = new Map<number, number>();
+  const yearCounters = new globalThis.Map<number, number>();
 
   const padding = 80;
-  const nodes: Node[] = sorted.map((e) => {
+  const nodes: GraphNode[] = sorted.map((e) => {
     const yearFraction = (e.year_ce - minYear) / yearRange;
     const count = yearGroups.get(e.year_ce) || 1;
     const idx = yearCounters.get(e.year_ce) || 0;
@@ -117,7 +239,7 @@ function computeLayout(events: GraphEvent[], width: number, height: number): { n
     };
   });
 
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+  const nodeMap = new globalThis.Map(nodes.map((n) => [n.id, n]));
   for (let iter = 0; iter < 120; iter++) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
@@ -166,13 +288,15 @@ function bezierPath(sx: number, sy: number, tx: number, ty: number): string {
   const dy = ty - sy;
   const dist = Math.sqrt(dx * dx + dy * dy);
   const offset = Math.min(dist * 0.25, 60);
-  // perpendicular offset for curve
   const nx = -dy / dist * offset;
   const ny = dx / dist * offset;
   const cx = (sx + tx) / 2 + nx;
   const cy = (sy + ty) / 2 + ny;
   return `M ${sx} ${sy} Q ${cx} ${cy} ${tx} ${ty}`;
 }
+
+const MINIMAP_W = 160;
+const MINIMAP_H = 110;
 
 const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", compact = false }: Props) => {
   const { lang } = useLanguage();
@@ -186,7 +310,8 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   const [initialFitDone, setInitialFitDone] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [tooltip, setTooltip] = useState<{ screenX: number; screenY: number; node: Node } | null>(null);
+  const [tooltip, setTooltip] = useState<{ screenX: number; screenY: number; node: GraphNode } | null>(null);
+  const [showMinimap, setShowMinimap] = useState(!compact);
 
   const graphWidth = compact ? 800 : 2400;
   const graphHeight = compact ? 500 : 1400;
@@ -196,7 +321,13 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
     [events, graphWidth, graphHeight]
   );
 
-  const nodeMap = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
+  const nodeMap = useMemo(() => new globalThis.Map(nodes.map((n) => [n.id, n])), [nodes]);
+
+  // Clusters
+  const clusters = useMemo(
+    () => compact ? [] : computeClusters(nodes, edges, isAr),
+    [nodes, edges, isAr, compact]
+  );
 
   // Search matches
   const searchMatches = useMemo(() => {
@@ -268,12 +399,12 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
     setZoom((z) => Math.max(0.3, Math.min(3, z + delta)));
   }, []);
 
-  const handleNodeClick = useCallback((node: Node) => {
+  const handleNodeClick = useCallback((node: GraphNode) => {
     const target = node.slug || node.id;
     navigate(`/event/${target}`);
   }, [navigate]);
 
-  const handleNodeHover = useCallback((node: Node, e: React.MouseEvent) => {
+  const handleNodeHover = useCallback((node: GraphNode, e: React.MouseEvent) => {
     setHoveredNode(node.id);
     const rect = containerRef.current?.getBoundingClientRect();
     if (rect) {
@@ -311,7 +442,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   // Auto-fit on initial load
   useEffect(() => {
     if (!initialFitDone && nodes.length > 0 && containerRef.current) {
-      // Small delay to ensure container is rendered
       const timer = setTimeout(() => { handleReset(); setInitialFitDone(true); }, 100);
       return () => clearTimeout(timer);
     }
@@ -332,6 +462,24 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
     }
   }, [highlightEventId, searchMatches, hasSearch, nodeMap, zoom]);
 
+  // Mini-map click handler
+  const handleMinimapClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (!containerRef.current || nodes.length === 0) return;
+    const svgRect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - svgRect.left;
+    const clickY = e.clientY - svgRect.top;
+    // Map click position to graph coordinates
+    const scaleX = graphWidth / MINIMAP_W;
+    const scaleY = graphHeight / MINIMAP_H;
+    const graphX = clickX * scaleX;
+    const graphY = clickY * scaleY;
+    const rect = containerRef.current.getBoundingClientRect();
+    setPan({
+      x: rect.width / 2 - graphX * zoom,
+      y: rect.height / 2 - graphY * zoom,
+    });
+  }, [nodes, graphWidth, graphHeight, zoom]);
+
   if (nodes.length === 0) return (
     <div className="flex items-center justify-center h-[400px] text-muted-foreground font-body text-sm">
       {isAr ? "لا توجد أحداث مترابطة للعرض" : "No connected events to display"}
@@ -343,6 +491,17 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
   const maxYear = Math.max(...nodes.map((n) => n.year));
   const yearRange = Math.max(maxYear - minYear, 1);
   const yearToX = (year: number) => 80 + ((year - minYear) / yearRange) * (graphWidth - 160);
+
+  // Mini-map viewport rect
+  const containerEl = containerRef.current;
+  const containerWidth = containerEl?.clientWidth || 600;
+  const containerHeight = containerEl?.clientHeight || 400;
+  const vpX = -pan.x / zoom;
+  const vpY = -pan.y / zoom;
+  const vpW = containerWidth / zoom;
+  const vpH = containerHeight / zoom;
+  const mmScaleX = MINIMAP_W / graphWidth;
+  const mmScaleY = MINIMAP_H / graphHeight;
 
   return (
     <div className="relative w-full" ref={containerRef}>
@@ -379,7 +538,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
           className="select-none"
         >
           <defs>
-            {/* Glow filter */}
             <filter id="node-glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="4" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -388,12 +546,10 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
               <feGaussianBlur stdDeviation="8" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
-            {/* Search pulse */}
             <filter id="search-pulse" x="-100%" y="-100%" width="300%" height="300%">
               <feGaussianBlur stdDeviation="6" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
-            {/* Edge gradients per category */}
             {Object.entries(categoryColors).map(([key, color]) => (
               <linearGradient key={key} id={`edge-grad-${key}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={color} stopOpacity={0.6} />
@@ -415,6 +571,39 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
             <text x={graphWidth * 0.75} y={30} textAnchor="middle" fill="hsl(200, 40%, 50%)" fontSize={11} fontWeight="600" opacity={0.4} className="select-none">
               {isAr ? "العهد المدني" : "MADINAN PERIOD"}
             </text>
+
+            {/* Cluster hulls — rendered behind edges/nodes */}
+            {clusters.map((cluster) => {
+              const pathD = smoothHullPath(cluster.hull);
+              if (!pathD) return null;
+              return (
+                <g key={cluster.id}>
+                  <path
+                    d={pathD}
+                    fill={cluster.color}
+                    fillOpacity={0.06}
+                    stroke={cluster.color}
+                    strokeOpacity={0.12}
+                    strokeWidth={1.5}
+                    strokeDasharray="6 4"
+                    className="pointer-events-none"
+                  />
+                  <text
+                    x={cluster.centroid.x}
+                    y={cluster.centroid.y - Math.max(...cluster.nodes.map(n => Math.abs(n.y - cluster.centroid.y))) - 20}
+                    textAnchor="middle"
+                    fill={cluster.color}
+                    fontSize={10}
+                    fontWeight="600"
+                    opacity={0.3}
+                    className="pointer-events-none select-none"
+                    style={{ textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
+                  >
+                    {cluster.label}
+                  </text>
+                </g>
+              );
+            })}
 
             {/* Timeline axis */}
             <line x1={80} y1={graphHeight - 30} x2={graphWidth - 80} y2={graphHeight - 30} stroke="hsl(0, 0%, 40%)" strokeWidth={0.5} opacity={0.3} />
@@ -454,7 +643,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                     className="transition-all duration-300"
                     strokeLinecap="round"
                   />
-                  {/* Particle trails on highlighted edges */}
                   {isHighlighted && (
                     <>
                       {[0, 0.33, 0.66].map((delay, i) => (
@@ -469,7 +657,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                           <animate attributeName="r" values="1.5;3.5;1.5" dur="2s" repeatCount="indefinite" begin={`${delay * 2}s`} />
                         </circle>
                       ))}
-                      {/* Faint glow trail */}
                       <circle r={6} fill={color} opacity={0} filter="url(#node-glow)">
                         <animateMotion
                           dur="3s"
@@ -507,7 +694,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                   onMouseLeave={handleNodeLeave}
                   onClick={(e) => { e.stopPropagation(); handleNodeClick(node); }}
                 >
-                  {/* Search pulse ring */}
                   {isSearchMatch && (
                     <>
                       <circle cx={node.x} cy={node.y} r={node.radius * scale + 14} fill="none" stroke={color} strokeWidth={1.5} opacity={0.2}>
@@ -518,12 +704,10 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                     </>
                   )}
 
-                  {/* Outer glow for active */}
                   {isActive && (
                     <circle cx={node.x} cy={node.y} r={node.radius * scale + 10} fill={color} fillOpacity={0.15} filter="url(#node-glow-strong)" />
                   )}
 
-                  {/* Glow ring */}
                   {(isActive || isSearchMatch) && (
                     <circle
                       cx={node.x} cy={node.y}
@@ -535,7 +719,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                     />
                   )}
 
-                  {/* Node circle */}
                   <circle
                     cx={node.x} cy={node.y}
                     r={node.radius * scale}
@@ -545,7 +728,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                     filter={isActive ? "url(#node-glow)" : undefined}
                   />
 
-                  {/* Year inside node */}
                   {node.radius >= 10 && (
                     <text
                       x={node.x} y={node.y + 3}
@@ -556,7 +738,6 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
                     </text>
                   )}
 
-                  {/* Persistent label for highly connected nodes */}
                   {showLabel && (
                     <text
                       x={node.x}
@@ -577,6 +758,62 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
           </g>
         </svg>
       </div>
+
+      {/* Mini-map Navigator */}
+      {showMinimap && !compact && (
+        <div className="absolute bottom-3 start-3 z-20">
+          <div className="bg-card/80 backdrop-blur-md border border-border rounded-lg p-1.5 shadow-lg">
+            <svg
+              width={MINIMAP_W}
+              height={MINIMAP_H}
+              className="cursor-crosshair rounded"
+              onClick={handleMinimapClick}
+              style={{ background: "hsl(200, 20%, 8%)" }}
+            >
+              {/* Cluster hulls on minimap */}
+              {clusters.map((cluster) => {
+                const pathD = smoothHullPath(
+                  cluster.hull.map(p => ({ x: p.x * mmScaleX, y: p.y * mmScaleY }))
+                );
+                if (!pathD) return null;
+                return (
+                  <path
+                    key={cluster.id}
+                    d={pathD}
+                    fill={cluster.color}
+                    fillOpacity={0.12}
+                    stroke="none"
+                  />
+                );
+              })}
+              {/* Mini nodes */}
+              {nodes.map((node) => (
+                <circle
+                  key={node.id}
+                  cx={node.x * mmScaleX}
+                  cy={node.y * mmScaleY}
+                  r={1.5}
+                  fill={categoryColors[node.category] || "hsl(160, 50%, 40%)"}
+                  opacity={0.8}
+                />
+              ))}
+              {/* Viewport rectangle */}
+              <rect
+                x={Math.max(0, vpX * mmScaleX)}
+                y={Math.max(0, vpY * mmScaleY)}
+                width={Math.min(MINIMAP_W, vpW * mmScaleX)}
+                height={Math.min(MINIMAP_H, vpH * mmScaleY)}
+                fill="hsl(200, 60%, 50%)"
+                fillOpacity={0.08}
+                stroke="hsl(200, 60%, 60%)"
+                strokeWidth={1}
+                strokeOpacity={0.5}
+                rx={2}
+              />
+            </svg>
+          </div>
+        </div>
+      )}
 
       {/* HTML Tooltip Overlay */}
       {tooltip && (
