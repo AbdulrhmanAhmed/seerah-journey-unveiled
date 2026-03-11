@@ -1,139 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { ZoomIn, ZoomOut, Maximize2, Map } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { categories, categoryMap } from "@/data/eventCategories";
-
-// --- Convex Hull (Graham Scan) ---
-function convexHull(points: { x: number; y: number }[]): { x: number; y: number }[] {
-  if (points.length < 3) return points;
-  const pts = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
-  const cross = (O: { x: number; y: number }, A: { x: number; y: number }, B: { x: number; y: number }) =>
-    (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
-  const lower: { x: number; y: number }[] = [];
-  for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
-  const upper: { x: number; y: number }[] = [];
-  for (const p of pts.reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
-  lower.pop(); upper.pop();
-  return lower.concat(upper);
-}
-
-// --- Expand hull outward for padding ---
-function expandHull(hull: { x: number; y: number }[], padding: number): { x: number; y: number }[] {
-  const cx = hull.reduce((s, p) => s + p.x, 0) / hull.length;
-  const cy = hull.reduce((s, p) => s + p.y, 0) / hull.length;
-  return hull.map(p => {
-    const dx = p.x - cx, dy = p.y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    return { x: p.x + (dx / dist) * padding, y: p.y + (dy / dist) * padding };
-  });
-}
-
-// --- Smooth hull to SVG path (Catmull-Rom → cubic bezier) ---
-function smoothHullPath(hull: { x: number; y: number }[]): string {
-  if (hull.length < 3) return "";
-  const n = hull.length;
-  const pts = [...hull, hull[0], hull[1]]; // wrap around
-  let d = `M ${hull[0].x} ${hull[0].y}`;
-  for (let i = 0; i < n; i++) {
-    const p0 = pts[(i - 1 + n) % n];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2];
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-  }
-  return d + " Z";
-}
-
-interface Cluster {
-  id: string;
-  nodes: Node[];
-  hull: { x: number; y: number }[];
-  centroid: { x: number; y: number };
-  color: string;
-  label: string;
-  labelAr: string;
-}
-
-function computeClusters(nodes: Node[], edges: Edge[], isAr: boolean): Cluster[] {
-  // Group by era, then find connected components within each era
-  const eraGroups = new Map<string, Node[]>();
-  nodes.forEach(n => {
-    const group = eraGroups.get(n.era) || [];
-    group.push(n);
-    eraGroups.set(n.era, group);
-  });
-
-  const clusters: Cluster[] = [];
-
-  eraGroups.forEach((eraNodes, era) => {
-    const nodeIds = new Set(eraNodes.map(n => n.id));
-    const adj = new Map<string, Set<string>>();
-    eraNodes.forEach(n => adj.set(n.id, new Set()));
-    edges.forEach(e => {
-      if (nodeIds.has(e.source) && nodeIds.has(e.target)) {
-        adj.get(e.source)?.add(e.target);
-        adj.get(e.target)?.add(e.source);
-      }
-    });
-
-    // BFS connected components
-    const visited = new Set<string>();
-    const nodeMap = new Map(eraNodes.map(n => [n.id, n]));
-
-    eraNodes.forEach(startNode => {
-      if (visited.has(startNode.id)) return;
-      const component: Node[] = [];
-      const queue = [startNode.id];
-      visited.add(startNode.id);
-      while (queue.length) {
-        const cur = queue.shift()!;
-        component.push(nodeMap.get(cur)!);
-        adj.get(cur)?.forEach(nb => {
-          if (!visited.has(nb)) { visited.add(nb); queue.push(nb); }
-        });
-      }
-
-      if (component.length < 3) return;
-
-      const points = component.map(n => ({ x: n.x, y: n.y }));
-      const hull = expandHull(convexHull(points), 35);
-      const cx = component.reduce((s, n) => s + n.x, 0) / component.length;
-      const cy = component.reduce((s, n) => s + n.y, 0) / component.length;
-
-      // Dominant category
-      const catCount = new Map<string, number>();
-      component.forEach(n => catCount.set(n.category, (catCount.get(n.category) || 0) + 1));
-      const domCat = [...catCount.entries()].sort((a, b) => b[1] - a[1])[0][0];
-      const color = categoryColors[domCat] || "hsl(160, 50%, 40%)";
-
-      // Year range
-      const years = component.map(n => n.year).sort((a, b) => a - b);
-      const minY = years[0], maxY = years[years.length - 1];
-      const yearStr = minY === maxY ? `${minY}` : `${minY}–${maxY}`;
-
-      const catConfig = categoryMap[domCat as keyof typeof categoryMap];
-      const catLabel = catConfig ? (isAr ? catConfig.label : catConfig.labelEn) : domCat;
-      const eraLabel = era === "makkah" ? (isAr ? "مكة" : "Makkan") : (isAr ? "المدينة" : "Madinan");
-
-      clusters.push({
-        id: `${era}-${domCat}-${minY}`,
-        nodes: component,
-        hull,
-        centroid: { x: cx, y: cy },
-        color,
-        label: `${catLabel} ${yearStr}`,
-        labelAr: `${catLabel} ${yearStr}`,
-      });
-    });
-  });
-
-  return clusters;
-}
 
 interface GraphEvent {
   id: string;
@@ -162,7 +31,7 @@ const categoryColors: Record<string, string> = {
   diplomacy: "hsl(160, 50%, 40%)",
 };
 
-interface Node {
+interface GraphNode {
   id: string;
   x: number;
   y: number;
@@ -179,6 +48,131 @@ interface Node {
 interface Edge {
   source: string;
   target: string;
+}
+
+interface Cluster {
+  id: string;
+  nodes: GraphNode[];
+  hull: { x: number; y: number }[];
+  centroid: { x: number; y: number };
+  color: string;
+  label: string;
+}
+
+// --- Convex Hull (Graham Scan) ---
+function convexHull(points: { x: number; y: number }[]): { x: number; y: number }[] {
+  if (points.length < 3) return points;
+  const pts = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  const cross = (O: { x: number; y: number }, A: { x: number; y: number }, B: { x: number; y: number }) =>
+    (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
+  const lower: { x: number; y: number }[] = [];
+  for (const p of pts) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
+  const upper: { x: number; y: number }[] = [];
+  for (const p of pts.reverse()) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
+  lower.pop(); upper.pop();
+  return lower.concat(upper);
+}
+
+function expandHull(hull: { x: number; y: number }[], padding: number): { x: number; y: number }[] {
+  const cx = hull.reduce((s, p) => s + p.x, 0) / hull.length;
+  const cy = hull.reduce((s, p) => s + p.y, 0) / hull.length;
+  return hull.map(p => {
+    const dx = p.x - cx, dy = p.y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { x: p.x + (dx / dist) * padding, y: p.y + (dy / dist) * padding };
+  });
+}
+
+function smoothHullPath(hull: { x: number; y: number }[]): string {
+  if (hull.length < 3) return "";
+  const n = hull.length;
+  const pts = [...hull, hull[0], hull[1]];
+  let d = `M ${hull[0].x} ${hull[0].y}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d + " Z";
+}
+
+function computeClusters(nodes: GraphNode[], edges: Edge[], isAr: boolean): Cluster[] {
+  const eraGroups = new Map<string, GraphNode[]>();
+  nodes.forEach(n => {
+    const group = eraGroups.get(n.era) || [];
+    group.push(n);
+    eraGroups.set(n.era, group);
+  });
+
+  const clusters: Cluster[] = [];
+
+  eraGroups.forEach((eraNodes, era) => {
+    const nodeIds = new Set(eraNodes.map(n => n.id));
+    const adj = new Map<string, Set<string>>();
+    eraNodes.forEach(n => adj.set(n.id, new Set()));
+    edges.forEach(e => {
+      if (nodeIds.has(e.source) && nodeIds.has(e.target)) {
+        adj.get(e.source)?.add(e.target);
+        adj.get(e.target)?.add(e.source);
+      }
+    });
+
+    const visited = new Set<string>();
+    const nodeById = new Map(eraNodes.map(n => [n.id, n]));
+
+    eraNodes.forEach(startNode => {
+      if (visited.has(startNode.id)) return;
+      const component: GraphNode[] = [];
+      const queue = [startNode.id];
+      visited.add(startNode.id);
+      while (queue.length) {
+        const cur = queue.shift()!;
+        component.push(nodeById.get(cur)!);
+        adj.get(cur)?.forEach(nb => {
+          if (!visited.has(nb)) { visited.add(nb); queue.push(nb); }
+        });
+      }
+
+      if (component.length < 3) return;
+
+      const points = component.map(n => ({ x: n.x, y: n.y }));
+      const hull = expandHull(convexHull(points), 35);
+      const cx = component.reduce((s, n) => s + n.x, 0) / component.length;
+      const cy = component.reduce((s, n) => s + n.y, 0) / component.length;
+
+      const catCount = new Map<string, number>();
+      component.forEach(n => catCount.set(n.category, (catCount.get(n.category) || 0) + 1));
+      const domCat = [...catCount.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      const color = categoryColors[domCat] || "hsl(160, 50%, 40%)";
+
+      const years = component.map(n => n.year).sort((a, b) => a - b);
+      const minY = years[0], maxY = years[years.length - 1];
+      const yearStr = minY === maxY ? `${minY}` : `${minY}–${maxY}`;
+
+      const catConfig = categoryMap[domCat as keyof typeof categoryMap];
+      const catLabel = catConfig ? (isAr ? catConfig.label : catConfig.labelEn) : domCat;
+
+      clusters.push({
+        id: `${era}-${domCat}-${minY}`,
+        nodes: component,
+        hull,
+        centroid: { x: cx, y: cy },
+        color,
+        label: `${catLabel} ${yearStr}`,
+      });
+    });
+  });
+
+  return clusters;
+}
+
+function computeLayout(events: GraphEvent[], width: number, height: number): { nodes: GraphNode[]; edges: Edge[] } {
 }
 
 function computeLayout(events: GraphEvent[], width: number, height: number): { nodes: Node[]; edges: Edge[] } {
