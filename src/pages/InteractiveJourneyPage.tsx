@@ -243,6 +243,14 @@ const InteractiveJourneyPage = () => {
     markersLayer.clearLayers();
     polylinesLayer.clearLayers();
 
+    // Clean up previous animations
+    pathAnimationsRef.current.forEach((id) => cancelAnimationFrame(id));
+    pathAnimationsRef.current = [];
+    animatedDotsRef.current.forEach((m) => m.remove());
+    animatedDotsRef.current = [];
+    trailLinesRef.current.forEach((l) => l.remove());
+    trailLinesRef.current = [];
+
     // Add markers
     visibleEvents.forEach((event) => {
       const isCurrentYr = event.year_ce === currentYear;
@@ -273,7 +281,7 @@ const InteractiveJourneyPage = () => {
       marker.addTo(markersLayer);
     });
 
-    // Add polylines for active paths
+    // Animated polylines for active paths
     const matchedEvents = visibleEvents.filter((e) => e.path_id);
     const pathIds = [...new Set(matchedEvents.map((e) => e.path_id))];
     const activePaths = paths.filter((p: any) => pathIds.includes(p.id));
@@ -281,14 +289,112 @@ const InteractiveJourneyPage = () => {
     activePaths.forEach((p: any) => {
       const steps = (p.path_steps || []).sort((a: any, b: any) => a.step_order - b.step_order);
       if (steps.length < 2) return;
-      const positions: L.LatLngExpression[] = steps.map((s: any) => [s.lat || 21.4225, s.lng || 39.8262] as L.LatLngExpression);
-      const polyline = L.polyline(positions, {
-        color: `hsl(${p.line_color})`,
+      const positions: L.LatLngTuple[] = steps.map((s: any) => [s.lat || 21.4225, s.lng || 39.8262] as L.LatLngTuple);
+      const pathColor = `hsl(${p.line_color})`;
+      const isSea = steps.some((s: any) => s.segment_type === "sea");
+
+      // Trail polyline (wider, lower opacity, behind)
+      const trail = L.polyline(positions, {
+        color: pathColor,
+        weight: 8,
+        opacity: 0.15,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: isSea ? "8 6" : undefined,
+      });
+      trail.addTo(polylinesLayer);
+      trailLinesRef.current.push(trail);
+
+      // Main polyline with progressive draw animation
+      const mainLine = L.polyline(positions, {
+        color: pathColor,
         weight: 4,
         opacity: 0.9,
-        dashArray: steps.some((s: any) => s.segment_type === "sea") ? "8 6" : undefined,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: isSea ? "8 6" : undefined,
       });
-      polyline.addTo(polylinesLayer);
+      mainLine.addTo(polylinesLayer);
+
+      // Animate stroke-dashoffset for progressive draw
+      requestAnimationFrame(() => {
+        const el = (mainLine as any)._path as SVGPathElement | undefined;
+        if (el) {
+          const totalLength = el.getTotalLength();
+          el.style.strokeDasharray = `${totalLength}`;
+          el.style.strokeDashoffset = `${totalLength}`;
+          el.style.transition = "stroke-dashoffset 2s ease-in-out";
+          requestAnimationFrame(() => {
+            el.style.strokeDashoffset = "0";
+          });
+        }
+      });
+
+      // Glowing moving dot along the path
+      const dotIcon = L.divIcon({
+        html: `<div class="journey-glow-dot" style="--dot-color: ${pathColor};"></div>`,
+        className: "",
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
+      const dotMarker = L.marker(positions[0], { icon: dotIcon, interactive: false });
+      dotMarker.addTo(map);
+      animatedDotsRef.current.push(dotMarker);
+
+      // Compute cumulative distances for uniform speed
+      const distances: number[] = [0];
+      for (let i = 1; i < positions.length; i++) {
+        const d = map.distance(positions[i - 1], positions[i]);
+        distances.push(distances[i - 1] + d);
+      }
+      const totalDist = distances[distances.length - 1];
+      if (totalDist === 0) return;
+
+      const LOOP_DURATION = 4000; // ms per loop
+      let startTime: number | null = null;
+      let showedLabel = false;
+
+      const animateDot = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = (elapsed % LOOP_DURATION) / LOOP_DURATION;
+        const currentDist = progress * totalDist;
+
+        // Find segment
+        let segIdx = 0;
+        for (let i = 1; i < distances.length; i++) {
+          if (distances[i] >= currentDist) { segIdx = i - 1; break; }
+          if (i === distances.length - 1) segIdx = i - 1;
+        }
+        const segLen = distances[segIdx + 1] - distances[segIdx];
+        const t = segLen > 0 ? (currentDist - distances[segIdx]) / segLen : 0;
+        const lat = positions[segIdx][0] + t * (positions[segIdx + 1][0] - positions[segIdx][0]);
+        const lng = positions[segIdx][1] + t * (positions[segIdx + 1][1] - positions[segIdx][1]);
+        dotMarker.setLatLng([lat, lng]);
+
+        // Show path label once after first loop
+        if (!showedLabel && elapsed >= LOOP_DURATION) {
+          showedLabel = true;
+          const midIdx = Math.floor(positions.length / 2);
+          const label = isAr ? p.name : p.name_en;
+          const popup = L.popup({
+            closeButton: false,
+            autoClose: true,
+            className: "seerah-path-label",
+            offset: [0, -10],
+          })
+            .setLatLng(positions[midIdx])
+            .setContent(`<span style="font-size:12px;font-weight:600;">${label}</span>`)
+            .openOn(map);
+          setTimeout(() => map.closePopup(popup), 3000);
+        }
+
+        const frameId = requestAnimationFrame(animateDot);
+        pathAnimationsRef.current.push(frameId);
+      };
+
+      const initialFrame = requestAnimationFrame(animateDot);
+      pathAnimationsRef.current.push(initialFrame);
     });
 
     // Auto-fly to current year's events
