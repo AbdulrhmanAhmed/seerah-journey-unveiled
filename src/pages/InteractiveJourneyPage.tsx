@@ -95,6 +95,9 @@ const InteractiveJourneyPage = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const polylinesLayerRef = useRef<L.LayerGroup | null>(null);
+  const pathAnimationsRef = useRef<number[]>([]);
+  const animatedDotsRef = useRef<L.Marker[]>([]);
+  const trailLinesRef = useRef<L.Polyline[]>([]);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
