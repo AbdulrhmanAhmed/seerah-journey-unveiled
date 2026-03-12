@@ -530,6 +530,7 @@ const InteractiveJourneyPage = () => {
           margin: 4px 2px;
           color: hsl(var(--foreground));
         }
+      `}</style>
 
       {/* Map container */}
       <div className="flex-1 relative overflow-hidden">
