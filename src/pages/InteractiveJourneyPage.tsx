@@ -500,7 +500,36 @@ const InteractiveJourneyPage = () => {
           0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
           50% { transform: scale(1.15); box-shadow: 0 4px 16px rgba(198,160,32,0.5); }
         }
-      `}</style>
+        .journey-glow-dot {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: var(--dot-color, hsl(46 56% 52%));
+          border: 2px solid rgba(255,255,255,0.9);
+          box-shadow: 0 0 10px var(--dot-color, hsl(46 56% 52%)),
+                      0 0 20px var(--dot-color, hsl(46 56% 52%)),
+                      0 0 4px rgba(255,255,255,0.6);
+          animation: dot-glow 1.5s ease-in-out infinite;
+        }
+        @keyframes dot-glow {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.85; }
+        }
+        .seerah-path-label .leaflet-popup-content-wrapper {
+          background: hsl(var(--card) / 0.95);
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.5rem;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          padding: 4px 10px;
+        }
+        .seerah-path-label .leaflet-popup-tip {
+          background: hsl(var(--card) / 0.95);
+          border: 1px solid hsl(var(--border));
+        }
+        .seerah-path-label .leaflet-popup-content {
+          margin: 4px 2px;
+          color: hsl(var(--foreground));
+        }
 
       {/* Map container */}
       <div className="flex-1 relative overflow-hidden">
