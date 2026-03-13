@@ -95,6 +95,7 @@ const InteractiveJourneyPage = () => {
   const isAr = lang === "ar";
   const [currentYear, setCurrentYear] = useState(MIN_YEAR);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [speedIndex, setSpeedIndex] = useState(1); // default 1× (6000ms)
   const intervalRef = useRef<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
