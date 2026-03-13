@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, RotateCcw, ChevronRight } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronRight, Gauge } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,12 @@ import "leaflet/dist/leaflet.css";
 
 const MIN_YEAR = 570;
 const MAX_YEAR = 632;
-const AUTOPLAY_INTERVAL = 6000;
+const SPEED_PRESETS = [
+  { label: "0.5×", labelAr: "٠.٥×", ms: 10000 },
+  { label: "1×", labelAr: "١×", ms: 6000 },
+  { label: "2×", labelAr: "٢×", ms: 3000 },
+  { label: "3×", labelAr: "٣×", ms: 1500 },
+];
 const ARABIA_CENTER: L.LatLngExpression = [23.5, 39.5];
 
 interface TimelineEvent {
@@ -90,6 +95,7 @@ const InteractiveJourneyPage = () => {
   const isAr = lang === "ar";
   const [currentYear, setCurrentYear] = useState(MIN_YEAR);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [speedIndex, setSpeedIndex] = useState(1); // default 1× (6000ms)
   const intervalRef = useRef<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -421,6 +427,8 @@ const InteractiveJourneyPage = () => {
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
   }, []);
 
+  const autoplayInterval = SPEED_PRESETS[speedIndex].ms;
+
   useEffect(() => {
     if (!isPlaying) return;
     const yearEvents = [...new Set(events.map((e) => e.year_ce))].sort((a, b) => a - b);
@@ -430,9 +438,13 @@ const InteractiveJourneyPage = () => {
       idx++;
       if (idx >= yearEvents.length) { stopPlaying(); return; }
       setCurrentYear(yearEvents[idx]);
-    }, AUTOPLAY_INTERVAL);
+    }, autoplayInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isPlaying, events, stopPlaying]);
+  }, [isPlaying, events, stopPlaying, autoplayInterval]);
+
+  const cycleSpeed = () => {
+    setSpeedIndex((prev) => (prev + 1) % SPEED_PRESETS.length);
+  };
 
   const handleSliderChange = (value: number[]) => {
     stopPlaying();
@@ -590,6 +602,16 @@ const InteractiveJourneyPage = () => {
             </Button>
             <Button size="sm" variant="ghost" onClick={handleReset}>
               <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cycleSpeed}
+              className="gap-1.5 text-xs min-w-[60px] font-mono"
+              title={isAr ? "سرعة التشغيل" : "Playback speed"}
+            >
+              <Gauge className="h-3.5 w-3.5" />
+              {isAr ? SPEED_PRESETS[speedIndex].labelAr : SPEED_PRESETS[speedIndex].label}
             </Button>
           </div>
           <div className="text-center">
