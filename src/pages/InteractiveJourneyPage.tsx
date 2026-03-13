@@ -427,6 +427,8 @@ const InteractiveJourneyPage = () => {
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
   }, []);
 
+  const autoplayInterval = SPEED_PRESETS[speedIndex].ms;
+
   useEffect(() => {
     if (!isPlaying) return;
     const yearEvents = [...new Set(events.map((e) => e.year_ce))].sort((a, b) => a - b);
@@ -436,9 +438,13 @@ const InteractiveJourneyPage = () => {
       idx++;
       if (idx >= yearEvents.length) { stopPlaying(); return; }
       setCurrentYear(yearEvents[idx]);
-    }, AUTOPLAY_INTERVAL);
+    }, autoplayInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isPlaying, events, stopPlaying]);
+  }, [isPlaying, events, stopPlaying, autoplayInterval]);
+
+  const cycleSpeed = () => {
+    setSpeedIndex((prev) => (prev + 1) % SPEED_PRESETS.length);
+  };
 
   const handleSliderChange = (value: number[]) => {
     stopPlaying();
