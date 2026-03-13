@@ -603,6 +603,16 @@ const InteractiveJourneyPage = () => {
             <Button size="sm" variant="ghost" onClick={handleReset}>
               <RotateCcw className="h-4 w-4" />
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cycleSpeed}
+              className="gap-1.5 text-xs min-w-[60px] font-mono"
+              title={isAr ? "سرعة التشغيل" : "Playback speed"}
+            >
+              <Gauge className="h-3.5 w-3.5" />
+              {isAr ? SPEED_PRESETS[speedIndex].labelAr : SPEED_PRESETS[speedIndex].label}
+            </Button>
           </div>
           <div className="text-center">
             <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
