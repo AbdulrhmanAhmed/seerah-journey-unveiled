@@ -12,7 +12,12 @@ import "leaflet/dist/leaflet.css";
 
 const MIN_YEAR = 570;
 const MAX_YEAR = 632;
-const AUTOPLAY_INTERVAL = 6000;
+const SPEED_PRESETS = [
+  { label: "0.5×", labelAr: "٠.٥×", ms: 10000 },
+  { label: "1×", labelAr: "١×", ms: 6000 },
+  { label: "2×", labelAr: "٢×", ms: 3000 },
+  { label: "3×", labelAr: "٣×", ms: 1500 },
+];
 const ARABIA_CENTER: L.LatLngExpression = [23.5, 39.5];
 
 interface TimelineEvent {
