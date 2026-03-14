@@ -434,8 +434,67 @@ const InteractiveJourneyPage = () => {
   // Autoplay
   const stopPlaying = useCallback(() => {
     setIsPlaying(false);
+    waitingForAudioRef.current = false;
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
   }, []);
+
+  // Audio playback helpers
+  const playAudio = useCallback((url: string, eventId: string) => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.addEventListener("ended", () => {
+        setAudioPlaying(false);
+        setCurrentAudioEventId(null);
+        if (waitingForAudioRef.current) {
+          waitingForAudioRef.current = false;
+          // Resume autoplay interval — handled by isPlaying effect
+        }
+      });
+    }
+    const audio = audioRef.current;
+    audio.src = url;
+    audio.volume = audioMuted ? 0 : audioVolume;
+    audio.play().catch(() => {});
+    setAudioPlaying(true);
+    setCurrentAudioEventId(eventId);
+  }, [audioMuted, audioVolume]);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setAudioPlaying(false);
+    setCurrentAudioEventId(null);
+    waitingForAudioRef.current = false;
+  }, []);
+
+  const toggleAudioPause = useCallback(() => {
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
+      setAudioPlaying(true);
+    } else {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    }
+  }, []);
+
+  // Sync volume/mute
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = audioMuted ? 0 : audioVolume;
+    }
+  }, [audioVolume, audioMuted]);
+
+  // Auto-narrate: when year changes and autoNarrate is ON, play first event with audio
+  useEffect(() => {
+    if (!autoNarrate) return;
+    const firstWithAudio = currentYearEvents.find((e) => e.audio_url);
+    if (firstWithAudio?.audio_url) {
+      playAudio(firstWithAudio.audio_url, firstWithAudio.id);
+    }
+  }, [currentYear, autoNarrate, currentYearEvents, playAudio]);
 
   const autoplayInterval = SPEED_PRESETS[speedIndex].ms;
 
