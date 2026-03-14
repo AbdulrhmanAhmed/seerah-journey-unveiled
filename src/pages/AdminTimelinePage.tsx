@@ -48,6 +48,7 @@ interface TimelineEventRow {
   location_id: string | null;
   path_id: string | null;
   image_url: string | null;
+  audio_url: string | null;
   map_x: number;
   map_y: number;
   lat: number;
