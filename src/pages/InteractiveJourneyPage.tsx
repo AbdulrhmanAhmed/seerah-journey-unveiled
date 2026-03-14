@@ -658,6 +658,9 @@ const InteractiveJourneyPage = () => {
           onClose={() => setSidebarOpen(false)}
           onEventClick={openEventDetail}
           title={sidebarTitle}
+          onPlayAudio={(url, eventId) => playAudio(url, eventId)}
+          currentAudioEventId={currentAudioEventId}
+          audioPlaying={audioPlaying}
         />
       </div>
 
