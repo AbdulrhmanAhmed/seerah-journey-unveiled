@@ -325,6 +325,49 @@ function EventForm({
               <span className="text-sm">Active</span>
             </div>
           </div>
+
+          {/* Audio Upload */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-1.5">
+              <Volume2 className="h-4 w-4 text-secondary" /> Voice Over Audio
+            </label>
+            {audioUrl ? (
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/20">
+                <audio
+                  src={audioUrl}
+                  controls
+                  className="h-8 flex-1"
+                  style={{ maxHeight: "32px" }}
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-destructive"
+                  onClick={() => setAudioUrl("")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/30 transition-colors text-sm text-muted-foreground">
+                  <Upload className="h-4 w-4" />
+                  {audioUploading ? "Uploading..." : "Upload MP3/WAV"}
+                  <input
+                    type="file"
+                    accept="audio/mp3,audio/wav,audio/mpeg,audio/x-wav"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleAudioUpload(f);
+                    }}
+                    disabled={audioUploading}
+                  />
+                </label>
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="story" className="space-y-4 mt-0">
