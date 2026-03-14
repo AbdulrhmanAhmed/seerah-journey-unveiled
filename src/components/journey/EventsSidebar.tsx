@@ -46,9 +46,12 @@ interface EventsSidebarProps {
   onClose: () => void;
   onEventClick: (eventId: string) => void;
   title?: string;
+  onPlayAudio?: (url: string, eventId: string) => void;
+  currentAudioEventId?: string | null;
+  audioPlaying?: boolean;
 }
 
-const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title }: EventsSidebarProps) => {
+const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title, onPlayAudio, currentAudioEventId, audioPlaying }: EventsSidebarProps) => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
 
