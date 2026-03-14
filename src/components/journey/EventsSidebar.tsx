@@ -144,11 +144,28 @@ const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title, onPlayAud
                           {isAr ? event.description : event.description_en}
                         </p>
 
-                        {/* Read more */}
-                        <div className="flex items-center gap-1 text-xs text-secondary font-body group-hover:underline">
-                          <ExternalLink className="h-3 w-3" />
-                          {isAr ? "اقرأ المزيد" : "Read More"}
-                          <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {/* Audio + Read more row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-secondary font-body group-hover:underline" onClick={() => onEventClick(event.id)}>
+                            <ExternalLink className="h-3 w-3" />
+                            {isAr ? "اقرأ المزيد" : "Read More"}
+                            <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          {event.audio_url && onPlayAudio && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => { e.stopPropagation(); onPlayAudio(event.audio_url!, event.id); }}
+                              title={isAr ? "تشغيل الصوت" : "Play narration"}
+                            >
+                              {currentAudioEventId === event.id && audioPlaying ? (
+                                <Pause className="h-3 w-3 text-secondary" />
+                              ) : (
+                                <Volume2 className="h-3 w-3 text-secondary" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </motion.div>
