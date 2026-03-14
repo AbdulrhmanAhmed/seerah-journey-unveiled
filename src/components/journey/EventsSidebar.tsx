@@ -16,6 +16,7 @@ interface TimelineEvent {
   description_en: string;
   category: string;
   image_url: string | null;
+  audio_url: string | null;
   map_x: number;
   map_y: number;
   is_major: boolean;
