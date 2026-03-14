@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, RotateCcw, ChevronRight, Gauge } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronRight, Gauge, Volume2, VolumeX, Mic } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
