@@ -155,6 +155,30 @@ function EventForm({
   onSave: (data: Omit<TimelineEventRow, "id">) => void;
   saving: boolean;
 }) {
+  const { toast } = useToast();
+  const [audioUploading, setAudioUploading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(initial?.audio_url ?? "");
+  const [audioPreviewPlaying, setAudioPreviewPlaying] = useState(false);
+  const audioPreviewRef = useState<HTMLAudioElement | null>(null);
+
+  const handleAudioUpload = async (file: File) => {
+    if (!file) return;
+    setAudioUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "mp3";
+      const path = `audio/events/${initial?.id || crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("seerah-media").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("seerah-media").getPublicUrl(path);
+      setAudioUrl(urlData.publicUrl);
+      toast({ title: "Audio uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAudioUploading(false);
+    }
+  };
+
   const [form, setForm] = useState({
     year_ce: initial?.year_ce ?? 622,
     year_hijri: initial?.year_hijri ?? "",
