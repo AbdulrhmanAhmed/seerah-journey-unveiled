@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, BookOpen, Quote } from "lucide-react";
+import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, BookOpen, Quote, Upload, Volume2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LeafletMapPicker from "@/components/LeafletMapPicker";
 import type { Json } from "@/integrations/supabase/types";
