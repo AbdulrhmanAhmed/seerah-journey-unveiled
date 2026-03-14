@@ -419,6 +419,7 @@ function EventForm({
             location_id: form.location_id || null,
             path_id: form.path_id || null,
             image_url: form.image_url || null,
+            audio_url: audioUrl || null,
             year_hijri: form.year_hijri || null,
             full_story: form.full_story || null,
             full_story_en: form.full_story_en || null,
