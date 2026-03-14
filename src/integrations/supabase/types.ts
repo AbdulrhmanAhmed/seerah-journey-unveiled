@@ -272,6 +272,7 @@ export type Database = {
       }
       timeline_events: {
         Row: {
+          audio_url: string | null
           category: string
           created_at: string
           description: string | null
@@ -301,6 +302,7 @@ export type Database = {
           year_hijri: string | null
         }
         Insert: {
+          audio_url?: string | null
           category?: string
           created_at?: string
           description?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           year_hijri?: string | null
         }
         Update: {
+          audio_url?: string | null
           category?: string
           created_at?: string
           description?: string | null
