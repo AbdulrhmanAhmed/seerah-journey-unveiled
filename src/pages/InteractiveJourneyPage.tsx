@@ -116,6 +116,15 @@ const InteractiveJourneyPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarTitle, setSidebarTitle] = useState("");
 
+  // Audio state
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [audioVolume, setAudioVolume] = useState(0.8);
+  const [autoNarrate, setAutoNarrate] = useState(false);
+  const [currentAudioEventId, setCurrentAudioEventId] = useState<string | null>(null);
+  const waitingForAudioRef = useRef(false);
+
   // Initialize Leaflet map
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
