@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, RotateCcw, ChevronRight, Gauge } from "lucide-react";
+import { Play, Pause, RotateCcw, ChevronRight, Gauge, Volume2, VolumeX, Mic } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ interface TimelineEvent {
   location_id: string | null;
   path_id: string | null;
   image_url: string | null;
+  audio_url: string | null;
   map_x: number;
   map_y: number;
   lat: number;
@@ -114,6 +115,15 @@ const InteractiveJourneyPage = () => {
   const [sidebarEvents, setSidebarEvents] = useState<TimelineEvent[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarTitle, setSidebarTitle] = useState("");
+
+  // Audio state
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [audioVolume, setAudioVolume] = useState(0.8);
+  const [autoNarrate, setAutoNarrate] = useState(false);
+  const [currentAudioEventId, setCurrentAudioEventId] = useState<string | null>(null);
+  const waitingForAudioRef = useRef(false);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -424,8 +434,67 @@ const InteractiveJourneyPage = () => {
   // Autoplay
   const stopPlaying = useCallback(() => {
     setIsPlaying(false);
+    waitingForAudioRef.current = false;
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
   }, []);
+
+  // Audio playback helpers
+  const playAudio = useCallback((url: string, eventId: string) => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.addEventListener("ended", () => {
+        setAudioPlaying(false);
+        setCurrentAudioEventId(null);
+        if (waitingForAudioRef.current) {
+          waitingForAudioRef.current = false;
+          // Resume autoplay interval — handled by isPlaying effect
+        }
+      });
+    }
+    const audio = audioRef.current;
+    audio.src = url;
+    audio.volume = audioMuted ? 0 : audioVolume;
+    audio.play().catch(() => {});
+    setAudioPlaying(true);
+    setCurrentAudioEventId(eventId);
+  }, [audioMuted, audioVolume]);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setAudioPlaying(false);
+    setCurrentAudioEventId(null);
+    waitingForAudioRef.current = false;
+  }, []);
+
+  const toggleAudioPause = useCallback(() => {
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
+      setAudioPlaying(true);
+    } else {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    }
+  }, []);
+
+  // Sync volume/mute
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = audioMuted ? 0 : audioVolume;
+    }
+  }, [audioVolume, audioMuted]);
+
+  // Auto-narrate: when year changes and autoNarrate is ON, play first event with audio
+  useEffect(() => {
+    if (!autoNarrate) return;
+    const firstWithAudio = currentYearEvents.find((e) => e.audio_url);
+    if (firstWithAudio?.audio_url) {
+      playAudio(firstWithAudio.audio_url, firstWithAudio.id);
+    }
+  }, [currentYear, autoNarrate, currentYearEvents, playAudio]);
 
   const autoplayInterval = SPEED_PRESETS[speedIndex].ms;
 
@@ -589,6 +658,9 @@ const InteractiveJourneyPage = () => {
           onClose={() => setSidebarOpen(false)}
           onEventClick={openEventDetail}
           title={sidebarTitle}
+          onPlayAudio={(url, eventId) => playAudio(url, eventId)}
+          currentAudioEventId={currentAudioEventId}
+          audioPlaying={audioPlaying}
         />
       </div>
 
@@ -613,6 +685,37 @@ const InteractiveJourneyPage = () => {
               <Gauge className="h-3.5 w-3.5" />
               {isAr ? SPEED_PRESETS[speedIndex].labelAr : SPEED_PRESETS[speedIndex].label}
             </Button>
+            {/* Audio controls */}
+            <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+              {audioPlaying ? (
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Pause narration">
+                  <Pause className="h-3.5 w-3.5" />
+                </Button>
+              ) : currentAudioEventId ? (
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Resume narration">
+                  <Play className="h-3.5 w-3.5" />
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setAudioMuted(!audioMuted)}
+                className="h-7 w-7 p-0"
+                title={audioMuted ? "Unmute" : "Mute"}
+              >
+                {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </Button>
+              <Button
+                size="sm"
+                variant={autoNarrate ? "default" : "outline"}
+                onClick={() => setAutoNarrate(!autoNarrate)}
+                className="h-7 gap-1 text-[10px] px-2"
+                title={isAr ? "سرد تلقائي" : "Auto-narrate"}
+              >
+                <Mic className="h-3 w-3" />
+                {isAr ? "سرد" : "Narrate"}
+              </Button>
+            </div>
           </div>
           <div className="text-center">
             <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">

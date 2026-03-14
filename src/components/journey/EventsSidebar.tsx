@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ExternalLink, ChevronRight } from "lucide-react";
+import { X, ExternalLink, ChevronRight, Volume2, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +16,7 @@ interface TimelineEvent {
   description_en: string;
   category: string;
   image_url: string | null;
+  audio_url: string | null;
   map_x: number;
   map_y: number;
   is_major: boolean;
@@ -45,9 +46,12 @@ interface EventsSidebarProps {
   onClose: () => void;
   onEventClick: (eventId: string) => void;
   title?: string;
+  onPlayAudio?: (url: string, eventId: string) => void;
+  currentAudioEventId?: string | null;
+  audioPlaying?: boolean;
 }
 
-const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title }: EventsSidebarProps) => {
+const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title, onPlayAudio, currentAudioEventId, audioPlaying }: EventsSidebarProps) => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
 
@@ -140,11 +144,28 @@ const EventsSidebar = ({ events, isOpen, onClose, onEventClick, title }: EventsS
                           {isAr ? event.description : event.description_en}
                         </p>
 
-                        {/* Read more */}
-                        <div className="flex items-center gap-1 text-xs text-secondary font-body group-hover:underline">
-                          <ExternalLink className="h-3 w-3" />
-                          {isAr ? "اقرأ المزيد" : "Read More"}
-                          <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {/* Audio + Read more row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-secondary font-body group-hover:underline" onClick={() => onEventClick(event.id)}>
+                            <ExternalLink className="h-3 w-3" />
+                            {isAr ? "اقرأ المزيد" : "Read More"}
+                            <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          {event.audio_url && onPlayAudio && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => { e.stopPropagation(); onPlayAudio(event.audio_url!, event.id); }}
+                              title={isAr ? "تشغيل الصوت" : "Play narration"}
+                            >
+                              {currentAudioEventId === event.id && audioPlaying ? (
+                                <Pause className="h-3 w-3 text-secondary" />
+                              ) : (
+                                <Volume2 className="h-3 w-3 text-secondary" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </motion.div>

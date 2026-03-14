@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, BookOpen, Quote } from "lucide-react";
+import { Plus, Trash2, Edit, Loader2, Eye, EyeOff, BookOpen, Quote, Upload, Volume2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import LeafletMapPicker from "@/components/LeafletMapPicker";
 import type { Json } from "@/integrations/supabase/types";
@@ -48,6 +48,7 @@ interface TimelineEventRow {
   location_id: string | null;
   path_id: string | null;
   image_url: string | null;
+  audio_url: string | null;
   map_x: number;
   map_y: number;
   lat: number;
@@ -154,6 +155,30 @@ function EventForm({
   onSave: (data: Omit<TimelineEventRow, "id">) => void;
   saving: boolean;
 }) {
+  const { toast } = useToast();
+  const [audioUploading, setAudioUploading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(initial?.audio_url ?? "");
+  const [audioPreviewPlaying, setAudioPreviewPlaying] = useState(false);
+  const audioPreviewRef = useState<HTMLAudioElement | null>(null);
+
+  const handleAudioUpload = async (file: File) => {
+    if (!file) return;
+    setAudioUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "mp3";
+      const path = `audio/events/${initial?.id || crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("seerah-media").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("seerah-media").getPublicUrl(path);
+      setAudioUrl(urlData.publicUrl);
+      toast({ title: "Audio uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAudioUploading(false);
+    }
+  };
+
   const [form, setForm] = useState({
     year_ce: initial?.year_ce ?? 622,
     year_hijri: initial?.year_hijri ?? "",
@@ -300,6 +325,49 @@ function EventForm({
               <span className="text-sm">Active</span>
             </div>
           </div>
+
+          {/* Audio Upload */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-1.5">
+              <Volume2 className="h-4 w-4 text-secondary" /> Voice Over Audio
+            </label>
+            {audioUrl ? (
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/20">
+                <audio
+                  src={audioUrl}
+                  controls
+                  className="h-8 flex-1"
+                  style={{ maxHeight: "32px" }}
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-destructive"
+                  onClick={() => setAudioUrl("")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/30 transition-colors text-sm text-muted-foreground">
+                  <Upload className="h-4 w-4" />
+                  {audioUploading ? "Uploading..." : "Upload MP3/WAV"}
+                  <input
+                    type="file"
+                    accept="audio/mp3,audio/wav,audio/mpeg,audio/x-wav"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleAudioUpload(f);
+                    }}
+                    disabled={audioUploading}
+                  />
+                </label>
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="story" className="space-y-4 mt-0">
@@ -351,6 +419,7 @@ function EventForm({
             location_id: form.location_id || null,
             path_id: form.path_id || null,
             image_url: form.image_url || null,
+            audio_url: audioUrl || null,
             year_hijri: form.year_hijri || null,
             full_story: form.full_story || null,
             full_story_en: form.full_story_en || null,
