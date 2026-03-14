@@ -685,6 +685,37 @@ const InteractiveJourneyPage = () => {
               <Gauge className="h-3.5 w-3.5" />
               {isAr ? SPEED_PRESETS[speedIndex].labelAr : SPEED_PRESETS[speedIndex].label}
             </Button>
+            {/* Audio controls */}
+            <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+              {audioPlaying ? (
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Pause narration">
+                  <Pause className="h-3.5 w-3.5" />
+                </Button>
+              ) : currentAudioEventId ? (
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Resume narration">
+                  <Play className="h-3.5 w-3.5" />
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setAudioMuted(!audioMuted)}
+                className="h-7 w-7 p-0"
+                title={audioMuted ? "Unmute" : "Mute"}
+              >
+                {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </Button>
+              <Button
+                size="sm"
+                variant={autoNarrate ? "default" : "outline"}
+                onClick={() => setAutoNarrate(!autoNarrate)}
+                className="h-7 gap-1 text-[10px] px-2"
+                title={isAr ? "سرد تلقائي" : "Auto-narrate"}
+              >
+                <Mic className="h-3 w-3" />
+                {isAr ? "سرد" : "Narrate"}
+              </Button>
+            </div>
           </div>
           <div className="text-center">
             <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
