@@ -158,8 +158,28 @@ function EventForm({
   const { toast } = useToast();
   const [audioUploading, setAudioUploading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(initial?.audio_url ?? "");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [audioPreviewPlaying, setAudioPreviewPlaying] = useState(false);
   const audioPreviewRef = useState<HTMLAudioElement | null>(null);
+
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `images/events/${initial?.id || crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("seerah-media").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("seerah-media").getPublicUrl(path);
+      setImageUrl(urlData.publicUrl);
+      toast({ title: "Image uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const handleAudioUpload = async (file: File) => {
     if (!file) return;
@@ -192,7 +212,7 @@ function EventForm({
     category: initial?.category ?? "milestone",
     location_id: initial?.location_id ?? "",
     path_id: initial?.path_id ?? "",
-    image_url: initial?.image_url ?? "",
+    image_url: "",
     map_x: initial?.map_x ?? 38.5,
     map_y: initial?.map_y ?? 62,
     lat: (initial as any)?.lat ?? 21.4225,
@@ -299,8 +319,39 @@ function EventForm({
               <Input value={form.location_id} onChange={(e) => setForm({ ...form, location_id: e.target.value })} placeholder="e.g. makkah" />
             </div>
             <div>
-              <label className="text-sm font-medium">Image URL</label>
-              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="optional" />
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                <Upload className="h-4 w-4 text-secondary" /> Event Image
+              </label>
+              {imageUrl ? (
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/20 mt-1">
+                  <img src={imageUrl} alt="Event" className="h-16 w-16 object-cover rounded" />
+                  <span className="text-xs text-muted-foreground truncate flex-1">{imageUrl.split("/").pop()}</span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => setImageUrl("")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/30 transition-colors text-sm text-muted-foreground mt-1">
+                  <Upload className="h-4 w-4" />
+                  {imageUploading ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleImageUpload(f);
+                    }}
+                    disabled={imageUploading}
+                  />
+                </label>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -418,7 +469,7 @@ function EventForm({
             ...form,
             location_id: form.location_id || null,
             path_id: form.path_id || null,
-            image_url: form.image_url || null,
+            image_url: imageUrl || null,
             audio_url: audioUrl || null,
             year_hijri: form.year_hijri || null,
             full_story: form.full_story || null,
