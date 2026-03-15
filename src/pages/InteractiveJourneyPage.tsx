@@ -442,25 +442,42 @@ const InteractiveJourneyPage = () => {
   }, []);
 
   // Audio playback helpers
+  const updateAudioProgress = useCallback(() => {
+    if (audioRef.current && !audioRef.current.paused) {
+      setAudioProgress(audioRef.current.currentTime);
+      setAudioDuration(audioRef.current.duration || 0);
+      audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+    }
+  }, []);
+
   const playAudio = useCallback((url: string, eventId: string) => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.addEventListener("ended", () => {
         setAudioPlaying(false);
         setCurrentAudioEventId(null);
+        setAudioProgress(0);
+        setAudioDuration(0);
+        if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
         if (waitingForAudioRef.current) {
           waitingForAudioRef.current = false;
-          // Resume autoplay interval — handled by isPlaying effect
         }
+      });
+      audioRef.current.addEventListener("loadedmetadata", () => {
+        setAudioDuration(audioRef.current?.duration || 0);
       });
     }
     const audio = audioRef.current;
     audio.src = url;
     audio.volume = audioMuted ? 0 : audioVolume;
-    audio.play().catch(() => {});
+    audio.play().then(() => {
+      if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
+      audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+    }).catch(() => {});
     setAudioPlaying(true);
+    setAudioProgress(0);
     setCurrentAudioEventId(eventId);
-  }, [audioMuted, audioVolume]);
+  }, [audioMuted, audioVolume, updateAudioProgress]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
