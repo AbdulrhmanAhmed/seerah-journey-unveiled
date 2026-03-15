@@ -91,6 +91,12 @@ function createCategoryIcon(category: string, isMajor: boolean, isCurrentYear: b
   });
 }
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 const InteractiveJourneyPage = () => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
@@ -124,6 +130,9 @@ const InteractiveJourneyPage = () => {
   const [autoNarrate, setAutoNarrate] = useState(false);
   const [currentAudioEventId, setCurrentAudioEventId] = useState<string | null>(null);
   const waitingForAudioRef = useRef(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const audioProgressRaf = useRef<number | null>(null);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -439,25 +448,42 @@ const InteractiveJourneyPage = () => {
   }, []);
 
   // Audio playback helpers
+  const updateAudioProgress = useCallback(() => {
+    if (audioRef.current && !audioRef.current.paused) {
+      setAudioProgress(audioRef.current.currentTime);
+      setAudioDuration(audioRef.current.duration || 0);
+      audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+    }
+  }, []);
+
   const playAudio = useCallback((url: string, eventId: string) => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.addEventListener("ended", () => {
         setAudioPlaying(false);
         setCurrentAudioEventId(null);
+        setAudioProgress(0);
+        setAudioDuration(0);
+        if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
         if (waitingForAudioRef.current) {
           waitingForAudioRef.current = false;
-          // Resume autoplay interval — handled by isPlaying effect
         }
+      });
+      audioRef.current.addEventListener("loadedmetadata", () => {
+        setAudioDuration(audioRef.current?.duration || 0);
       });
     }
     const audio = audioRef.current;
     audio.src = url;
     audio.volume = audioMuted ? 0 : audioVolume;
-    audio.play().catch(() => {});
+    audio.play().then(() => {
+      if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
+      audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+    }).catch(() => {});
     setAudioPlaying(true);
+    setAudioProgress(0);
     setCurrentAudioEventId(eventId);
-  }, [audioMuted, audioVolume]);
+  }, [audioMuted, audioVolume, updateAudioProgress]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
@@ -472,13 +498,16 @@ const InteractiveJourneyPage = () => {
   const toggleAudioPause = useCallback(() => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().then(() => {
+        audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+      }).catch(() => {});
       setAudioPlaying(true);
     } else {
       audioRef.current.pause();
+      if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
       setAudioPlaying(false);
     }
-  }, []);
+  }, [updateAudioProgress]);
 
   // Sync volume/mute
   useEffect(() => {
@@ -715,6 +744,30 @@ const InteractiveJourneyPage = () => {
                 <Mic className="h-3 w-3" />
                 {isAr ? "سرد" : "Narrate"}
               </Button>
+              {/* Audio progress bar */}
+              {currentAudioEventId && audioDuration > 0 && (
+                <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+                  <div
+                    className="relative h-1.5 w-20 rounded-full bg-muted overflow-hidden cursor-pointer"
+                    onClick={(e) => {
+                      if (!audioRef.current || !audioDuration) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const pct = (e.clientX - rect.left) / rect.width;
+                      audioRef.current.currentTime = pct * audioDuration;
+                      setAudioProgress(pct * audioDuration);
+                    }}
+                  >
+                    <motion.div
+                      className="absolute inset-y-0 left-0 rounded-full bg-secondary"
+                      style={{ width: `${audioDuration > 0 ? (audioProgress / audioDuration) * 100 : 0}%` }}
+                      transition={{ duration: 0.1 }}
+                    />
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-mono min-w-[32px]">
+                    {formatTime(audioProgress)}/{formatTime(audioDuration)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-center">
