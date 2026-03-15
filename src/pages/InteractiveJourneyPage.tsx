@@ -734,6 +734,25 @@ const InteractiveJourneyPage = () => {
               >
                 {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
               </Button>
+              {/* Volume slider */}
+              <div className="flex items-center gap-1.5 w-16">
+                <Slider
+                  value={[audioVolume * 100]}
+                  onValueChange={(value) => {
+                    const vol = value[0] / 100;
+                    setAudioVolume(vol);
+                    if (audioRef.current) {
+                      audioRef.current.volume = vol;
+                    }
+                    if (vol > 0 && audioMuted) {
+                      setAudioMuted(false);
+                    }
+                  }}
+                  max={100}
+                  step={1}
+                  className="cursor-pointer"
+                />
+              </div>
               <Button
                 size="sm"
                 variant={autoNarrate ? "default" : "outline"}
