@@ -158,6 +158,8 @@ function EventForm({
   const { toast } = useToast();
   const [audioUploading, setAudioUploading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(initial?.audio_url ?? "");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [audioPreviewPlaying, setAudioPreviewPlaying] = useState(false);
   const audioPreviewRef = useState<HTMLAudioElement | null>(null);
 
