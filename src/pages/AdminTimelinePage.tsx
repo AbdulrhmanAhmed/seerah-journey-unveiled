@@ -163,6 +163,24 @@ function EventForm({
   const [audioPreviewPlaying, setAudioPreviewPlaying] = useState(false);
   const audioPreviewRef = useState<HTMLAudioElement | null>(null);
 
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `images/events/${initial?.id || crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("seerah-media").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("seerah-media").getPublicUrl(path);
+      setImageUrl(urlData.publicUrl);
+      toast({ title: "Image uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleAudioUpload = async (file: File) => {
     if (!file) return;
     setAudioUploading(true);
