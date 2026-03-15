@@ -738,6 +738,30 @@ const InteractiveJourneyPage = () => {
                 <Mic className="h-3 w-3" />
                 {isAr ? "سرد" : "Narrate"}
               </Button>
+              {/* Audio progress bar */}
+              {currentAudioEventId && audioDuration > 0 && (
+                <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+                  <div
+                    className="relative h-1.5 w-20 rounded-full bg-muted overflow-hidden cursor-pointer"
+                    onClick={(e) => {
+                      if (!audioRef.current || !audioDuration) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const pct = (e.clientX - rect.left) / rect.width;
+                      audioRef.current.currentTime = pct * audioDuration;
+                      setAudioProgress(pct * audioDuration);
+                    }}
+                  >
+                    <motion.div
+                      className="absolute inset-y-0 left-0 rounded-full bg-secondary"
+                      style={{ width: `${audioDuration > 0 ? (audioProgress / audioDuration) * 100 : 0}%` }}
+                      transition={{ duration: 0.1 }}
+                    />
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-mono min-w-[32px]">
+                    {formatTime(audioProgress)}/{formatTime(audioDuration)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-center">
