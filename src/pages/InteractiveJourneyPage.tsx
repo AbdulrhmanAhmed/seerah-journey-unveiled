@@ -492,13 +492,16 @@ const InteractiveJourneyPage = () => {
   const toggleAudioPause = useCallback(() => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().then(() => {
+        audioProgressRaf.current = requestAnimationFrame(updateAudioProgress);
+      }).catch(() => {});
       setAudioPlaying(true);
     } else {
       audioRef.current.pause();
+      if (audioProgressRaf.current) cancelAnimationFrame(audioProgressRaf.current);
       setAudioPlaying(false);
     }
-  }, []);
+  }, [updateAudioProgress]);
 
   // Sync volume/mute
   useEffect(() => {
