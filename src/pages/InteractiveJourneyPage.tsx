@@ -124,6 +124,9 @@ const InteractiveJourneyPage = () => {
   const [autoNarrate, setAutoNarrate] = useState(false);
   const [currentAudioEventId, setCurrentAudioEventId] = useState<string | null>(null);
   const waitingForAudioRef = useRef(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const audioProgressRaf = useRef<number | null>(null);
 
   // Initialize Leaflet map
   useEffect(() => {
