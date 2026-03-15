@@ -469,7 +469,7 @@ function EventForm({
             ...form,
             location_id: form.location_id || null,
             path_id: form.path_id || null,
-            image_url: form.image_url || null,
+            image_url: imageUrl || null,
             audio_url: audioUrl || null,
             year_hijri: form.year_hijri || null,
             full_story: form.full_story || null,
