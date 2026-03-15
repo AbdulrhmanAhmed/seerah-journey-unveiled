@@ -212,7 +212,7 @@ function EventForm({
     category: initial?.category ?? "milestone",
     location_id: initial?.location_id ?? "",
     path_id: initial?.path_id ?? "",
-    image_url: initial?.image_url ?? "",
+    image_url: "",
     map_x: initial?.map_x ?? 38.5,
     map_y: initial?.map_y ?? 62,
     lat: (initial as any)?.lat ?? 21.4225,
