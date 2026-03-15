@@ -91,6 +91,12 @@ function createCategoryIcon(category: string, isMajor: boolean, isCurrentYear: b
   });
 }
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 const InteractiveJourneyPage = () => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
