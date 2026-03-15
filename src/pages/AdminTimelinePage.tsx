@@ -319,8 +319,39 @@ function EventForm({
               <Input value={form.location_id} onChange={(e) => setForm({ ...form, location_id: e.target.value })} placeholder="e.g. makkah" />
             </div>
             <div>
-              <label className="text-sm font-medium">Image URL</label>
-              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="optional" />
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                <Upload className="h-4 w-4 text-secondary" /> Event Image
+              </label>
+              {imageUrl ? (
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/20 mt-1">
+                  <img src={imageUrl} alt="Event" className="h-16 w-16 object-cover rounded" />
+                  <span className="text-xs text-muted-foreground truncate flex-1">{imageUrl.split("/").pop()}</span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => setImageUrl("")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/30 transition-colors text-sm text-muted-foreground mt-1">
+                  <Upload className="h-4 w-4" />
+                  {imageUploading ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleImageUpload(f);
+                    }}
+                    disabled={imageUploading}
+                  />
+                </label>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
