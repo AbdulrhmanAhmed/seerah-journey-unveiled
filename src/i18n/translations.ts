@@ -108,7 +108,7 @@ export const translations = {
     catDiplomacy: "دبلوماسية",
   },
   en: {
-    siteName: "Seerah Path",
+    siteName: "Seerah Story",
     navJourney: "Journey",
     navCharacter: "Character",
     navMap: "Map",
