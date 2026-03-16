@@ -28,6 +28,8 @@ export const translations = {
     pillarCharacterDesc: "اكتشف الصفات النبيلة والتعاليم والحكمة الخالدة لخير الخلق ﷺ.",
     pillarMapDesc: "استكشف الأراضي والطرق والأماكن المقدسة المرتبطة بالرسالة النبوية.",
     pillarLibraryDesc: "اطّلع على المصادر الموثقة والأعمال العلمية والموارد المتعددة حول السيرة.",
+    pillarInteractiveDesc: "شاهد السيرة كمسار بصري تفاعلي يربط بين الزمن والمكان والأحداث في خريطة واحدة.",
+    pillarGraphDesc: "اكتشف كيف ترتبط أحداث السيرة ببعضها في شبكة واحدة — من الغزوات إلى المعاهدات.",
 
     // Footer
     footerSourcesTitle: "المصادر والتوثيق",
@@ -131,6 +133,8 @@ export const translations = {
     pillarCharacterDesc: "Discover the noble qualities, teachings, and timeless wisdom of the best of creation ﷺ.",
     pillarMapDesc: "Explore the lands, routes, and sacred places connected to the Prophetic mission.",
     pillarLibraryDesc: "Browse verified sources, scholarly works, and diverse resources on the Seerah.",
+    pillarInteractiveDesc: "See the Seerah as an interactive visual path connecting time, place, and events in one journey.",
+    pillarGraphDesc: "Explore how key Seerah events connect to each other in a single event network — from battles to treaties.",
 
     footerSourcesTitle: "Sources & Documentation",
     footerSourcesText: "All content in Seerah Story is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections like Sahih al-Bukhari and Sahih Muslim.",

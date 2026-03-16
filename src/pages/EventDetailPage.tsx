@@ -193,7 +193,7 @@ const EventDetailPage = () => {
       />
 
       {/* Header */}
-      <div className="container mx-auto px-4 md:px-6 max-w-3xl -mt-20 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 max-w-3xl -mt-40 md:-mt-44 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <button
             onClick={() => navigate("/journey")}

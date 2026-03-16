@@ -7,8 +7,8 @@ import type { TranslationKey } from "@/i18n/translations";
 const pillarsConfig = [
   { titleKey: "navJourney" as TranslationKey, descKey: "pillarJourneyDesc" as TranslationKey, icon: Clock, path: "/journey" },
   { titleKey: "navCharacter" as TranslationKey, descKey: "pillarCharacterDesc" as TranslationKey, icon: Heart, path: "/character" },
-  { titleKey: "navMap" as TranslationKey, descKey: "pillarMapDesc" as TranslationKey, icon: Compass, path: "/map" },
-  { titleKey: "navLibrary" as TranslationKey, descKey: "pillarLibraryDesc" as TranslationKey, icon: BookOpen, path: "/library" },
+  { titleKey: "navInteractiveJourney" as TranslationKey, descKey: "pillarInteractiveDesc" as TranslationKey, icon: Compass, path: "/interactive-journey" },
+  { titleKey: "navGraph" as TranslationKey, descKey: "pillarGraphDesc" as TranslationKey, icon: BookOpen, path: "/event-graph" },
 ];
 
 const container = {
