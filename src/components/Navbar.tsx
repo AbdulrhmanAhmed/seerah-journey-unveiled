@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, Heart, Compass, BookOpen, Menu, X, Map, Network } from "lucide-react";
+import { Clock, Heart, Menu, X, Map, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -14,7 +14,6 @@ const Navbar = () => {
   const pillars = [
     { name: t("navJourney"), icon: Clock, path: "/journey" },
     { name: t("navCharacter"), icon: Heart, path: "/character" },
-    { name: t("navMap"), icon: Compass, path: "/map" },
     { name: t("navInteractiveJourney"), icon: Map, path: "/interactive-journey" },
     { name: t("navGraph"), icon: Network, path: "/event-graph" },
   ];

@@ -3,7 +3,7 @@ export type Language = "ar" | "en";
 export const translations = {
   ar: {
     // Navbar
-    siteName: "مسار السيرة",
+    siteName: "قصة السيرة",
     navJourney: "الرحلة",
     navCharacter: "الشمائل",
     navMap: "الخريطة",
@@ -31,7 +31,7 @@ export const translations = {
 
     // Footer
     footerSourcesTitle: "المصادر والتوثيق",
-    footerSourcesText: "كل محتوى في «مسار السيرة» مبني على مصادر علمية موثقة. نعتمد على المؤلفات الكلاسيكية مثل الرحيق المختوم، والسيرة النبوية لابن هشام، ومجموعات الحديث المعتمدة كصحيح البخاري وصحيح مسلم.",
+    footerSourcesText: "كل محتوى في «قصة السيرة» مبني على مصادر علمية موثقة. نعتمد على المؤلفات الكلاسيكية مثل الرحيق المختوم، والسيرة النبوية لابن هشام، ومجموعات الحديث المعتمدة كصحيح البخاري وصحيح مسلم.",
     footerReviewed: "محتوى مراجع علمياً",
     footerVerified: "مصادر موثقة فقط",
     footerScholarly: "مراجع علمية",
@@ -108,7 +108,7 @@ export const translations = {
     catDiplomacy: "دبلوماسية",
   },
   en: {
-    siteName: "Seerah Path",
+    siteName: "Seerah Story",
     navJourney: "Journey",
     navCharacter: "Character",
     navMap: "Map",
@@ -133,7 +133,7 @@ export const translations = {
     pillarLibraryDesc: "Browse verified sources, scholarly works, and diverse resources on the Seerah.",
 
     footerSourcesTitle: "Sources & Documentation",
-    footerSourcesText: "All content in Seerah Path is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections like Sahih al-Bukhari and Sahih Muslim.",
+    footerSourcesText: "All content in Seerah Story is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections like Sahih al-Bukhari and Sahih Muslim.",
     footerReviewed: "Scholarly reviewed content",
     footerVerified: "Verified sources only",
     footerScholarly: "Academic references",
