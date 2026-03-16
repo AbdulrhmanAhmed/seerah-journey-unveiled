@@ -3,7 +3,7 @@ export type Language = "ar" | "en";
 export const translations = {
   ar: {
     // Navbar
-    siteName: "مسار السيرة",
+    siteName: "قصة السيرة",
     navJourney: "الرحلة",
     navCharacter: "الشمائل",
     navMap: "الخريطة",
