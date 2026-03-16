@@ -133,7 +133,7 @@ export const translations = {
     pillarLibraryDesc: "Browse verified sources, scholarly works, and diverse resources on the Seerah.",
 
     footerSourcesTitle: "Sources & Documentation",
-    footerSourcesText: "All content in Seerah Path is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections like Sahih al-Bukhari and Sahih Muslim.",
+    footerSourcesText: "All content in Seerah Story is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections like Sahih al-Bukhari and Sahih Muslim.",
     footerReviewed: "Scholarly reviewed content",
     footerVerified: "Verified sources only",
     footerScholarly: "Academic references",
