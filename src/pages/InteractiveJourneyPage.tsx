@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Play, Pause, RotateCcw, ChevronRight, Gauge, Volume2, VolumeX, Mic } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Pause, RotateCcw, ChevronRight, Gauge, Volume2, VolumeX, Mic, Maximize, Minimize, Keyboard, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import EventDetailModal, { type EventDetailData, type RelatedEvent } from "@/components/EventDetailModal";
 import EventsSidebar from "@/components/journey/EventsSidebar";
+import { categories } from "@/data/eventCategories";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -19,6 +21,15 @@ const SPEED_PRESETS = [
   { label: "3×", labelAr: "٣×", ms: 1500 },
 ];
 const ARABIA_CENTER: L.LatLngExpression = [23.5, 39.5];
+
+const MAJOR_YEAR_LABELS = [
+  { year: 570, labelAr: "المولد", labelEn: "Birth" },
+  { year: 610, labelAr: "الوحي", labelEn: "Revelation" },
+  { year: 622, labelAr: "الهجرة", labelEn: "Hijrah" },
+  { year: 624, labelAr: "بدر", labelEn: "Badr" },
+  { year: 630, labelAr: "فتح مكة", labelEn: "Conquest" },
+  { year: 632, labelAr: "الوفاة", labelEn: "Farewell" },
+];
 
 interface TimelineEvent {
   id: string;
@@ -102,7 +113,7 @@ const InteractiveJourneyPage = () => {
   const isAr = lang === "ar";
   const [currentYear, setCurrentYear] = useState(MIN_YEAR);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speedIndex, setSpeedIndex] = useState(1); // default 1× (6000ms)
+  const [speedIndex, setSpeedIndex] = useState(1);
   const intervalRef = useRef<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -122,6 +133,14 @@ const InteractiveJourneyPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarTitle, setSidebarTitle] = useState("");
 
+  // New state for enhancements
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set(categories.map(c => c.id)));
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const popupTimeoutRef = useRef<number | null>(null);
+  const prevYearRef = useRef(MIN_YEAR);
+
   // Audio state
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -133,6 +152,9 @@ const InteractiveJourneyPage = () => {
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
   const audioProgressRaf = useRef<number | null>(null);
+
+  // Progress calculation
+  const progressPercent = Math.round(((currentYear - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -149,7 +171,6 @@ const InteractiveJourneyPage = () => {
       worldCopyJump: false,
     });
 
-    // Antique-style tiles with sepia filter
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     }).addTo(map);
@@ -212,14 +233,6 @@ const InteractiveJourneyPage = () => {
         } else {
           setPaths((pathsResp.data ?? []) as any[]);
         }
-
-        console.log(
-          "[InteractiveJourneyPage] Loaded",
-          (eventsResp.data ?? []).length,
-          "events and",
-          (pathsResp.data ?? []).length,
-          "paths"
-        );
       } catch (error) {
         if (!mounted) return;
         const isAbort = error instanceof DOMException && error.name === "AbortError";
@@ -243,15 +256,19 @@ const InteractiveJourneyPage = () => {
     };
   }, []);
 
-  // Visible events: current year + 2 previous event-years
+  // Filtered & visible events
+  const filteredEvents = useMemo(() => {
+    return events.filter(e => activeCategories.has(e.category));
+  }, [events, activeCategories]);
+
   const visibleEvents = useMemo(() => {
-    const pastEvents = events.filter((e) => e.year_ce <= currentYear);
+    const pastEvents = filteredEvents.filter((e) => e.year_ce <= currentYear);
     const uniqueYears = [...new Set(pastEvents.map((e) => e.year_ce))].sort((a, b) => b - a);
     const recentYears = uniqueYears.slice(0, 3);
     return pastEvents.filter((e) => recentYears.includes(e.year_ce));
-  }, [events, currentYear]);
+  }, [filteredEvents, currentYear]);
 
-  const currentYearEvents = useMemo(() => events.filter((e) => e.year_ce === currentYear), [events, currentYear]);
+  const currentYearEvents = useMemo(() => filteredEvents.filter((e) => e.year_ce === currentYear), [filteredEvents, currentYear]);
 
   const era = currentYear < 622 ? "makkah" : "madinah";
   const eraLabel = isAr
@@ -268,7 +285,6 @@ const InteractiveJourneyPage = () => {
     markersLayer.clearLayers();
     polylinesLayer.clearLayers();
 
-    // Clean up previous animations
     pathAnimationsRef.current.forEach((id) => cancelAnimationFrame(id));
     pathAnimationsRef.current = [];
     animatedDotsRef.current.forEach((m) => m.remove());
@@ -276,7 +292,6 @@ const InteractiveJourneyPage = () => {
     trailLinesRef.current.forEach((l) => l.remove());
     trailLinesRef.current = [];
 
-    // Add markers
     visibleEvents.forEach((event) => {
       const isCurrentYr = event.year_ce === currentYear;
       const icon = createCategoryIcon(event.category, event.is_major, isCurrentYr);
@@ -306,7 +321,7 @@ const InteractiveJourneyPage = () => {
       marker.addTo(markersLayer);
     });
 
-    // Animated polylines for active paths (formal path data)
+    // Animated polylines
     const matchedEvents = visibleEvents.filter((e) => e.path_id);
     const pathIds = [...new Set(matchedEvents.map((e) => e.path_id))];
     const activePaths = paths.filter((p: any) => pathIds.includes(p.id));
@@ -314,7 +329,6 @@ const InteractiveJourneyPage = () => {
     const animatePathLine = (positions: L.LatLngTuple[], pathColor: string, isSea: boolean, labelText?: string) => {
       if (positions.length < 2) return;
 
-      // Trail polyline (wider, lower opacity, behind)
       const trail = L.polyline(positions, {
         color: pathColor, weight: 8, opacity: 0.15, lineCap: "round", lineJoin: "round",
         dashArray: isSea ? "8 6" : undefined,
@@ -322,7 +336,6 @@ const InteractiveJourneyPage = () => {
       trail.addTo(polylinesLayer);
       trailLinesRef.current.push(trail);
 
-      // Main polyline with progressive draw animation
       const mainLine = L.polyline(positions, {
         color: pathColor, weight: 4, opacity: 0.9, lineCap: "round", lineJoin: "round",
         dashArray: isSea ? "8 6" : undefined,
@@ -340,7 +353,6 @@ const InteractiveJourneyPage = () => {
         }
       });
 
-      // Glowing moving dot
       const dotIcon = L.divIcon({
         html: `<div class="journey-glow-dot" style="--dot-color: ${pathColor};"></div>`,
         className: "", iconSize: [14, 14], iconAnchor: [7, 7],
@@ -394,7 +406,6 @@ const InteractiveJourneyPage = () => {
       pathAnimationsRef.current.push(requestAnimationFrame(animateDot));
     };
 
-    // 1) Formal paths (Migration to Abyssinia, Hijrah, etc.)
     activePaths.forEach((p: any) => {
       const steps = (p.path_steps || []).sort((a: any, b: any) => a.step_order - b.step_order);
       const positions: L.LatLngTuple[] = steps.map((s: any) => [s.lat || 21.4225, s.lng || 39.8262] as L.LatLngTuple);
@@ -404,13 +415,11 @@ const InteractiveJourneyPage = () => {
       animatePathLine(positions, pathColor, isSea, label);
     });
 
-    // 2) Animated connecting lines between ALL consecutive visible events (journey flow)
     const sortedVisible = [...visibleEvents].sort((a, b) => a.year_ce - b.year_ce || a.display_order - b.display_order);
     const eventsWithPathIds = new Set(matchedEvents.map((e) => e.id));
-    // Build unique location sequence (skip duplicate consecutive coords)
     const journeyPositions: L.LatLngTuple[] = [];
     sortedVisible.forEach((ev) => {
-      if (eventsWithPathIds.has(ev.id)) return; // skip events already covered by formal paths
+      if (eventsWithPathIds.has(ev.id)) return;
       const pos: L.LatLngTuple = [ev.lat, ev.lng];
       const last = journeyPositions[journeyPositions.length - 1];
       if (!last || Math.abs(last[0] - pos[0]) > 0.05 || Math.abs(last[1] - pos[1]) > 0.05) {
@@ -423,7 +432,6 @@ const InteractiveJourneyPage = () => {
       animatePathLine(journeyPositions, journeyColor, false);
     }
 
-    // Auto-fly to current year's events
     if (currentYearEvents.length > 0) {
       const bounds = L.latLngBounds(currentYearEvents.map((e) => [e.lat, e.lng] as L.LatLngExpression));
       if (bounds.isValid()) {
@@ -431,6 +439,44 @@ const InteractiveJourneyPage = () => {
       }
     }
   }, [visibleEvents, currentYear, isAr, paths, currentYearEvents]);
+
+  // Mini popup on year change during autoplay
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !isPlaying || currentYear === prevYearRef.current) {
+      prevYearRef.current = currentYear;
+      return;
+    }
+    prevYearRef.current = currentYear;
+
+    if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
+
+    const yearEvents = currentYearEvents;
+    if (yearEvents.length === 0) return;
+
+    const firstEvent = yearEvents[0];
+    const title = isAr ? firstEvent.title : firstEvent.title_en;
+    const catIcon = categoryIcons[firstEvent.category] || "⭐";
+    const popup = L.popup({
+      closeButton: false,
+      autoClose: false,
+      className: "seerah-mini-popup",
+      offset: [0, -20],
+    })
+      .setLatLng([firstEvent.lat, firstEvent.lng])
+      .setContent(`
+        <div style="text-align:center;padding:2px 4px;">
+          <div style="font-size:16px;">${catIcon}</div>
+          <div style="font-size:12px;font-weight:600;margin:2px 0;">${title}</div>
+          <div style="font-size:10px;opacity:0.7;">${currentYear} ${isAr ? "م" : "CE"}</div>
+        </div>
+      `)
+      .openOn(map);
+
+    popupTimeoutRef.current = window.setTimeout(() => {
+      map.closePopup(popup);
+    }, 3000);
+  }, [currentYear, isPlaying, currentYearEvents, isAr]);
 
   // Update sidebar when year changes
   useEffect(() => {
@@ -516,7 +562,7 @@ const InteractiveJourneyPage = () => {
     }
   }, [audioVolume, audioMuted]);
 
-  // Auto-narrate: when year changes and autoNarrate is ON, play first event with audio
+  // Auto-narrate
   useEffect(() => {
     if (!autoNarrate) return;
     const firstWithAudio = currentYearEvents.find((e) => e.audio_url);
@@ -529,7 +575,7 @@ const InteractiveJourneyPage = () => {
 
   useEffect(() => {
     if (!isPlaying) return;
-    const yearEvents = [...new Set(events.map((e) => e.year_ce))].sort((a, b) => a - b);
+    const yearEvents = [...new Set(filteredEvents.map((e) => e.year_ce))].sort((a, b) => a - b);
     let idx = yearEvents.findIndex((y) => y >= currentYear);
     if (idx < 0) idx = 0;
     intervalRef.current = window.setInterval(() => {
@@ -538,7 +584,7 @@ const InteractiveJourneyPage = () => {
       setCurrentYear(yearEvents[idx]);
     }, autoplayInterval);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isPlaying, events, stopPlaying, autoplayInterval]);
+  }, [isPlaying, filteredEvents, stopPlaying, autoplayInterval]);
 
   const cycleSpeed = () => {
     setSpeedIndex((prev) => (prev + 1) % SPEED_PRESETS.length);
@@ -564,6 +610,82 @@ const InteractiveJourneyPage = () => {
     setSidebarOpen(false);
   };
 
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  // Category filter toggle
+  const toggleCategory = useCallback((catId: string) => {
+    setActiveCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(catId)) {
+        if (next.size > 1) next.delete(catId); // keep at least one
+      } else {
+        next.add(catId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't capture when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          handleAutoPlay();
+          break;
+        case "ArrowRight": {
+          e.preventDefault();
+          const yearList = [...new Set(filteredEvents.map(ev => ev.year_ce))].sort((a, b) => a - b);
+          const nextIdx = yearList.findIndex(y => y > currentYear);
+          if (nextIdx >= 0) { stopPlaying(); setCurrentYear(yearList[nextIdx]); }
+          break;
+        }
+        case "ArrowLeft": {
+          e.preventDefault();
+          const yearList = [...new Set(filteredEvents.map(ev => ev.year_ce))].sort((a, b) => a - b);
+          const prevIdx = [...yearList].reverse().findIndex(y => y < currentYear);
+          if (prevIdx >= 0) { stopPlaying(); setCurrentYear([...yearList].reverse()[prevIdx]); }
+          break;
+        }
+        case "m":
+        case "M":
+          setAudioMuted(prev => !prev);
+          break;
+        case "Escape":
+          if (showShortcuts) setShowShortcuts(false);
+          else if (sidebarOpen) setSidebarOpen(false);
+          break;
+        case "?":
+          setShowShortcuts(prev => !prev);
+          break;
+        case "f":
+        case "F":
+          toggleFullscreen();
+          break;
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [currentYear, filteredEvents, isPlaying, sidebarOpen, showShortcuts, stopPlaying, toggleFullscreen]);
+
   // Open event detail modal
   const openEventDetail = useCallback(async (eventId: string) => {
     const { data } = await supabase.from("timeline_events").select("*").eq("id", eventId).single();
@@ -584,7 +706,7 @@ const InteractiveJourneyPage = () => {
   }, []);
 
   return (
-    <div className="flex flex-col bg-background overflow-hidden pt-16 md:pt-20" dir={isAr ? "rtl" : "ltr"} style={{ height: "100vh" }}>
+    <div ref={containerRef} className="flex flex-col bg-background overflow-hidden pt-16 md:pt-20" dir={isAr ? "rtl" : "ltr"} style={{ height: "100vh" }}>
       <style>{`
         .seerah-tooltip {
           background: hsl(var(--card));
@@ -626,20 +748,30 @@ const InteractiveJourneyPage = () => {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.3); opacity: 0.85; }
         }
-        .seerah-path-label .leaflet-popup-content-wrapper {
+        .seerah-path-label .leaflet-popup-content-wrapper,
+        .seerah-mini-popup .leaflet-popup-content-wrapper {
           background: hsl(var(--card) / 0.95);
           border: 1px solid hsl(var(--border));
           border-radius: 0.5rem;
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
           padding: 4px 10px;
         }
-        .seerah-path-label .leaflet-popup-tip {
+        .seerah-path-label .leaflet-popup-tip,
+        .seerah-mini-popup .leaflet-popup-tip {
           background: hsl(var(--card) / 0.95);
           border: 1px solid hsl(var(--border));
         }
-        .seerah-path-label .leaflet-popup-content {
+        .seerah-path-label .leaflet-popup-content,
+        .seerah-mini-popup .leaflet-popup-content {
           margin: 4px 2px;
           color: hsl(var(--foreground));
+        }
+        .seerah-mini-popup {
+          animation: popup-fade-in 0.3s ease-out;
+        }
+        @keyframes popup-fade-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
@@ -673,12 +805,61 @@ const InteractiveJourneyPage = () => {
           </div>
         )}
 
-        {/* Era indicator */}
-        <div className="absolute top-4 left-4 z-[1000]">
+        {/* Era indicator + Progress */}
+        <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
           <motion.div key={era} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="px-4 py-2 rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-sm">
             <span className="text-sm font-medium text-foreground">{eraLabel}</span>
           </motion.div>
+          <div className="px-3 py-1.5 rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-sm flex items-center gap-2">
+            <Progress value={progressPercent} className="h-1.5 w-16 bg-muted" />
+            <span className="text-[10px] text-muted-foreground font-mono">{progressPercent}%</span>
+          </div>
         </div>
+
+        {/* Top-right controls: fullscreen + shortcuts help */}
+        <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2" style={fetchError || isLoadingData ? { top: "3.5rem" } : {}}>
+          <Button size="sm" variant="ghost" onClick={() => setShowShortcuts(!showShortcuts)} className="h-8 w-8 p-0 bg-card/90 backdrop-blur-sm border border-border" title={isAr ? "اختصارات لوحة المفاتيح (?)" : "Keyboard shortcuts (?)"}>
+            <Keyboard className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={toggleFullscreen} className="h-8 w-8 p-0 bg-card/90 backdrop-blur-sm border border-border" title={isAr ? "ملء الشاشة (F)" : "Fullscreen (F)"}>
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        {/* Keyboard shortcuts overlay */}
+        <AnimatePresence>
+          {showShortcuts && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute inset-0 z-[1100] flex items-center justify-center bg-background/60 backdrop-blur-sm"
+              onClick={() => setShowShortcuts(false)}
+            >
+              <div className="bg-card border border-border rounded-xl shadow-xl p-6 max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">{isAr ? "اختصارات لوحة المفاتيح" : "Keyboard Shortcuts"}</h3>
+                  <Button size="sm" variant="ghost" onClick={() => setShowShortcuts(false)} className="h-7 w-7 p-0"><X className="h-4 w-4" /></Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  {[
+                    ["Space", isAr ? "تشغيل / إيقاف" : "Play / Pause"],
+                    ["← →", isAr ? "الحدث السابق / التالي" : "Previous / Next event"],
+                    ["M", isAr ? "كتم / إلغاء كتم الصوت" : "Mute / Unmute"],
+                    ["F", isAr ? "ملء الشاشة" : "Fullscreen"],
+                    ["Esc", isAr ? "إغلاق" : "Close panel"],
+                    ["?", isAr ? "إظهار الاختصارات" : "Show shortcuts"],
+                  ].map(([key, desc]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <kbd className="px-2 py-0.5 bg-muted rounded text-xs font-mono text-foreground">{key}</kbd>
+                      <span className="text-muted-foreground">{desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Events Sidebar */}
         <EventsSidebar
@@ -694,59 +875,69 @@ const InteractiveJourneyPage = () => {
       </div>
 
       {/* Time-Bar */}
-      <div className="relative z-[1000] border-t border-border bg-card/95 backdrop-blur-md px-4 py-4 md:px-8 md:py-5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="ghost" onClick={handleAutoPlay} className="gap-2 text-secondary hover:text-secondary">
+      <div className="relative z-[1000] border-t border-border bg-card/95 backdrop-blur-md px-3 py-3 md:px-8 md:py-5">
+        {/* Category filter chips */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {categories.map(cat => {
+            const isActive = activeCategories.has(cat.id);
+            return (
+              <button
+                key={cat.id}
+                onClick={() => toggleCategory(cat.id)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                  isActive
+                    ? "border-transparent text-white shadow-sm"
+                    : "border-border text-muted-foreground bg-muted/50 opacity-50"
+                }`}
+                style={isActive ? { backgroundColor: `hsl(${cat.colorHsl})` } : {}}
+              >
+                {categoryIcons[cat.id]} {isAr ? cat.label : cat.labelEn}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Controls row - responsive */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            <Button size="sm" variant="ghost" onClick={handleAutoPlay} className="gap-1.5 text-secondary hover:text-secondary text-xs md:text-sm">
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {isPlaying ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تشغيل تلقائي" : "Auto-Play")}
+              <span className="hidden sm:inline">{isPlaying ? (isAr ? "إيقاف" : "Pause") : (isAr ? "تشغيل" : "Play")}</span>
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleReset}>
+            <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 w-8 p-0 md:h-auto md:w-auto md:px-3">
               <RotateCcw className="h-4 w-4" />
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={cycleSpeed}
-              className="gap-1.5 text-xs min-w-[60px] font-mono"
-              title={isAr ? "سرعة التشغيل" : "Playback speed"}
+              className="gap-1 text-[10px] md:text-xs min-w-[50px] font-mono"
             >
               <Gauge className="h-3.5 w-3.5" />
               {isAr ? SPEED_PRESETS[speedIndex].labelAr : SPEED_PRESETS[speedIndex].label}
             </Button>
             {/* Audio controls */}
-            <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+            <div className="flex items-center gap-1.5 border-s border-border ps-2 ms-0.5">
               {audioPlaying ? (
-                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Pause narration">
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0">
                   <Pause className="h-3.5 w-3.5" />
                 </Button>
               ) : currentAudioEventId ? (
-                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0" title="Resume narration">
+                <Button size="sm" variant="ghost" onClick={toggleAudioPause} className="h-7 w-7 p-0">
                   <Play className="h-3.5 w-3.5" />
                 </Button>
               ) : null}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setAudioMuted(!audioMuted)}
-                className="h-7 w-7 p-0"
-                title={audioMuted ? "Unmute" : "Mute"}
-              >
+              <Button size="sm" variant="ghost" onClick={() => setAudioMuted(!audioMuted)} className="h-7 w-7 p-0">
                 {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
               </Button>
-              {/* Volume slider */}
-              <div className="flex items-center gap-1.5 w-16">
+              <div className="hidden sm:flex items-center gap-1.5 w-16">
                 <Slider
                   value={[audioVolume * 100]}
                   onValueChange={(value) => {
                     const vol = value[0] / 100;
                     setAudioVolume(vol);
-                    if (audioRef.current) {
-                      audioRef.current.volume = vol;
-                    }
-                    if (vol > 0 && audioMuted) {
-                      setAudioMuted(false);
-                    }
+                    if (audioRef.current) audioRef.current.volume = vol;
+                    if (vol > 0 && audioMuted) setAudioMuted(false);
                   }}
                   max={100}
                   step={1}
@@ -758,14 +949,13 @@ const InteractiveJourneyPage = () => {
                 variant={autoNarrate ? "default" : "outline"}
                 onClick={() => setAutoNarrate(!autoNarrate)}
                 className="h-7 gap-1 text-[10px] px-2"
-                title={isAr ? "سرد تلقائي" : "Auto-narrate"}
               >
                 <Mic className="h-3 w-3" />
-                {isAr ? "سرد" : "Narrate"}
+                <span className="hidden sm:inline">{isAr ? "سرد" : "Narrate"}</span>
               </Button>
               {/* Audio progress bar */}
               {currentAudioEventId && audioDuration > 0 && (
-                <div className="flex items-center gap-1.5 border-l border-border pl-3 ml-1">
+                <div className="hidden md:flex items-center gap-1.5 border-s border-border ps-2 ms-0.5">
                   <div
                     className="relative h-1.5 w-20 rounded-full bg-muted overflow-hidden cursor-pointer"
                     onClick={(e) => {
@@ -789,14 +979,12 @@ const InteractiveJourneyPage = () => {
               )}
             </div>
           </div>
-          <div className="text-center">
-            <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
-              <span className="font-serif-display text-2xl md:text-3xl font-bold text-secondary gold-glow rounded-lg px-3">
-                {currentYear} {isAr ? "م" : "CE"}
-              </span>
-              <span className="text-xs text-muted-foreground mt-0.5">{eraLabel}</span>
-            </motion.div>
-          </div>
+          {/* Year display */}
+          <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
+            <span className="font-serif-display text-xl md:text-3xl font-bold text-secondary gold-glow rounded-lg px-2">
+              {currentYear} {isAr ? "م" : "CE"}
+            </span>
+          </motion.div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -811,14 +999,15 @@ const InteractiveJourneyPage = () => {
               className="gap-1 text-xs"
             >
                <ChevronRight className="h-3.5 w-3.5" />
-               {isLoadingData ? (isAr ? "..." : "...") : currentYearEvents.length} {isAr ? "حدث" : "events"}
+               {isLoadingData ? "..." : currentYearEvents.length} {isAr ? "حدث" : "events"}
             </Button>
           </div>
         </div>
 
+        {/* Timeline slider with year labels */}
         <div className="relative">
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-4 pointer-events-none">
-            {events.map((e) => {
+            {filteredEvents.map((e) => {
               const pct = ((e.year_ce - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100;
               return (
                 <div
@@ -841,10 +1030,23 @@ const InteractiveJourneyPage = () => {
             onValueChange={handleSliderChange}
             className="[&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-secondary [&_[role=slider]]:border-2 [&_[role=slider]]:border-secondary/80 [&_[role=slider]]:shadow-lg [&_[role=slider]]:shadow-secondary/30 [&_[role=slider]]:rounded-full [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-secondary/60 [&_[data-orientation=horizontal]]:bg-border"
           />
-          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-            <span>{MIN_YEAR} {isAr ? "م" : "CE"}</span>
-            <span>622 {isAr ? "م · الهجرة" : "CE · Hijrah"}</span>
-            <span>{MAX_YEAR} {isAr ? "م" : "CE"}</span>
+          {/* Major event year labels */}
+          <div className="relative h-5 mt-1">
+            {MAJOR_YEAR_LABELS.map(({ year, labelAr, labelEn }) => {
+              const pct = ((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100;
+              return (
+                <button
+                  key={year}
+                  onClick={() => { stopPlaying(); setCurrentYear(year); }}
+                  className={`absolute -translate-x-1/2 text-[9px] md:text-[10px] transition-colors cursor-pointer hover:text-foreground ${
+                    currentYear === year ? "text-secondary font-bold" : "text-muted-foreground"
+                  }`}
+                  style={{ left: `${pct}%` }}
+                >
+                  {isAr ? labelAr : labelEn}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
