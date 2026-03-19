@@ -298,12 +298,7 @@ const InteractiveJourneyPage = () => {
       const marker = L.marker([event.lat, event.lng], { icon });
 
       const title = isAr ? event.title : event.title_en;
-      marker.bindTooltip(title, {
-        direction: "top",
-        offset: [0, -14],
-        className: "seerah-tooltip",
-        permanent: true,
-      });
+
 
       marker.on("click", () => {
         const locationEvents = visibleEvents.filter(
