@@ -120,8 +120,9 @@ const InteractiveJourneyPage = () => {
   const intervalRef = useRef<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const markersLayerRef = useRef<L.MarkerClusterGroup | null>(null);
   const polylinesLayerRef = useRef<L.LayerGroup | null>(null);
+  const labelsLayerRef = useRef<L.TileLayer | null>(null);
   const pathAnimationsRef = useRef<number[]>([]);
   const animatedDotsRef = useRef<L.Marker[]>([]);
   const trailLinesRef = useRef<L.Polyline[]>([]);
