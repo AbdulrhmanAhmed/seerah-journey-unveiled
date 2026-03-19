@@ -11,6 +11,9 @@ import EventsSidebar from "@/components/journey/EventsSidebar";
 import { categories } from "@/data/eventCategories";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 const MIN_YEAR = 570;
 const MAX_YEAR = 632;
@@ -117,8 +120,9 @@ const InteractiveJourneyPage = () => {
   const intervalRef = useRef<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const markersLayerRef = useRef<L.MarkerClusterGroup | null>(null);
   const polylinesLayerRef = useRef<L.LayerGroup | null>(null);
+  const labelsLayerRef = useRef<L.TileLayer | null>(null);
   const pathAnimationsRef = useRef<number[]>([]);
   const animatedDotsRef = useRef<L.Marker[]>([]);
   const trailLinesRef = useRef<L.Polyline[]>([]);
@@ -175,11 +179,29 @@ const InteractiveJourneyPage = () => {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     }).addTo(map);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png", {
-      pane: "overlayPane",
-    }).addTo(map);
-
-    const markersLayer = L.layerGroup().addTo(map);
+    const markersLayer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        const size = count > 50 ? 48 : count > 10 ? 40 : 32;
+        return L.divIcon({
+          html: `<div style="
+            width:${size}px;height:${size}px;
+            display:flex;align-items:center;justify-content:center;
+            background:hsl(40 60% 40%);border:2.5px solid hsl(40 50% 85%);
+            border-radius:50%;color:#fff;font-weight:700;font-size:${size * 0.35}px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.3), 0 0 8px hsl(40 60% 40% / 0.5);
+          ">${count}</div>`,
+          className: "",
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+      },
+    });
+    markersLayer.addTo(map);
     const polylinesLayer = L.layerGroup().addTo(map);
 
     mapInstanceRef.current = map;
@@ -192,7 +214,25 @@ const InteractiveJourneyPage = () => {
     };
   }, []);
 
-  // Load data
+  // Language-aware labels layer
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Remove old labels layer
+    if (labelsLayerRef.current) {
+      map.removeLayer(labelsLayerRef.current);
+    }
+
+    const labelsUrl = isAr
+      ? "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png?language=en";
+
+    const labelsLayer = L.tileLayer(labelsUrl, { pane: "overlayPane" });
+    labelsLayer.addTo(map);
+    labelsLayerRef.current = labelsLayer;
+  }, [isAr]);
+
   useEffect(() => {
     let mounted = true;
     const abortController = new AbortController();
@@ -410,22 +450,7 @@ const InteractiveJourneyPage = () => {
       animatePathLine(positions, pathColor, isSea, label);
     });
 
-    const sortedVisible = [...visibleEvents].sort((a, b) => a.year_ce - b.year_ce || a.display_order - b.display_order);
-    const eventsWithPathIds = new Set(matchedEvents.map((e) => e.id));
-    const journeyPositions: L.LatLngTuple[] = [];
-    sortedVisible.forEach((ev) => {
-      if (eventsWithPathIds.has(ev.id)) return;
-      const pos: L.LatLngTuple = [ev.lat, ev.lng];
-      const last = journeyPositions[journeyPositions.length - 1];
-      if (!last || Math.abs(last[0] - pos[0]) > 0.05 || Math.abs(last[1] - pos[1]) > 0.05) {
-        journeyPositions.push(pos);
-      }
-    });
-
-    if (journeyPositions.length >= 2) {
-      const journeyColor = "hsl(var(--primary))";
-      animatePathLine(journeyPositions, journeyColor, false);
-    }
+    // Only defined paths (Hijrah, Ta'if, etc.) are rendered — no universal journey line
 
     if (currentYearEvents.length > 0) {
       const bounds = L.latLngBounds(currentYearEvents.map((e) => [e.lat, e.lng] as L.LatLngExpression));
