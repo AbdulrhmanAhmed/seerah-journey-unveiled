@@ -11,6 +11,9 @@ import EventsSidebar from "@/components/journey/EventsSidebar";
 import { categories } from "@/data/eventCategories";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 const MIN_YEAR = 570;
 const MAX_YEAR = 632;
