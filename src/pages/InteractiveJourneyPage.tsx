@@ -179,11 +179,29 @@ const InteractiveJourneyPage = () => {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     }).addTo(map);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png", {
-      pane: "overlayPane",
-    }).addTo(map);
-
-    const markersLayer = L.layerGroup().addTo(map);
+    const markersLayer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        const size = count > 50 ? 48 : count > 10 ? 40 : 32;
+        return L.divIcon({
+          html: `<div style="
+            width:${size}px;height:${size}px;
+            display:flex;align-items:center;justify-content:center;
+            background:hsl(40 60% 40%);border:2.5px solid hsl(40 50% 85%);
+            border-radius:50%;color:#fff;font-weight:700;font-size:${size * 0.35}px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.3), 0 0 8px hsl(40 60% 40% / 0.5);
+          ">${count}</div>`,
+          className: "",
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+      },
+    });
+    markersLayer.addTo(map);
     const polylinesLayer = L.layerGroup().addTo(map);
 
     mapInstanceRef.current = map;
