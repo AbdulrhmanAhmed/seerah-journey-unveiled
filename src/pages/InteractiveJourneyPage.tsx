@@ -432,22 +432,7 @@ const InteractiveJourneyPage = () => {
       animatePathLine(positions, pathColor, isSea, label);
     });
 
-    const sortedVisible = [...visibleEvents].sort((a, b) => a.year_ce - b.year_ce || a.display_order - b.display_order);
-    const eventsWithPathIds = new Set(matchedEvents.map((e) => e.id));
-    const journeyPositions: L.LatLngTuple[] = [];
-    sortedVisible.forEach((ev) => {
-      if (eventsWithPathIds.has(ev.id)) return;
-      const pos: L.LatLngTuple = [ev.lat, ev.lng];
-      const last = journeyPositions[journeyPositions.length - 1];
-      if (!last || Math.abs(last[0] - pos[0]) > 0.05 || Math.abs(last[1] - pos[1]) > 0.05) {
-        journeyPositions.push(pos);
-      }
-    });
-
-    if (journeyPositions.length >= 2) {
-      const journeyColor = "hsl(var(--primary))";
-      animatePathLine(journeyPositions, journeyColor, false);
-    }
+    // Only defined paths (Hijrah, Ta'if, etc.) are rendered — no universal journey line
 
     if (currentYearEvents.length > 0) {
       const bounds = L.latLngBounds(currentYearEvents.map((e) => [e.lat, e.lng] as L.LatLngExpression));
