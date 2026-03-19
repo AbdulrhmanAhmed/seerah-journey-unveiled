@@ -214,7 +214,25 @@ const InteractiveJourneyPage = () => {
     };
   }, []);
 
-  // Load data
+  // Language-aware labels layer
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Remove old labels layer
+    if (labelsLayerRef.current) {
+      map.removeLayer(labelsLayerRef.current);
+    }
+
+    const labelsUrl = isAr
+      ? "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png?language=en";
+
+    const labelsLayer = L.tileLayer(labelsUrl, { pane: "overlayPane" });
+    labelsLayer.addTo(map);
+    labelsLayerRef.current = labelsLayer;
+  }, [isAr]);
+
   useEffect(() => {
     let mounted = true;
     const abortController = new AbortController();
