@@ -743,6 +743,17 @@ const InteractiveJourneyPage = () => {
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         .seerah-tooltip::before { border-top-color: hsl(var(--border)) !important; }
+        .seerah-hover-tooltip {
+          background: hsl(var(--card));
+          border: 1px solid hsl(var(--border));
+          color: hsl(var(--foreground));
+          border-radius: 0.5rem;
+          padding: 4px 10px;
+          font-size: 13px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          white-space: nowrap;
+        }
+        .seerah-hover-tooltip::before { border-top-color: hsl(var(--border)) !important; }
         .leaflet-control-zoom {
           border: 1px solid hsl(var(--border)) !important;
           border-radius: 0.5rem !important;
