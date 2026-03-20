@@ -339,6 +339,11 @@ const InteractiveJourneyPage = () => {
 
       const title = isAr ? event.title : event.title_en;
 
+      marker.bindTooltip(title, {
+        direction: "top",
+        offset: [0, -14],
+        className: "seerah-hover-tooltip",
+      });
 
       marker.on("click", () => {
         const locationEvents = visibleEvents.filter(
