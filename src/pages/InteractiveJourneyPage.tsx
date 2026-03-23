@@ -623,7 +623,13 @@ const InteractiveJourneyPage = () => {
   const handleAutoPlay = () => {
     if (isPlaying) { stopPlaying(); } else {
       if (currentYear >= MAX_YEAR) setCurrentYear(MIN_YEAR);
-      setSidebarOpen(true);
+      // On mobile, keep sidebar hidden by default during autoplay so the map stays visible
+      const isMobileView = window.innerWidth < 768;
+      if (!isMobileView) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
       setIsPlaying(true);
     }
   };
