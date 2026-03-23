@@ -1023,17 +1023,17 @@ const InteractiveJourneyPage = () => {
           </div>
           {/* Year display */}
           <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
-            <span className="font-serif-display text-xl md:text-3xl font-bold text-secondary gold-glow rounded-lg px-2">
-              {currentYear} {isAr ? "م" : "CE"}
-            </span>
             {(() => {
               const hijri = currentYearEvents.find(e => e.year_hijri)?.year_hijri;
               return hijri ? (
-                <span className="text-[10px] md:text-xs text-muted-foreground font-body">
+                <span className="font-serif-display text-xl md:text-3xl font-bold text-secondary gold-glow rounded-lg px-2">
                   {hijri} {isAr ? "هـ" : "AH"}
                 </span>
               ) : null;
             })()}
+            <span className="text-[10px] md:text-xs text-muted-foreground font-body">
+              {currentYear} {isAr ? "م" : "CE"}
+            </span>
           </motion.div>
           <div className="flex items-center gap-2">
             <Button
