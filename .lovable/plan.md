@@ -1,68 +1,42 @@
 
 
-## Fix Plan: Interactive Journey — Overlapping Markers, Arabic Labels, and Confusing Lines
+## Add Detailed Event Content from The Sealed Nectar
 
-### Problems Identified
+### Current State
+- **244 total events** in the database
+- **36 events have completely empty** `full_story` and `full_story_en` fields — all from 630–632 CE (late Madinan period: delegations, final year events, death of the Prophet ﷺ)
+- **46 events have short stories** (under 500 characters) that need expansion
+- Average story length is ~733 characters; best events have ~2,200 characters
 
-1. **Overlapping markers**: 227 events share the exact same Makkah coordinates (21.4225, 39.8262), plus 3 in Madinah and 2 at other locations. Markers stack directly on top of each other.
+### Plan
 
-2. **Arabic road/place names in English mode**: The CARTO label tile layer (`light_only_labels`) pulls from OpenStreetMap, which uses Arabic names for the Arabian Peninsula region. There's no language parameter for these tiles.
+#### Step 1: Populate the 36 Empty Events
+Write detailed bilingual narratives (Arabic + English) for all 36 empty events, sourced from The Sealed Nectar. These include critical events like:
+- The Farewell Pilgrimage and Last Sermon
+- Death of the Prophet ﷺ and burial
+- Year of Delegations (Thaqif, Najran, Banu Tamim, etc.)
+- Battle aftermath events (Hunayn spoils, Tabuk consequences)
+- Final year events (Prophet's illness, Abu Bakr leading prayers)
 
-3. **Confusing connecting lines**: The "universal journey line" connects all non-path events chronologically, creating zigzag lines between events at the same location or unrelated events.
+Each narrative will be 1,000–2,000 characters with proper scholarly citations.
 
----
+#### Step 2: Expand Short Events
+Enhance the ~46 events with stories under 500 characters, adding more detail from The Sealed Nectar — particularly:
+- Death of Abdullah (372 chars)
+- Death of Abdul-Muttalib (196 chars)
+- Siege of Ta'if (269 chars)
+- Expedition of Tabuk (328 chars)
 
-### Solution
+#### Step 3: Add Hadith and Quran References
+For events that currently have empty `hadith_references` or `quran_references` JSONB arrays, populate them with relevant citations (e.g., Surah An-Nasr for the revelation event, relevant Bukhari/Muslim hadith numbers).
 
-#### 1. Marker Clustering with Leaflet.markercluster
-- Add `leaflet.markercluster` package
-- Replace the plain `L.layerGroup` for markers with `L.markerClusterGroup` configured with custom styling matching the app's gold/sepia theme
-- Clusters will show count badges and expand on click, solving the 227-marker-on-Makkah problem
-- When clicking a cluster, show the events sidebar with all events at that location
+### Technical Approach
+- Use an edge function powered by Lovable AI (Gemini 2.5 Pro) to generate scholarly narratives based on The Sealed Nectar's content for each event
+- The function will receive event titles and context, then produce bilingual narratives with proper citations
+- Results will be inserted via database UPDATE statements in batches
+- All content will follow the existing project standard: bilingual (Arabic/English), citing The Sealed Nectar, Ibn Hisham, and Sahih collections
 
-#### 2. Switch to English Map Labels
-- Replace the CARTO `light_only_labels` layer with a language-aware tile source
-- Use CARTO's vector/query endpoint or switch to a labels-only layer that respects `lang` parameter
-- Option A: Use `https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png?language=en` (CARTO supports `@2x` and language parameter on some endpoints)
-- Option B: Remove the labels overlay entirely and use `light_all` with language parameter
-- Dynamically switch between Arabic and English labels based on `lang` state
-
-#### 3. Simplify Journey Lines
-- Remove the "universal animated path" that connects all non-path events (the zigzag line)
-- Only show the actual defined paths (Hijrah, Ta'if, Abyssinia) which have proper geographic steps
-- This eliminates the confusing lines between events at the same coordinates
-
----
-
-### Files to Modify
-
-**`src/pages/InteractiveJourneyPage.tsx`**:
-- Import and configure `L.markerClusterGroup` instead of `L.layerGroup` for markers
-- Update the tile layer URL to include language parameter based on `lang`
-- Remove the universal journey line logic (lines ~413-428) that creates the confusing connections
-- Add custom cluster icon styling
-
-**`package.json`**:
-- Add `leaflet.markercluster` dependency
-
----
-
-### Technical Details
-
-```text
-Current marker rendering flow:
-  visibleEvents → forEach → L.marker → addTo(markersLayer)
-  
-New flow with clustering:
-  visibleEvents → forEach → L.marker → addTo(markerClusterGroup)
-  markerClusterGroup handles overlap automatically
-
-Tile layers (language-aware):
-  Arabic: light_only_labels (default OSM)
-  English: Use Stamen/MapTiler labels or remove labels overlay
-
-Lines to remove (universal journey path):
-  Lines ~413-428: sortedVisible → journeyPositions → animatePathLine
-  Keep only: activePaths.forEach (defined paths like Hijrah, Ta'if, Abyssinia)
-```
+### Files to Create/Modify
+- **New edge function**: `supabase/functions/populate-event-details/index.ts` — AI-powered content generation
+- **Database updates**: SQL migrations to batch-update the 36 empty + 46 short events
 
