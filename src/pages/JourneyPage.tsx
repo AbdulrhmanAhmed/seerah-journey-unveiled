@@ -7,7 +7,7 @@ import { timelineEvents } from "@/data/seerahTimeline";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
 import TimelineEventModal from "@/components/TimelineEventModal";
-import YearQuickNav from "@/components/YearQuickNav";
+
 
 const JourneyPage = () => {
   const { t, lang } = useLanguage();
