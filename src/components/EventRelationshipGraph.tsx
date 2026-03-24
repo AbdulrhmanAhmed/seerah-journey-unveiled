@@ -505,31 +505,33 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      {/* Zoom Controls */}
-      <div className="absolute top-3 end-3 z-20 flex gap-1.5">
-        {[
-          { action: handleZoomIn, icon: <ZoomIn size={16} /> },
-          { action: handleZoomOut, icon: <ZoomOut size={16} /> },
-          { action: handleReset, icon: <Maximize2 size={16} /> },
-        ].map((btn, i) => (
-          <button
-            key={i}
-            onClick={btn.action}
-            className="p-1.5 rounded-lg bg-card/90 border border-border hover:bg-muted transition-colors backdrop-blur-sm"
-          >
-            <span className="text-foreground">{btn.icon}</span>
-          </button>
-        ))}
-      </div>
+      {/* Zoom Controls — only for full graph */}
+      {!compact && (
+        <div className="absolute top-3 end-3 z-20 flex gap-1.5">
+          {[
+            { action: handleZoomIn, icon: <ZoomIn size={16} /> },
+            { action: handleZoomOut, icon: <ZoomOut size={16} /> },
+            { action: handleReset, icon: <Maximize2 size={16} /> },
+          ].map((btn, i) => (
+            <button
+              key={i}
+              onClick={btn.action}
+              className="p-1.5 rounded-lg bg-card/90 border border-border hover:bg-muted transition-colors backdrop-blur-sm"
+            >
+              <span className="text-foreground">{btn.icon}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* SVG Graph */}
       <div
-        className={`overflow-hidden rounded-xl border border-border bg-gradient-to-r from-[hsl(30,20%,8%)] via-[hsl(160,30%,8%)] to-[hsl(200,30%,10%)] cursor-grab active:cursor-grabbing ${compact ? "h-[400px]" : "h-[600px]"}`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => { setIsPanning(false); handleNodeLeave(); }}
-        onWheel={handleWheel}
+        className={`overflow-hidden rounded-xl border border-border bg-gradient-to-r from-[hsl(30,20%,8%)] via-[hsl(160,30%,8%)] to-[hsl(200,30%,10%)] ${compact ? "h-[350px]" : "cursor-grab active:cursor-grabbing h-[600px]"}`}
+        onMouseDown={compact ? undefined : handleMouseDown}
+        onMouseMove={compact ? undefined : handleMouseMove}
+        onMouseUp={compact ? undefined : handleMouseUp}
+        onMouseLeave={() => { if (!compact) setIsPanning(false); handleNodeLeave(); }}
+        onWheel={compact ? undefined : handleWheel}
       >
         <svg
           width="100%"
@@ -626,7 +628,7 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
               if (!s || !t) return null;
               const key = [edge.source, edge.target].sort().join("-");
               const isHighlighted = highlightedEdges.has(key);
-              const opacity = hasActive ? (isHighlighted ? 0.85 : 0.06) : hasSearch ? 0.08 : 0.2;
+              const opacity = hasActive ? (isHighlighted ? 0.85 : (compact ? 0 : 0.06)) : hasSearch ? 0.08 : 0.2;
               const sourceCategory = s.category;
               const pathD = bezierPath(s.x, s.y, t.x, t.y);
               const color = categoryColors[sourceCategory] || "hsl(160, 50%, 40%)";
@@ -680,8 +682,13 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
               const showLabel = node.connections >= 3 || isActive || isSearchMatch;
 
               let opacity = 1;
-              if (hasActive) opacity = isConnected ? 1 : 0.12;
-              else if (hasSearch) opacity = isSearchMatch ? 1 : 0.15;
+              if (hasActive) {
+                if (compact) {
+                  opacity = isConnected ? 1 : 0;
+                } else {
+                  opacity = isConnected ? 1 : 0.12;
+                }
+              } else if (hasSearch) opacity = isSearchMatch ? 1 : 0.15;
 
               const scale = isActive ? 1.5 : isSearchMatch ? 1.3 : 1;
 
