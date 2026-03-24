@@ -628,7 +628,7 @@ const EventRelationshipGraph = ({ events, highlightEventId, searchQuery = "", co
               if (!s || !t) return null;
               const key = [edge.source, edge.target].sort().join("-");
               const isHighlighted = highlightedEdges.has(key);
-              const opacity = hasActive ? (isHighlighted ? 0.85 : 0.06) : hasSearch ? 0.08 : 0.2;
+              const opacity = hasActive ? (isHighlighted ? 0.85 : (compact ? 0 : 0.06)) : hasSearch ? 0.08 : 0.2;
               const sourceCategory = s.category;
               const pathD = bezierPath(s.x, s.y, t.x, t.y);
               const color = categoryColors[sourceCategory] || "hsl(160, 50%, 40%)";
