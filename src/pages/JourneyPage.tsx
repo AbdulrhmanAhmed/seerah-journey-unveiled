@@ -7,7 +7,7 @@ import { timelineEvents } from "@/data/seerahTimeline";
 import type { TimelineEvent } from "@/data/seerahTimeline";
 import TimelineEventCard from "@/components/TimelineEventCard";
 import TimelineEventModal from "@/components/TimelineEventModal";
-import YearQuickNav from "@/components/YearQuickNav";
+
 
 const JourneyPage = () => {
   const { t, lang } = useLanguage();
@@ -69,7 +69,7 @@ const JourneyPage = () => {
       </div>
 
       <div className="relative" ref={timelineRef}>
-        <YearQuickNav />
+        
 
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
