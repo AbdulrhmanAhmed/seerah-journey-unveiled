@@ -69,7 +69,7 @@ const JourneyPage = () => {
       </div>
 
       <div className="relative" ref={timelineRef}>
-        <YearQuickNav />
+        
 
         <section
           className="relative py-12 md:py-16 transition-colors duration-700"
