@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      companions: {
+        Row: {
+          bio: string | null
+          bio_en: string | null
+          birth_year: string | null
+          category: string
+          created_at: string
+          death_year: string | null
+          family_relation: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          name_en: string
+          nickname: string | null
+          nickname_en: string | null
+          notable_roles: Json
+          related_event_ids: Json
+        }
+        Insert: {
+          bio?: string | null
+          bio_en?: string | null
+          birth_year?: string | null
+          category?: string
+          created_at?: string
+          death_year?: string | null
+          family_relation?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          name_en: string
+          nickname?: string | null
+          nickname_en?: string | null
+          notable_roles?: Json
+          related_event_ids?: Json
+        }
+        Update: {
+          bio?: string | null
+          bio_en?: string | null
+          birth_year?: string | null
+          category?: string
+          created_at?: string
+          death_year?: string | null
+          family_relation?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          name_en?: string
+          nickname?: string | null
+          nickname_en?: string | null
+          notable_roles?: Json
+          related_event_ids?: Json
+        }
+        Relationships: []
+      }
+      family_members: {
+        Row: {
+          bio: string | null
+          bio_en: string | null
+          birth_year: string | null
+          companion_id: string | null
+          created_at: string
+          death_year: string | null
+          display_order: number
+          gender: string
+          id: string
+          image_url: string | null
+          name: string
+          name_en: string
+          parent_id: string | null
+          relation_type: string
+        }
+        Insert: {
+          bio?: string | null
+          bio_en?: string | null
+          birth_year?: string | null
+          companion_id?: string | null
+          created_at?: string
+          death_year?: string | null
+          display_order?: number
+          gender?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          name_en: string
+          parent_id?: string | null
+          relation_type?: string
+        }
+        Update: {
+          bio?: string | null
+          bio_en?: string | null
+          birth_year?: string | null
+          companion_id?: string | null
+          created_at?: string
+          death_year?: string | null
+          display_order?: number
+          gender?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          name_en?: string
+          parent_id?: string | null
+          relation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_companion_id_fkey"
+            columns: ["companion_id"]
+            isOneToOne: false
+            referencedRelation: "companions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_members_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_events: {
         Row: {
           category: string
@@ -207,6 +330,78 @@ export type Database = {
           line_color?: string
           name?: string
           name_en?: string
+        }
+        Relationships: []
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          difficulty: string
+          display_order: number
+          era: string
+          explanation: string | null
+          explanation_en: string | null
+          id: string
+          is_active: boolean
+          options: Json
+          question: string
+          question_en: string
+          related_event_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: string
+          display_order?: number
+          era?: string
+          explanation?: string | null
+          explanation_en?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question: string
+          question_en: string
+          related_event_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          display_order?: number
+          era?: string
+          explanation?: string | null
+          explanation_en?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question?: string
+          question_en?: string
+          related_event_id?: string | null
+        }
+        Relationships: []
+      }
+      quiz_scores: {
+        Row: {
+          completed_at: string
+          era: string
+          id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          era: string
+          id?: string
+          score?: number
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          era?: string
+          id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string
         }
         Relationships: []
       }
