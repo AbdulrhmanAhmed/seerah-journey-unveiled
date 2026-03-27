@@ -50,8 +50,8 @@ const relationLabels: Record<string, { ar: string; en: string }> = {
 };
 
 const FamilyTreePage = () => {
-  const { language } = useLanguage();
-  const isAr = language === "ar";
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const [selected, setSelected] = useState<FamilyMember | null>(null);
 
   const { data: members = [], isLoading } = useQuery({

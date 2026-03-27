@@ -36,8 +36,8 @@ const difficulties = [
 ];
 
 const QuizPage = () => {
-  const { language } = useLanguage();
-  const isAr = language === "ar";
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
 
   const [selectedEra, setSelectedEra] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");

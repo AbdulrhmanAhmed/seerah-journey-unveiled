@@ -23,6 +23,9 @@ import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 import BattleOfBadrPage from "./pages/BattleOfBadrPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import EventGraphPage from "./pages/EventGraphPage";
+import QuizPage from "./pages/QuizPage";
+import FamilyTreePage from "./pages/FamilyTreePage";
+import CompanionsPage from "./pages/CompanionsPage";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +48,9 @@ const App = () => (
               <Route path="/battle-of-badr" element={<Layout><BattleOfBadrPage /></Layout>} />
               <Route path="/event/:id" element={<Layout><EventDetailPage /></Layout>} />
               <Route path="/event-graph" element={<Layout><EventGraphPage /></Layout>} />
+              <Route path="/quiz" element={<Layout><QuizPage /></Layout>} />
+              <Route path="/family-tree" element={<Layout><FamilyTreePage /></Layout>} />
+              <Route path="/companions" element={<Layout><CompanionsPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />

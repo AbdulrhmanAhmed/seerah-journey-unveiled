@@ -35,8 +35,8 @@ const categories = [
 ];
 
 const CompanionsPage = () => {
-  const { language, t } = useLanguage();
-  const isAr = language === "ar";
+  const { lang, t } = useLanguage();
+  const isAr = lang === "ar";
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);

@@ -10,6 +10,9 @@ export const translations = {
     navInteractiveJourney: "الرحلة التفاعلية",
     navLibrary: "المكتبة",
     navGraph: "شبكة الأحداث",
+    navQuiz: "اختبار المعرفة",
+    navFamilyTree: "شجرة العائلة",
+    navCompanions: "الصحابة",
     menuLabel: "القائمة",
 
     // Hero
@@ -117,6 +120,9 @@ export const translations = {
     navInteractiveJourney: "Interactive Journey",
     navLibrary: "Library",
     navGraph: "Event Graph",
+    navQuiz: "Knowledge Quiz",
+    navFamilyTree: "Family Tree",
+    navCompanions: "Companions",
     menuLabel: "Menu",
 
     bismillah: "In the Name of God, the Most Gracious, the Most Merciful",
