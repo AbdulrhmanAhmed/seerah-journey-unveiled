@@ -166,3 +166,47 @@
     stroke-dashoffset: -20;
   }
 }
+
+/* Seerah map permanent labels */
+.seerah-permanent-label {
+  background: hsl(40 30% 15% / 0.85) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  pointer-events: none !important;
+}
+.seerah-permanent-label::before {
+  border-top-color: hsl(40 30% 15% / 0.85) !important;
+}
+
+.seerah-hover-tooltip {
+  background: hsl(40 30% 20% / 0.9) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 3px 10px !important;
+  font-size: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+.seerah-hover-tooltip::before {
+  border-top-color: hsl(40 30% 20% / 0.9) !important;
+}
+
+@keyframes marker-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+.journey-glow-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dot-color, hsl(46 56% 52%));
+  box-shadow: 0 0 10px var(--dot-color, hsl(46 56% 52%)), 0 0 20px var(--dot-color, hsl(46 56% 52%));
+  animation: marker-pulse 1.5s infinite;
+}
