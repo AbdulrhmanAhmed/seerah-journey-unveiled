@@ -332,18 +332,57 @@ const InteractiveJourneyPage = () => {
     trailLinesRef.current.forEach((l) => l.remove());
     trailLinesRef.current = [];
 
+    // Group events by rounded lat/lng to apply spatial offsets
+    const locationGroups: Record<string, TimelineEvent[]> = {};
+    visibleEvents.forEach((event) => {
+      const key = `${Math.round(event.lat * 100)}_${Math.round(event.lng * 100)}`;
+      if (!locationGroups[key]) locationGroups[key] = [];
+      locationGroups[key].push(event);
+    });
+
+    // Build offset map: eventId -> [offsetLat, offsetLng]
+    const offsets: Record<string, [number, number]> = {};
+    Object.values(locationGroups).forEach((group) => {
+      if (group.length <= 1) {
+        if (group[0]) offsets[group[0].id] = [0, 0];
+        return;
+      }
+      const radius = 0.015 + group.length * 0.005; // ~1.5-3km spread
+      group.forEach((ev, i) => {
+        const angle = (2 * Math.PI * i) / group.length - Math.PI / 2;
+        offsets[ev.id] = [
+          Math.sin(angle) * radius,
+          Math.cos(angle) * radius,
+        ];
+      });
+    });
+
     visibleEvents.forEach((event) => {
       const isCurrentYr = event.year_ce === currentYear;
       const icon = createCategoryIcon(event.category, event.is_major, isCurrentYr);
-      const marker = L.marker([event.lat, event.lng], { icon });
+      const [oLat, oLng] = offsets[event.id] || [0, 0];
+      const markerLat = event.lat + oLat;
+      const markerLng = event.lng + oLng;
+      const marker = L.marker([markerLat, markerLng], { icon });
 
       const title = isAr ? event.title : event.title_en;
+      const truncTitle = title.length > 22 ? title.slice(0, 20) + "…" : title;
 
-      marker.bindTooltip(title, {
-        direction: "top",
-        offset: [0, -14],
-        className: "seerah-hover-tooltip",
-      });
+      // Permanent label for current-year events, hover-only for older
+      if (isCurrentYr) {
+        marker.bindTooltip(truncTitle, {
+          direction: "top",
+          offset: [0, -16],
+          permanent: true,
+          className: "seerah-permanent-label",
+        });
+      } else {
+        marker.bindTooltip(title, {
+          direction: "top",
+          offset: [0, -14],
+          className: "seerah-hover-tooltip",
+        });
+      }
 
       marker.on("click", () => {
         const locationEvents = visibleEvents.filter(
@@ -457,11 +496,22 @@ const InteractiveJourneyPage = () => {
 
     // Only defined paths (Hijrah, Ta'if, etc.) are rendered — no universal journey line
 
+    // Smooth cinematic transition to current year events
     if (currentYearEvents.length > 0) {
-      const bounds = L.latLngBounds(currentYearEvents.map((e) => [e.lat, e.lng] as L.LatLngExpression));
-      if (bounds.isValid()) {
-        map.flyToBounds(bounds.pad(0.5), { duration: 1, maxZoom: 10 });
+      const centroidLat = currentYearEvents.reduce((s, e) => s + e.lat, 0) / currentYearEvents.length;
+      const centroidLng = currentYearEvents.reduce((s, e) => s + e.lng, 0) / currentYearEvents.length;
+      const centroid: L.LatLngExpression = [centroidLat, centroidLng];
+      const currentCenter = map.getCenter();
+      const dist = map.distance(currentCenter, centroid);
+
+      if (dist > 50000) {
+        // Long distance: cinematic fly
+        map.flyTo(centroid, 9, { duration: 2, easeLinearity: 0.25 });
+      } else if (dist > 5000) {
+        // Medium distance: smooth pan
+        map.flyTo(centroid, map.getZoom(), { duration: 1.2, easeLinearity: 0.5 });
       }
+      // Short distance (<5km): don't move, avoid jitter
     }
   }, [visibleEvents, currentYear, isAr, paths, currentYearEvents]);
 
