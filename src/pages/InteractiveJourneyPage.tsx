@@ -496,11 +496,22 @@ const InteractiveJourneyPage = () => {
 
     // Only defined paths (Hijrah, Ta'if, etc.) are rendered — no universal journey line
 
+    // Smooth cinematic transition to current year events
     if (currentYearEvents.length > 0) {
-      const bounds = L.latLngBounds(currentYearEvents.map((e) => [e.lat, e.lng] as L.LatLngExpression));
-      if (bounds.isValid()) {
-        map.flyToBounds(bounds.pad(0.5), { duration: 1, maxZoom: 10 });
+      const centroidLat = currentYearEvents.reduce((s, e) => s + e.lat, 0) / currentYearEvents.length;
+      const centroidLng = currentYearEvents.reduce((s, e) => s + e.lng, 0) / currentYearEvents.length;
+      const centroid: L.LatLngExpression = [centroidLat, centroidLng];
+      const currentCenter = map.getCenter();
+      const dist = map.distance(currentCenter, centroid);
+
+      if (dist > 50000) {
+        // Long distance: cinematic fly
+        map.flyTo(centroid, 9, { duration: 2, easeLinearity: 0.25 });
+      } else if (dist > 5000) {
+        // Medium distance: smooth pan
+        map.flyTo(centroid, map.getZoom(), { duration: 1.2, easeLinearity: 0.5 });
       }
+      // Short distance (<5km): don't move, avoid jitter
     }
   }, [visibleEvents, currentYear, isAr, paths, currentYearEvents]);
 
