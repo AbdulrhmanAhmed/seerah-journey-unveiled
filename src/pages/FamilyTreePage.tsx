@@ -159,6 +159,10 @@ const FamilyTreePage = () => {
     const mainBranch = getChildren(lastAncestor.id);
     if (mainBranch.length === 0) return null;
 
+    // Separate Abdullah (father) from uncles
+    const father = mainBranch.find(m => m.relation_type === "father");
+    const uncles = mainBranch.filter(m => m.relation_type === "uncle");
+
     return (
       <div className="flex flex-col items-center gap-0">
         {/* Grandfather node */}
@@ -180,18 +184,43 @@ const FamilyTreePage = () => {
         </motion.button>
 
         <div className="w-px h-5 bg-border" />
-        {mainBranch.length > 1 && (
-          <div className="relative w-full flex justify-center">
-            <div className="h-px bg-border" style={{ width: `${(mainBranch.length - 1) * 140}px` }} />
-          </div>
-        )}
-        <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
-          {mainBranch.map((child) => (
-            <div key={child.id} className="flex flex-col items-center">
-              <div className="w-px h-5 bg-border" />
-              {renderNode(child, 1)}
+
+        {/* Two sections: Father branch (center) + Uncles grid */}
+        <div className="flex flex-col items-center gap-6 w-full">
+          {/* Father → Prophet branch */}
+          {father && (
+            <div className="flex flex-col items-center">
+              {renderNode(father, 1)}
             </div>
-          ))}
+          )}
+
+          {/* Uncles grid */}
+          {uncles.length > 0 && (
+            <div className="w-full max-w-3xl mx-auto">
+              <div className="text-center text-xs font-medium text-muted-foreground mb-3 px-3 py-1 rounded-full bg-muted/50 inline-block mx-auto">
+                {isAr ? `أعمام النبي ﷺ (${uncles.length})` : `Prophet's Uncles (${uncles.length})`}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {uncles.map((uncle) => (
+                  <motion.button
+                    key={uncle.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelected(uncle)}
+                    className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors.uncle}`}
+                    style={{ minWidth: 100 }}
+                  >
+                    <div className="font-bold text-xs">
+                      {isAr ? uncle.name : uncle.name_en}
+                    </div>
+                    <div className="text-[10px] opacity-70 mt-0.5">
+                      {relationLabels.uncle[isAr ? "ar" : "en"]}
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
