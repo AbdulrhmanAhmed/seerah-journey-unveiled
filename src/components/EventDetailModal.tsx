@@ -98,8 +98,25 @@ const EventDetailModal = ({
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
-  const quranRefs = event.quran_references || [];
-  const hadithRefs = event.hadith_references || [];
+  const rawQuran = event.quran_references || [];
+  const rawHadith = event.hadith_references || [];
+
+  // Handle both string[] and QuranReference[] formats
+  const quranRefs: { label: string; text?: string }[] = rawQuran
+    .map((ref: any) => {
+      if (typeof ref === "string") return ref.trim() ? { label: ref } : null;
+      if (ref && (ref.surah || ref.text || ref.text_en)) return { label: isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surah} — Ayah ${ref.ayah}`, text: isAr ? ref.text : ref.text_en };
+      return null;
+    })
+    .filter(Boolean) as { label: string; text?: string }[];
+
+  const hadithRefs: { label: string; text?: string }[] = rawHadith
+    .map((ref: any) => {
+      if (typeof ref === "string") return ref.trim() ? { label: ref } : null;
+      if (ref && (ref.source || ref.text || ref.text_en)) return { label: ref.source || "", text: isAr ? ref.text : ref.text_en };
+      return null;
+    })
+    .filter(Boolean) as { label: string; text?: string }[];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -174,16 +191,9 @@ const EventDetailModal = ({
               </h4>
               <div className="space-y-3">
                 {quranRefs.map((ref, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">
-                      {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surah} — Ayah ${ref.ayah}`}
-                    </p>
-                    <p className="font-serif-display text-base text-foreground leading-relaxed">
-                      {isAr ? ref.text : ref.text_en}
-                    </p>
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
+                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
+                    {ref.text && <p className="font-serif-display text-base text-foreground leading-relaxed">{ref.text}</p>}
                   </div>
                 ))}
               </div>
@@ -200,16 +210,9 @@ const EventDetailModal = ({
               </h4>
               <div className="space-y-3">
                 {hadithRefs.map((ref, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">
-                      {ref.source}
-                    </p>
-                    <p className="font-body text-sm text-foreground leading-relaxed italic">
-                      {isAr ? ref.text : ref.text_en}
-                    </p>
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
+                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
+                    {ref.text && <p className="font-body text-sm text-foreground leading-relaxed italic">{ref.text}</p>}
                   </div>
                 ))}
               </div>
