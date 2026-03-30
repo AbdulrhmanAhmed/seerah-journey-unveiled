@@ -377,16 +377,7 @@ const InteractiveJourneyPage = () => {
       });
 
       marker.on("click", () => {
-        const locationEvents = visibleEvents.filter(
-          (e) => Math.abs(e.lat - event.lat) < 0.1 && Math.abs(e.lng - event.lng) < 0.1
-        );
-        setSidebarEvents(locationEvents.length > 0 ? locationEvents : [event]);
-        setSidebarTitle(
-          locationEvents.length > 1
-            ? `${locationEvents.length} ${isAr ? "أحداث" : "events"}`
-            : title
-        );
-        setSidebarOpen(true);
+        openEventDetail(event.id);
       });
 
       marker.addTo(markersLayer);
