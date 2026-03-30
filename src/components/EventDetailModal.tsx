@@ -191,16 +191,9 @@ const EventDetailModal = ({
               </h4>
               <div className="space-y-3">
                 {quranRefs.map((ref, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">
-                      {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surah} — Ayah ${ref.ayah}`}
-                    </p>
-                    <p className="font-serif-display text-base text-foreground leading-relaxed">
-                      {isAr ? ref.text : ref.text_en}
-                    </p>
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
+                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
+                    {ref.text && <p className="font-serif-display text-base text-foreground leading-relaxed">{ref.text}</p>}
                   </div>
                 ))}
               </div>
