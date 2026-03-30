@@ -98,8 +98,25 @@ const EventDetailModal = ({
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
-  const quranRefs = event.quran_references || [];
-  const hadithRefs = event.hadith_references || [];
+  const rawQuran = event.quran_references || [];
+  const rawHadith = event.hadith_references || [];
+
+  // Handle both string[] and QuranReference[] formats
+  const quranRefs: { label: string; text?: string }[] = rawQuran
+    .map((ref: any) => {
+      if (typeof ref === "string") return ref.trim() ? { label: ref } : null;
+      if (ref && (ref.surah || ref.text || ref.text_en)) return { label: isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surah} — Ayah ${ref.ayah}`, text: isAr ? ref.text : ref.text_en };
+      return null;
+    })
+    .filter(Boolean) as { label: string; text?: string }[];
+
+  const hadithRefs: { label: string; text?: string }[] = rawHadith
+    .map((ref: any) => {
+      if (typeof ref === "string") return ref.trim() ? { label: ref } : null;
+      if (ref && (ref.source || ref.text || ref.text_en)) return { label: ref.source || "", text: isAr ? ref.text : ref.text_en };
+      return null;
+    })
+    .filter(Boolean) as { label: string; text?: string }[];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
