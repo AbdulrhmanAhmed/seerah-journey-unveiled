@@ -61,7 +61,7 @@ const FeedbackPage = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-24 pb-16" dir={isAr ? "rtl" : "ltr"}>
+    <div className="min-h-screen pt-24 pb-16" dir={isRtl ? "rtl" : "ltr"}>
       <div className="container mx-auto px-4 max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
