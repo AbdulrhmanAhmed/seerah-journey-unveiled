@@ -189,11 +189,11 @@ const EventDetailModal = ({
                 <BookOpen className="h-4 w-4 text-secondary" />
                 {isAr ? "آيات قرآنية" : "Quran References"}
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {quranRefs.map((ref, i) => (
-                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
-                    {ref.text && <p className="font-serif-display text-base text-foreground leading-relaxed">{ref.text}</p>}
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="font-body text-sm text-secondary font-semibold">{ref.label}</p>
+                    {ref.text && <p className="font-serif-display text-base text-foreground leading-relaxed mt-1">{ref.text}</p>}
                   </div>
                 ))}
               </div>
@@ -208,11 +208,11 @@ const EventDetailModal = ({
                 <Quote className="h-4 w-4 text-secondary" />
                 {isAr ? "أحاديث نبوية" : "Hadith References"}
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {hadithRefs.map((ref, i) => (
-                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
-                    {ref.text && <p className="font-body text-sm text-foreground leading-relaxed italic">{ref.text}</p>}
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="font-body text-sm text-foreground font-medium">{ref.label}</p>
+                    {ref.text && <p className="font-body text-sm text-muted-foreground leading-relaxed italic mt-1">{ref.text}</p>}
                   </div>
                 ))}
               </div>
