@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { GitBranch, X, ChevronDown, ChevronUp } from "lucide-react";
+import { GitBranch, X, ChevronDown, ChevronUp, Calendar, User, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
 type FamilyMember = {
