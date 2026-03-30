@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { GitBranch, X } from "lucide-react";
+import { GitBranch, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type FamilyMember = {
@@ -21,6 +21,7 @@ type FamilyMember = {
 };
 
 const relationColors: Record<string, string> = {
+  ancestor: "bg-amber-50 border-amber-300 text-amber-800",
   grandfather: "bg-amber-100 border-amber-400 text-amber-900",
   father: "bg-amber-100 border-amber-400 text-amber-900",
   mother: "bg-rose-50 border-rose-300 text-rose-900",
@@ -36,6 +37,7 @@ const relationColors: Record<string, string> = {
 };
 
 const relationLabels: Record<string, { ar: string; en: string }> = {
+  ancestor: { ar: "جد أعلى", en: "Ancestor" },
   grandfather: { ar: "جد", en: "Grandfather" },
   father: { ar: "أب", en: "Father" },
   mother: { ar: "أم", en: "Mother" },
@@ -53,6 +55,7 @@ const FamilyTreePage = () => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
   const [selected, setSelected] = useState<FamilyMember | null>(null);
+  const [showFullLineage, setShowFullLineage] = useState(false);
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["family_members"],
@@ -66,16 +69,40 @@ const FamilyTreePage = () => {
     },
   });
 
-  // Build tree structure
   const getChildren = (parentId: string | null) =>
     members.filter((m) => m.parent_id === parentId).sort((a, b) => a.display_order - b.display_order);
 
-  const roots = getChildren(null);
+  // Build ancestor chain (linear path from Ibrahim to Abdul-Muttalib)
+  const buildAncestorChain = () => {
+    const chain: FamilyMember[] = [];
+    const roots = getChildren(null);
+    if (roots.length === 0) return chain;
+
+    let current = roots[0];
+    chain.push(current);
+
+    while (true) {
+      const children = getChildren(current.id);
+      const nextAncestor = children.find(
+        (c) => c.relation_type === "ancestor" || c.relation_type === "grandfather"
+      );
+      if (!nextAncestor) break;
+      chain.push(nextAncestor);
+      current = nextAncestor;
+    }
+    return chain;
+  };
+
+  const ancestorChain = buildAncestorChain();
+  const lastAncestor = ancestorChain[ancestorChain.length - 1];
 
   const renderNode = (member: FamilyMember, depth: number = 0) => {
     const children = getChildren(member.id);
     const colorClass = relationColors[member.relation_type] || relationColors.other;
     const isProphet = member.relation_type === "prophet";
+
+    // Skip ancestors (they're rendered separately)
+    if (member.relation_type === "ancestor") return null;
 
     return (
       <div key={member.id} className="flex flex-col items-center">
@@ -83,12 +110,12 @@ const FamilyTreePage = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => setSelected(member)}
-          className={`relative px-4 py-2.5 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${colorClass} ${
+          className={`relative px-3 py-2 md:px-4 md:py-2.5 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${colorClass} ${
             isProphet ? "ring-2 ring-secondary ring-offset-2 shadow-lg" : ""
           }`}
-          style={{ minWidth: isProphet ? 160 : 120 }}
+          style={{ minWidth: isProphet ? 160 : depth > 2 ? 100 : 120 }}
         >
-          <div className={`font-bold text-sm ${isProphet ? "text-base" : ""}`}>
+          <div className={`font-bold text-xs md:text-sm ${isProphet ? "md:text-base" : ""}`}>
             {isAr ? member.name : member.name_en}
           </div>
           <div className="text-[10px] opacity-70 mt-0.5">
@@ -98,33 +125,147 @@ const FamilyTreePage = () => {
 
         {children.length > 0 && (
           <>
-            {/* Vertical connector */}
-            <div className="w-px h-6 bg-border" />
-            {/* Horizontal line spanning children */}
+            <div className="w-px h-5 bg-border" />
             {children.length > 1 && (
-              <div className="relative flex items-start">
+              <div className="relative w-full flex justify-center">
                 <div
-                  className="absolute top-0 h-px bg-border"
+                  className="h-px bg-border"
                   style={{
-                    left: "50%",
-                    right: "50%",
-                    transform: `translateX(-${(children.length - 1) * 50}%)`,
-                    width: `${(children.length - 1) * 100}%`,
-                    maxWidth: `${(children.length - 1) * 160}px`,
+                    width: `calc(100% - 60px)`,
+                    maxWidth: `${(children.length - 1) * 140}px`,
                   }}
                 />
               </div>
             )}
-            <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
+            <div className="flex gap-1.5 md:gap-3 flex-wrap justify-center">
               {children.map((child) => (
                 <div key={child.id} className="flex flex-col items-center">
-                  <div className="w-px h-6 bg-border" />
+                  <div className="w-px h-5 bg-border" />
                   {renderNode(child, depth + 1)}
                 </div>
               ))}
             </div>
           </>
         )}
+      </div>
+    );
+  };
+
+  // Render the tree starting from Abdul-Muttalib (grandfather)
+  const renderMainTree = () => {
+    if (!lastAncestor) return null;
+    const mainBranch = getChildren(lastAncestor.id);
+    if (mainBranch.length === 0) return null;
+
+    return (
+      <div className="flex flex-col items-center gap-0">
+        {/* Grandfather node */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setSelected(lastAncestor)}
+          className={`px-4 py-2.5 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${
+            relationColors[lastAncestor.relation_type] || relationColors.other
+          }`}
+          style={{ minWidth: 160 }}
+        >
+          <div className="font-bold text-sm">
+            {isAr ? lastAncestor.name : lastAncestor.name_en}
+          </div>
+          <div className="text-[10px] opacity-70 mt-0.5">
+            {relationLabels[lastAncestor.relation_type]?.[isAr ? "ar" : "en"]}
+          </div>
+        </motion.button>
+
+        <div className="w-px h-5 bg-border" />
+        {mainBranch.length > 1 && (
+          <div className="relative w-full flex justify-center">
+            <div className="h-px bg-border" style={{ width: `${(mainBranch.length - 1) * 140}px` }} />
+          </div>
+        )}
+        <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
+          {mainBranch.map((child) => (
+            <div key={child.id} className="flex flex-col items-center">
+              <div className="w-px h-5 bg-border" />
+              {renderNode(child, 1)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Compact ancestor lineage display
+  const renderAncestorLineage = () => {
+    if (ancestorChain.length <= 1) return null;
+    // Remove the last one (grandfather) since it's the main tree root
+    const ancestors = ancestorChain.slice(0, -1);
+
+    if (!showFullLineage) {
+      // Show collapsed: Ibrahim → ... → Hashim
+      const first = ancestors[0];
+      const last = ancestors[ancestors.length - 1];
+      return (
+        <div className="flex flex-col items-center mb-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setSelected(first)}
+            className={`px-4 py-2 rounded-xl border-2 text-center ${relationColors.ancestor}`}
+          >
+            <div className="font-bold text-sm">{isAr ? first.name : first.name_en}</div>
+            <div className="text-[10px] opacity-70">{isAr ? "جد أعلى" : "Ancestor"}</div>
+          </motion.button>
+
+          <button
+            onClick={() => setShowFullLineage(true)}
+            className="flex items-center gap-1 my-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs hover:bg-muted/80 transition-colors"
+          >
+            <ChevronDown size={12} />
+            {isAr
+              ? `${ancestors.length - 1} جد بينهما — اضغط للعرض`
+              : `${ancestors.length - 1} ancestors between — click to expand`}
+          </button>
+
+          {ancestors.length > 1 && first.id !== last.id && (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setSelected(last)}
+                className={`px-4 py-2 rounded-xl border-2 text-center ${relationColors.ancestor}`}
+              >
+                <div className="font-bold text-sm">{isAr ? last.name : last.name_en}</div>
+                <div className="text-[10px] opacity-70">{isAr ? "جد أعلى" : "Ancestor"}</div>
+              </motion.button>
+              <div className="w-px h-5 bg-border" />
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // Full lineage
+    return (
+      <div className="flex flex-col items-center mb-2">
+        <button
+          onClick={() => setShowFullLineage(false)}
+          className="flex items-center gap-1 mb-3 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs hover:bg-muted/80 transition-colors"
+        >
+          <ChevronUp size={12} />
+          {isAr ? "طيّ النسب" : "Collapse lineage"}
+        </button>
+        {ancestors.map((anc, i) => (
+          <div key={anc.id} className="flex flex-col items-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setSelected(anc)}
+              className={`px-3 py-1.5 rounded-lg border text-center ${relationColors.ancestor}`}
+            >
+              <div className="font-bold text-xs">{isAr ? anc.name : anc.name_en}</div>
+            </motion.button>
+            {i < ancestors.length - 1 && <div className="w-px h-4 bg-border" />}
+          </div>
+        ))}
+        <div className="w-px h-5 bg-border" />
       </div>
     );
   };
@@ -143,8 +284,8 @@ const FamilyTreePage = () => {
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             {isAr
-              ? "استكشف نسب النبي ﷺ وعائلته — زوجاته وأبناؤه وأحفاده"
-              : "Explore the lineage of the Prophet ﷺ — his wives, children, and grandchildren"}
+              ? "استكشف نسب النبي ﷺ من إبراهيم عليه السلام — زوجاته وأبناؤه وأحفاده"
+              : "Explore the Prophet's ﷺ lineage from Ibrahim — his wives, children, and grandchildren"}
           </p>
         </div>
 
@@ -174,7 +315,8 @@ const FamilyTreePage = () => {
         ) : (
           <div className="overflow-x-auto pb-8">
             <div className="flex flex-col items-center gap-0 min-w-fit mx-auto">
-              {roots.map((root) => renderNode(root))}
+              {renderAncestorLineage()}
+              {renderMainTree()}
             </div>
           </div>
         )}
