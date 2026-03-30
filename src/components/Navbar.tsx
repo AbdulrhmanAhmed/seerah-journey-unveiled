@@ -16,7 +16,7 @@ const Navbar = () => {
     { name: t("navJourney"), icon: Clock, path: "/journey" },
     { name: t("navCharacter"), icon: Heart, path: "/character" },
     { name: t("navInteractiveJourney"), icon: Map, path: "/interactive-journey" },
-    { name: t("navGraph"), icon: Network, path: "/event-graph" },
+    
     { name: t("navQuiz"), icon: Brain, path: "/quiz" },
     { name: t("navFamilyTree"), icon: GitBranch, path: "/family-tree" },
     { name: t("navCompanions"), icon: Users, path: "/companions" },
