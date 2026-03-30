@@ -21,6 +21,7 @@ type FamilyMember = {
 };
 
 const relationColors: Record<string, string> = {
+  ancestor: "bg-amber-50 border-amber-300 text-amber-800",
   grandfather: "bg-amber-100 border-amber-400 text-amber-900",
   father: "bg-amber-100 border-amber-400 text-amber-900",
   mother: "bg-rose-50 border-rose-300 text-rose-900",
