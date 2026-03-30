@@ -26,6 +26,7 @@ import EventGraphPage from "./pages/EventGraphPage";
 import QuizPage from "./pages/QuizPage";
 import FamilyTreePage from "./pages/FamilyTreePage";
 import CompanionsPage from "./pages/CompanionsPage";
+import FeedbackPage from "./pages/FeedbackPage";
 
 const queryClient = new QueryClient();
 
