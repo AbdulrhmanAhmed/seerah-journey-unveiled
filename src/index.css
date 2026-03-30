@@ -184,6 +184,11 @@
   border-top-color: hsl(40 30% 15% / 0.85) !important;
 }
 
+.seerah-label-older {
+  opacity: 0.7 !important;
+  font-size: 10px !important;
+}
+
 .seerah-hover-tooltip {
   background: hsl(40 30% 20% / 0.9) !important;
   color: #fff !important;

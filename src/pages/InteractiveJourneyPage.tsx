@@ -368,21 +368,13 @@ const InteractiveJourneyPage = () => {
       const title = isAr ? event.title : event.title_en;
       const truncTitle = title.length > 22 ? title.slice(0, 20) + "…" : title;
 
-      // Permanent label for current-year events, hover-only for older
-      if (isCurrentYr) {
-        marker.bindTooltip(truncTitle, {
-          direction: "top",
-          offset: [0, -16],
-          permanent: true,
-          className: "seerah-permanent-label",
-        });
-      } else {
-        marker.bindTooltip(title, {
-          direction: "top",
-          offset: [0, -14],
-          className: "seerah-hover-tooltip",
-        });
-      }
+      // Permanent label for all visible events
+      marker.bindTooltip(truncTitle, {
+        direction: "top",
+        offset: [0, -16],
+        permanent: true,
+        className: isCurrentYr ? "seerah-permanent-label" : "seerah-permanent-label seerah-label-older",
+      });
 
       marker.on("click", () => {
         const locationEvents = visibleEvents.filter(
