@@ -11,8 +11,8 @@ import { Send, MessageSquarePlus, AlertTriangle, Lightbulb } from "lucide-react"
 import { motion } from "framer-motion";
 
 const FeedbackPage = () => {
-  const { language } = useLanguage();
-  const isAr = language === "ar";
+  const { lang, isRtl } = useLanguage();
+  const isAr = lang === "ar";
   const { toast } = useToast();
 
   const [type, setType] = useState("suggestion");
