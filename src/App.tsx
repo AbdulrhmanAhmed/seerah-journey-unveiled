@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/quiz" element={<Layout><QuizPage /></Layout>} />
               <Route path="/family-tree" element={<Layout><FamilyTreePage /></Layout>} />
               <Route path="/companions" element={<Layout><CompanionsPage /></Layout>} />
+              <Route path="/feedback" element={<Layout><FeedbackPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
