@@ -1,45 +1,37 @@
 
 
-## Fix Interactive Journey Map: Spacing, Labels, and Smooth Transitions
+## Plan: Add Biographical Details to Family Tree Members
 
-### Problems Identified
+### Problem
+When clicking on family members (wives, sons, uncles), the side panel shows little or no detail because the `bio` and `bio_en` fields in the `family_members` table are empty or minimal. The user wants rich biographical information sourced from *The Sealed Nectar*.
 
-1. **Events clustered too closely** — Many events share the same default coordinates (21.4225, 39.8262 for Makkah) because they happened in the same city. The marker cluster group (`maxClusterRadius: 40`) tries to handle this but at certain zoom levels they overlap badly.
+### What We'll Do
 
-2. **No persistent labels on markers** — Events only show titles on hover (via `bindTooltip`). There are no visible labels so you can't tell what each marker represents without hovering.
+**1. Populate biographical data for all family members**
 
-3. **Jerky transitions between events** — When autoplay moves to a new year, `flyToBounds` jumps to fit all events of that year. If consecutive years are in the same area, it barely moves; if they're far apart, it jumps abruptly. No smooth cinematic panning.
+Update the `family_members` table with detailed Arabic and English bios for:
+- **All 11 wives + Maria al-Qibtiyya** (marriage context, age, notable contributions, children)
+- **All sons and daughters** (birth, life, death details)
+- **Uncles** (Abu Talib, Hamza, Al-Abbas, Abu Lahab, etc.)
+- **Birth/death years** where known
 
----
+All content strictly from *The Sealed Nectar* (Ar-Raheeq Al-Makhtum).
 
-### Plan
+**2. Link companions to family members**
 
-#### 1. Spread overlapping markers with spatial offset
-- For events sharing the same lat/lng (same city), apply a small radial offset (spiral pattern) so markers don't stack directly on top of each other
-- Group events by location, then spread them in a circle around the true coordinates (radius ~0.02°, roughly 2km)
-- This preserves geographic accuracy while making individual markers distinguishable
+For wives and uncles who also exist in the `companions` table, set the `companion_id` field so the detail panel can offer a "View full profile" link to their companion page.
 
-#### 2. Add persistent labels to markers
-- Use Leaflet's `bindTooltip` with `permanent: true` instead of hover-only tooltips
-- Show a short truncated title (max ~20 chars) as a permanent label above each marker
-- Style labels with a small semi-transparent background so they don't clutter the map
-- Only show permanent labels for current-year events; older events keep hover-only tooltips
+**3. Enhance the side panel UI**
 
-#### 3. Smooth cinematic transitions between events
-- Replace `flyToBounds` with `flyTo` targeting the centroid of new events, using longer duration (1.5-2s) and easing
-- When consecutive events are in the same area, skip the fly animation to avoid jittery micro-movements
-- Add a minimum distance threshold (~50km) before triggering a fly animation
-- During autoplay, pan smoothly to each new event's location instead of abruptly fitting bounds
+Update `FamilyTreePage.tsx` to:
+- Show a richer detail panel with sections (marriage info, notable events, children list)
+- Add a "View Companion Profile" button when `companion_id` is set, linking to `/companions/:id`
+- Display birth/death years more prominently
+- Add a subtle scroll indicator for long bios
 
 ### Technical Details
 
-**File**: `src/pages/InteractiveJourneyPage.tsx`
-
-- **Offset logic**: Before adding markers, group `visibleEvents` by rounded lat/lng. For groups with 2+ events, distribute them in a spiral pattern around the center point.
-
-- **Permanent tooltips**: Change `marker.bindTooltip(title, { direction: "top" })` to include `permanent: true` for current-year events, with CSS class for smaller font and background styling.
-
-- **Smooth fly**: Replace the `flyToBounds` block (lines 460-465) with centroid-based `flyTo` that checks distance from current map center. If distance < threshold, use `panTo` with animation; if large distance, use `flyTo` with 2s duration.
-
-- **CSS additions**: Add styles for permanent tooltip labels (`.seerah-permanent-label`) in `index.css`.
+- **Data updates**: ~30+ `UPDATE` statements via the insert tool to populate `bio`, `bio_en`, `birth_year`, `death_year`, and `companion_id` fields
+- **UI changes**: Only `src/pages/FamilyTreePage.tsx` — enhance the `selected` side panel section
+- No schema changes needed; all required columns already exist
 
