@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { GitBranch, X, ChevronDown, ChevronUp } from "lucide-react";
+import { GitBranch, X, ChevronDown, ChevronUp, Calendar, User, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
 type FamilyMember = {
@@ -329,29 +331,85 @@ const FamilyTreePage = () => {
             initial={{ opacity: 0, x: isAr ? -300 : 300 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: isAr ? -300 : 300 }}
-            className={`fixed top-20 ${isAr ? "left-4" : "right-4"} w-80 max-h-[70vh] overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl z-50 p-5`}
+            className={`fixed top-20 ${isAr ? "left-4" : "right-4"} w-80 max-h-[75vh] bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col`}
           >
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-3 end-3 text-muted-foreground hover:text-foreground"
-            >
-              <X size={18} />
-            </button>
-            <div className={`inline-block px-2 py-0.5 rounded-full text-xs mb-2 ${relationColors[selected.relation_type] || relationColors.other}`}>
-              {relationLabels[selected.relation_type]?.[isAr ? "ar" : "en"] || selected.relation_type}
+            {/* Header */}
+            <div className="p-5 pb-3 border-b border-border/50">
+              <button
+                onClick={() => setSelected(null)}
+                className="absolute top-3 end-3 text-muted-foreground hover:text-foreground"
+              >
+                <X size={18} />
+              </button>
+              <div className={`inline-block px-2.5 py-0.5 rounded-full text-xs mb-2 font-medium ${relationColors[selected.relation_type] || relationColors.other}`}>
+                {relationLabels[selected.relation_type]?.[isAr ? "ar" : "en"] || selected.relation_type}
+              </div>
+              <h3 className="text-lg font-bold font-amiri text-foreground">
+                {isAr ? selected.name : selected.name_en}
+              </h3>
+              {(selected.birth_year || selected.death_year) && (
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                  <Calendar size={12} />
+                  <span>
+                    {selected.birth_year && selected.birth_year}
+                    {selected.birth_year && selected.death_year && " — "}
+                    {selected.death_year && selected.death_year}
+                  </span>
+                </div>
+              )}
             </div>
-            <h3 className="text-lg font-bold font-amiri text-foreground mb-1">
-              {isAr ? selected.name : selected.name_en}
-            </h3>
-            {selected.birth_year && (
-              <p className="text-xs text-muted-foreground mb-3">
-                {selected.birth_year}
-                {selected.death_year && ` — ${selected.death_year}`}
-              </p>
-            )}
-            <p className="text-sm leading-relaxed text-foreground/80">
-              {isAr ? selected.bio : selected.bio_en}
-            </p>
+
+            {/* Scrollable Content */}
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-5 pt-3 space-y-4">
+                {/* Bio */}
+                {(isAr ? selected.bio : selected.bio_en) && (
+                  <div>
+                    <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-line">
+                      {isAr ? selected.bio : selected.bio_en}
+                    </p>
+                  </div>
+                )}
+
+                {/* Children list for wives */}
+                {selected.relation_type === "wife" && (() => {
+                  const children = members.filter(m => m.parent_id === selected.id);
+                  if (children.length === 0) return null;
+                  return (
+                    <div className="pt-2 border-t border-border/50">
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <User size={12} />
+                        {isAr ? "الأبناء" : "Children"}
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {children.map(child => (
+                          <button
+                            key={child.id}
+                            onClick={() => setSelected(child)}
+                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors hover:shadow-sm ${relationColors[child.relation_type] || relationColors.other}`}
+                          >
+                            {isAr ? child.name : child.name_en}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Companion Link */}
+                {selected.companion_id && (
+                  <div className="pt-2 border-t border-border/50">
+                    <Link
+                      to={`/companions`}
+                      className="inline-flex items-center gap-2 text-sm text-secondary hover:text-secondary/80 font-medium transition-colors"
+                    >
+                      <ExternalLink size={14} />
+                      {isAr ? "عرض السيرة الكاملة" : "View Full Profile"}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </motion.div>
         )}
       </AnimatePresence>
