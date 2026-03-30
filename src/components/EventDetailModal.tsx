@@ -210,16 +210,9 @@ const EventDetailModal = ({
               </h4>
               <div className="space-y-3">
                 {hadithRefs.map((ref, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-border bg-muted/30 p-4"
-                  >
-                    <p className="font-body text-xs text-secondary font-semibold mb-1">
-                      {ref.source}
-                    </p>
-                    <p className="font-body text-sm text-foreground leading-relaxed italic">
-                      {isAr ? ref.text : ref.text_en}
-                    </p>
+                  <div key={i} className="rounded-lg border border-border bg-muted/30 p-4">
+                    <p className="font-body text-xs text-secondary font-semibold mb-1">{ref.label}</p>
+                    {ref.text && <p className="font-body text-sm text-foreground leading-relaxed italic">{ref.text}</p>}
                   </div>
                 ))}
               </div>
