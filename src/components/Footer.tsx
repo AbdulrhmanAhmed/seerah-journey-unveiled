@@ -1,5 +1,6 @@
-import { BookOpen, ShieldCheck } from "lucide-react";
+import { BookOpen, ShieldCheck, MessageSquarePlus } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const { t } = useLanguage();
