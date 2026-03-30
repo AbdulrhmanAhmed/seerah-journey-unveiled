@@ -37,6 +37,7 @@ const relationColors: Record<string, string> = {
 };
 
 const relationLabels: Record<string, { ar: string; en: string }> = {
+  ancestor: { ar: "جد أعلى", en: "Ancestor" },
   grandfather: { ar: "جد", en: "Grandfather" },
   father: { ar: "أب", en: "Father" },
   mother: { ar: "أم", en: "Mother" },
