@@ -120,7 +120,7 @@ const EventDetailModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto border-border bg-card p-0">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto border-border bg-card p-0 z-[1200]">
         {/* Hero header */}
         <div className="relative">
           {event.image_url && (
