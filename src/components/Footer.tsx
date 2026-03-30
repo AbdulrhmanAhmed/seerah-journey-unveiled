@@ -1,5 +1,6 @@
-import { BookOpen, ShieldCheck } from "lucide-react";
+import { BookOpen, ShieldCheck, MessageSquarePlus } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -35,6 +36,10 @@ const Footer = () => {
           <p className="font-serif-display text-sm text-foreground/60">
             {t("siteName")}
           </p>
+          <Link to="/feedback" className="flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors">
+            <MessageSquarePlus size={14} />
+            {t("navFeedback")}
+          </Link>
           <p>
             © {new Date().getFullYear()} {t("siteName")}. {t("footerCopyright")}
           </p>

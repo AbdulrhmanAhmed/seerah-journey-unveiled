@@ -111,6 +111,7 @@ export const translations = {
     catChallenge: "ابتلاء",
     catMarriage: "زواج",
     catDiplomacy: "دبلوماسية",
+    navFeedback: "شاركنا رأيك",
   },
   en: {
     siteName: "Seerah Story",
@@ -209,6 +210,7 @@ export const translations = {
     catChallenge: "Trial",
     catMarriage: "Marriage",
     catDiplomacy: "Diplomacy",
+    navFeedback: "Feedback",
   },
 } as const;
 
