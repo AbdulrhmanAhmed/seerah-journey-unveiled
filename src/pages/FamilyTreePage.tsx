@@ -315,8 +315,8 @@ const FamilyTreePage = () => {
             {isAr ? "لم تُضَف بيانات العائلة بعد" : "Family data not yet added"}
           </div>
         ) : (
-          <div className="overflow-x-auto pb-8">
-            <div className="flex flex-col items-center gap-0 min-w-fit mx-auto">
+          <div className="pb-8">
+            <div className="flex flex-col items-center gap-0 mx-auto">
               {renderAncestorLineage()}
               {renderMainTree()}
             </div>
