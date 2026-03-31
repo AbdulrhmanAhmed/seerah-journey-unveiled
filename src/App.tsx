@@ -19,6 +19,7 @@ import AdminPathsPage from "./pages/AdminPathsPage";
 import AdminLocationsPage from "./pages/AdminLocationsPage";
 import AdminShamailPage from "./pages/AdminShamailPage";
 import AdminTimelinePage from "./pages/AdminTimelinePage";
+import AdminFeedbackPage from "./pages/AdminFeedbackPage";
 import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 import BattleOfBadrPage from "./pages/BattleOfBadrPage";
 import EventDetailPage from "./pages/EventDetailPage";
