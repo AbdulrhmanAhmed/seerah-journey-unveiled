@@ -13,6 +13,7 @@ export const translations = {
     navQuiz: "اختبار المعرفة",
     navFamilyTree: "شجرة العائلة",
     navCompanions: "الصحابة",
+    navFeedback: "اقتراحات",
     menuLabel: "القائمة",
 
     // Hero
