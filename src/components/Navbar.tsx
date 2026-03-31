@@ -20,6 +20,7 @@ const Navbar = () => {
     { name: t("navQuiz"), icon: Brain, path: "/quiz" },
     { name: t("navFamilyTree"), icon: GitBranch, path: "/family-tree" },
     { name: t("navCompanions"), icon: Users, path: "/companions" },
+    { name: t("navFeedback"), icon: MessageSquare, path: "/feedback" },
   ];
 
   return (
