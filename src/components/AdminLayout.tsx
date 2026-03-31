@@ -10,6 +10,7 @@ const navItems = [
   { path: "/admin/locations", label: "Locations", icon: Map },
   { path: "/admin/shamail", label: "Shamail", icon: Heart },
   { path: "/admin/timeline", label: "Timeline", icon: Clock },
+  { path: "/admin/feedback", label: "Feedback", icon: MessageSquare },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

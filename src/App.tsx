@@ -62,6 +62,7 @@ const App = () => (
               <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
               <Route path="/admin/shamail" element={<AdminProtectedRoute><AdminShamailPage /></AdminProtectedRoute>} />
               <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
+              <Route path="/admin/feedback" element={<AdminProtectedRoute><AdminFeedbackPage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
