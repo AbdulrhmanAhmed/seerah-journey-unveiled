@@ -125,6 +125,7 @@ export const translations = {
     navQuiz: "Knowledge Quiz",
     navFamilyTree: "Family Tree",
     navCompanions: "Companions",
+    navFeedback: "Feedback",
     menuLabel: "Menu",
 
     bismillah: "In the Name of God, the Most Gracious, the Most Merciful",
