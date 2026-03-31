@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Map, Route, LogOut, LayoutDashboard, Heart, Clock } from "lucide-react";
+import { Map, Route, LogOut, LayoutDashboard, Heart, Clock, MessageSquare } from "lucide-react";
 
 const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
