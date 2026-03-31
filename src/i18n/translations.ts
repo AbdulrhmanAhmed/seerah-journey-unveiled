@@ -212,7 +212,6 @@ export const translations = {
     catChallenge: "Trial",
     catMarriage: "Marriage",
     catDiplomacy: "Diplomacy",
-    navFeedback: "Feedback",
   },
 } as const;
 
