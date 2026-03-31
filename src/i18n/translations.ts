@@ -112,7 +112,7 @@ export const translations = {
     catChallenge: "ابتلاء",
     catMarriage: "زواج",
     catDiplomacy: "دبلوماسية",
-    navFeedback: "شاركنا رأيك",
+    
   },
   en: {
     siteName: "Seerah Story",
