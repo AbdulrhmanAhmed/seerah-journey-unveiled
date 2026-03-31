@@ -13,6 +13,7 @@ export const translations = {
     navQuiz: "اختبار المعرفة",
     navFamilyTree: "شجرة العائلة",
     navCompanions: "الصحابة",
+    navFeedback: "اقتراحات",
     menuLabel: "القائمة",
 
     // Hero
@@ -111,7 +112,7 @@ export const translations = {
     catChallenge: "ابتلاء",
     catMarriage: "زواج",
     catDiplomacy: "دبلوماسية",
-    navFeedback: "شاركنا رأيك",
+    
   },
   en: {
     siteName: "Seerah Story",
@@ -124,6 +125,7 @@ export const translations = {
     navQuiz: "Knowledge Quiz",
     navFamilyTree: "Family Tree",
     navCompanions: "Companions",
+    navFeedback: "Feedback",
     menuLabel: "Menu",
 
     bismillah: "In the Name of God, the Most Gracious, the Most Merciful",
@@ -210,7 +212,6 @@ export const translations = {
     catChallenge: "Trial",
     catMarriage: "Marriage",
     catDiplomacy: "Diplomacy",
-    navFeedback: "Feedback",
   },
 } as const;
 

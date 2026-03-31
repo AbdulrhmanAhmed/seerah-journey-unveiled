@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, Heart, Menu, X, Map, Brain, GitBranch, Users } from "lucide-react";
+import { Clock, Heart, Menu, X, Map, Brain, GitBranch, Users, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -20,6 +20,7 @@ const Navbar = () => {
     { name: t("navQuiz"), icon: Brain, path: "/quiz" },
     { name: t("navFamilyTree"), icon: GitBranch, path: "/family-tree" },
     { name: t("navCompanions"), icon: Users, path: "/companions" },
+    { name: t("navFeedback"), icon: MessageSquare, path: "/feedback" },
   ];
 
   return (
