@@ -19,6 +19,7 @@ import AdminPathsPage from "./pages/AdminPathsPage";
 import AdminLocationsPage from "./pages/AdminLocationsPage";
 import AdminShamailPage from "./pages/AdminShamailPage";
 import AdminTimelinePage from "./pages/AdminTimelinePage";
+import AdminFeedbackPage from "./pages/AdminFeedbackPage";
 import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 import BattleOfBadrPage from "./pages/BattleOfBadrPage";
 import EventDetailPage from "./pages/EventDetailPage";
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
               <Route path="/admin/shamail" element={<AdminProtectedRoute><AdminShamailPage /></AdminProtectedRoute>} />
               <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
+              <Route path="/admin/feedback" element={<AdminProtectedRoute><AdminFeedbackPage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
