@@ -159,9 +159,45 @@ const FamilyTreePage = () => {
     const mainBranch = getChildren(lastAncestor.id);
     if (mainBranch.length === 0) return null;
 
-    // Separate Abdullah (father) from uncles
+    // Separate Abdullah (father) from uncles and aunts
     const father = mainBranch.find(m => m.relation_type === "father");
     const uncles = mainBranch.filter(m => m.relation_type === "uncle");
+    const aunts = mainBranch.filter(m => m.relation_type === "aunt");
+
+    const renderRelativesGrid = (
+      relatives: FamilyMember[],
+      type: "uncle" | "aunt",
+      labelAr: string,
+      labelEn: string
+    ) => {
+      if (relatives.length === 0) return null;
+      return (
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="text-center text-xs font-medium text-muted-foreground mb-3 px-3 py-1 rounded-full bg-muted/50 inline-block mx-auto">
+            {isAr ? `${labelAr} (${relatives.length})` : `${labelEn} (${relatives.length})`}
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {relatives.map((rel) => (
+              <motion.button
+                key={rel.id}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setSelected(rel)}
+                className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors[type]}`}
+                style={{ minWidth: 100 }}
+              >
+                <div className="font-bold text-xs">
+                  {isAr ? rel.name : rel.name_en}
+                </div>
+                <div className="text-[10px] opacity-70 mt-0.5">
+                  {relationLabels[type][isAr ? "ar" : "en"]}
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="flex flex-col items-center gap-0">
@@ -185,42 +221,16 @@ const FamilyTreePage = () => {
 
         <div className="w-px h-5 bg-border" />
 
-        {/* Two sections: Father branch (center) + Uncles grid */}
+        {/* Father branch + Uncles + Aunts */}
         <div className="flex flex-col items-center gap-6 w-full">
-          {/* Father → Prophet branch */}
           {father && (
             <div className="flex flex-col items-center">
               {renderNode(father, 1)}
             </div>
           )}
 
-          {/* Uncles grid */}
-          {uncles.length > 0 && (
-            <div className="w-full max-w-3xl mx-auto">
-              <div className="text-center text-xs font-medium text-muted-foreground mb-3 px-3 py-1 rounded-full bg-muted/50 inline-block mx-auto">
-                {isAr ? `أعمام النبي ﷺ (${uncles.length})` : `Prophet's Uncles (${uncles.length})`}
-              </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {uncles.map((uncle) => (
-                  <motion.button
-                    key={uncle.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelected(uncle)}
-                    className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors.uncle}`}
-                    style={{ minWidth: 100 }}
-                  >
-                    <div className="font-bold text-xs">
-                      {isAr ? uncle.name : uncle.name_en}
-                    </div>
-                    <div className="text-[10px] opacity-70 mt-0.5">
-                      {relationLabels.uncle[isAr ? "ar" : "en"]}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          )}
+          {renderRelativesGrid(uncles, "uncle", "أعمام النبي ﷺ", "Prophet's Uncles")}
+          {renderRelativesGrid(aunts, "aunt", "عمات النبي ﷺ", "Prophet's Aunts")}
         </div>
       </div>
     );
