@@ -112,6 +112,8 @@ export const translations = {
     catChallenge: "ابتلاء",
     catMarriage: "زواج",
     catDiplomacy: "دبلوماسية",
+    journeyImportantEvents: "الأحداث المهمة",
+    journeyAllEvents: "جميع الأحداث",
     
   },
   en: {
@@ -212,6 +214,8 @@ export const translations = {
     catChallenge: "Trial",
     catMarriage: "Marriage",
     catDiplomacy: "Diplomacy",
+    journeyImportantEvents: "Important Events",
+    journeyAllEvents: "All Events",
   },
 } as const;
 
