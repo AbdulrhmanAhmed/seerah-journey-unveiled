@@ -214,6 +214,8 @@ export const translations = {
     catChallenge: "Trial",
     catMarriage: "Marriage",
     catDiplomacy: "Diplomacy",
+    journeyImportantEvents: "Important Events",
+    journeyAllEvents: "All Events",
   },
 } as const;
 
