@@ -52,6 +52,7 @@ const relationLabels: Record<string, { ar: string; en: string }> = {
   aunt: { ar: "عمة", en: "Aunt" },
   grandson: { ar: "حفيد", en: "Grandson" },
   granddaughter: { ar: "حفيدة", en: "Granddaughter" },
+  foster_sibling: { ar: "أخ/أخت من الرضاعة", en: "Foster Sibling" },
 };
 
 const FamilyTreePage = () => {
