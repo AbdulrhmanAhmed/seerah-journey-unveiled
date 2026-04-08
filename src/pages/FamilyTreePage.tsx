@@ -234,6 +234,7 @@ const FamilyTreePage = () => {
 
           {renderRelativesGrid(uncles, "uncle", "أعمام النبي ﷺ", "Prophet's Uncles")}
           {renderRelativesGrid(aunts, "aunt", "عمات النبي ﷺ", "Prophet's Aunts")}
+          {renderRelativesGrid(fosterSiblings, "foster_sibling", "إخوة النبي ﷺ من الرضاعة", "Prophet's Foster Siblings")}
         </div>
       </div>
     );
