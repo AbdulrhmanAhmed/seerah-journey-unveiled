@@ -299,10 +299,12 @@ const EventDetailPage = () => {
                   className="rounded-xl border border-secondary/20 bg-secondary/5 p-5"
                 >
                   <p className="font-body text-xs text-secondary font-semibold mb-2">
-                    {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surahEn} — Ayah ${ref.ayah}`}
+                    {isAr
+                      ? `سورة ${ref.surah || ref.surah_name || ""} — آية ${ref.ayah || ref.verse_number || ref.verse || ""}`
+                      : `Surah ${ref.surahEn || ref.surah_name_en || ref.surah || ""} — Ayah ${ref.ayah || ref.verse_number || ref.verse || ""}`}
                   </p>
                   <p className="font-serif-display text-lg text-foreground leading-relaxed">
-                    {isAr ? ref.textAr : ref.textEn}
+                    {isAr ? ref.textAr || ref.text || ref.content : ref.textEn || ref.text || ref.content}
                   </p>
                 </motion.div>
               ))}
