@@ -168,7 +168,7 @@ const FamilyTreePage = () => {
 
     const renderRelativesGrid = (
       relatives: FamilyMember[],
-      type: "uncle" | "aunt",
+      type: string,
       labelAr: string,
       labelEn: string
     ) => {
@@ -185,14 +185,14 @@ const FamilyTreePage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setSelected(rel)}
-                className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors[type]}`}
+                className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors[type] || relationColors.other}`}
                 style={{ minWidth: 100 }}
               >
                 <div className="font-bold text-xs">
                   {isAr ? rel.name : rel.name_en}
                 </div>
                 <div className="text-[10px] opacity-70 mt-0.5">
-                  {relationLabels[type][isAr ? "ar" : "en"]}
+                  {relationLabels[type]?.[isAr ? "ar" : "en"] || type}
                 </div>
               </motion.button>
             ))}
