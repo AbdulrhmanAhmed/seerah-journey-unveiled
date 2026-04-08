@@ -1,40 +1,30 @@
 
 
-# Journey Page: Show All Events with Toggle
+# Add Foster Brothers Section to Family Tree
 
-## Problem
-The Journey page currently uses only 23 hardcoded events from `seerahTimeline.ts`, while the database has **244 active events**. Users see far more events on the Interactive Map and want the same richness on the Journey timeline.
-
-## Solution
-Fetch events from the database instead of static data, and add a toggle so users can switch between "Important Events" (major only) and "All Events."
+## Context
+From *The Sealed Nectar*, Prophet Muhammad ﷺ had foster (milk) siblings through his wet nurse **Halimah bint Abi Dhu'ayb al-Sa'diyah**. These include:
+- **Abdullah bin Al-Harith** (foster brother)
+- **Anisah bint Al-Harith** (foster sister)  
+- **Hudhafah / Ash-Shayma' bint Al-Harith** (foster sister, known as Ash-Shayma')
 
 ## Plan
 
-### 1. Fetch events from database
-- Replace the static `timelineEvents` import with a `useQuery` call to `timeline_events` table
-- Fetch all active events ordered by `year_ce` and `display_order`
-- Map database fields to the component's expected shape
+### 1. Add new relation type: `foster_sibling`
+- Add `foster_sibling` to `relationColors` and `relationLabels` maps in `FamilyTreePage.tsx`
+- Color: a distinct teal/cyan shade to differentiate from other relations
 
-### 2. Add toggle UI
-- Add a pill-style toggle at the top of the timeline (below the header) with two options: "Important Events" / "All Events"
-- Default to "Important Events" (`is_major = true`, ~133 events)
-- "All Events" shows all 244 events
-- Add translation keys for the toggle labels in both Arabic and English
+### 2. Insert foster siblings into database
+- Create a migration to insert 3 family members with `relation_type = 'foster_sibling'`
+- Parent will be set to `null` (they aren't children of Abdul-Muttalib)
+- Include bilingual names, bios sourced from The Sealed Nectar, and gender fields
 
-### 3. Update event rendering
-- Filter fetched events by `is_major` flag based on toggle state
-- Split into Makkah/Madinah sections using the `era` field (same as current logic)
-- Map DB fields (`title`/`title_en`, `description`/`description_en`, `year_hijri`, `year_ce`, `category`, `era`) to card props
-
-### 4. Update TimelineEventCard
-- Adapt it to accept the database event shape (or map at the page level)
-- Navigation to `/event/{slug || id}` on "Learn More"
-
-### 5. Add loading state
-- Show skeleton cards while data loads
+### 3. Add "Foster Brothers & Sisters" section in UI
+- Add a new section below the uncles/aunts grids in `renderMainTree()`
+- Use the same `renderRelativesGrid` pattern with label "إخوة النبي ﷺ من الرضاعة" / "Prophet's Foster Siblings"
+- Filter members by `relation_type === 'foster_sibling'`
 
 ### Files to modify
-- `src/pages/JourneyPage.tsx` — main changes (DB fetch, toggle, mapping)
-- `src/i18n/translations.ts` — add toggle label translations
-- `src/components/TimelineEventCard.tsx` — minor adaptation if needed
+- `src/pages/FamilyTreePage.tsx` — add relation type config + render section
+- Database migration — insert foster sibling records
 
