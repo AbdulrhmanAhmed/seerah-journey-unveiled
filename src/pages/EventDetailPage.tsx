@@ -8,7 +8,7 @@ import {
   Quote,
   Link2,
   Calendar,
-  BookMarked,
+  
   Loader2,
   Network,
 } from "lucide-react";
@@ -332,37 +332,6 @@ const EventDetailPage = () => {
           </motion.section>
         )}
 
-        {/* Sources & Documentation */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.4 }}
-        >
-          <Separator className="mb-6" />
-          <h2 className="font-serif-display text-xl md:text-2xl text-foreground mb-4 flex items-center gap-2">
-            <BookMarked className="h-5 w-5 text-secondary" />
-            {isAr ? "المصادر والتوثيق" : "Sources & Documentation"}
-          </h2>
-          <p className="font-body text-sm md:text-base text-muted-foreground leading-relaxed">
-            {isAr
-              ? "جميع المحتوى في Seerah Path مبني على مصادر علمية موثوقة. نعتمد على أعمال كلاسيكية مثل الرحيق المختوم، وسيرة ابن هشام، ومصنفات الحديث المعتمدة."
-              : "All content in Seerah Path is built on verified scholarly sources. We rely on classical works such as The Sealed Nectar, Ibn Hisham's Seerah, and authenticated hadith collections."}
-          </p>
-          <ul className="mt-4 space-y-1 ps-5 list-disc font-body text-sm text-muted-foreground">
-            <li>{isAr ? "الرحيق المختوم (Ar-Raheeq Al-Makhtum)" : "The Sealed Nectar (Ar-Raheeq Al-Makhtum)"}</li>
-            <li>{isAr ? "سيرة ابن هشام" : "Ibn Hisham's Seerah"}</li>
-            <li>{isAr ? "صحيح البخاري" : "Sahih al-Bukhari"}</li>
-            <li>{isAr ? "صحيح مسلم" : "Sahih Muslim"}</li>
-          </ul>
-          {(quranRefs.length === 0 || hadithRefs.length === 0) && (
-            <p className="mt-4 font-body text-xs text-muted-foreground">
-              {isAr
-                ? "ستظهر هنا المراجع الخاصة بالحدث (الآيات والأحاديث) عند إضافتها من لوحة الإدارة."
-                : "Event-specific Quran/Hadith references will appear here once added from the Admin panel."}
-            </p>
-          )}
-        </motion.section>
 
         {/* Related Events */}
         {relatedEvents.length > 0 && (
