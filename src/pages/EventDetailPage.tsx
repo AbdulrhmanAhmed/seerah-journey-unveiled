@@ -20,11 +20,17 @@ import { timelineEvents } from "@/data/seerahTimeline";
 import EventRelationshipGraph from "@/components/EventRelationshipGraph";
 
 interface QuranRef {
-  surah: string;
-  surahEn: string;
-  ayah: string;
-  textAr: string;
-  textEn: string;
+  surah?: string;
+  surahEn?: string;
+  ayah?: string;
+  textAr?: string;
+  textEn?: string;
+  surah_name?: string;
+  surah_name_en?: string;
+  verse?: string;
+  verse_number?: string | number;
+  text?: string;
+  content?: string;
 }
 
 interface HadithRef {
