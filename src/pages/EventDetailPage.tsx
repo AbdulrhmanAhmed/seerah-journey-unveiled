@@ -177,7 +177,12 @@ const EventDetailPage = () => {
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
   const quranRefs = (event.quran_references as unknown as QuranRef[]) || [];
-  const hadithRefs = (event.hadith_references as unknown as HadithRef[]) || [];
+  const rawHadith = (event.hadith_references as unknown as (HadithRef | string)[]) || [];
+  // Filter to only structured objects that have actual content; skip plain strings
+  const hadithRefs = rawHadith.filter(
+    (ref): ref is HadithRef =>
+      typeof ref === "object" && ref !== null && !!(ref.textAr || ref.textEn)
+  );
 
   return (
     <div className="min-h-screen">
