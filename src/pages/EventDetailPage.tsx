@@ -20,11 +20,17 @@ import { timelineEvents } from "@/data/seerahTimeline";
 import EventRelationshipGraph from "@/components/EventRelationshipGraph";
 
 interface QuranRef {
-  surah: string;
-  surahEn: string;
-  ayah: string;
-  textAr: string;
-  textEn: string;
+  surah?: string;
+  surahEn?: string;
+  ayah?: string;
+  textAr?: string;
+  textEn?: string;
+  surah_name?: string;
+  surah_name_en?: string;
+  verse?: string;
+  verse_number?: string | number;
+  text?: string;
+  content?: string;
 }
 
 interface HadithRef {
@@ -176,9 +182,11 @@ const EventDetailPage = () => {
   const catLabel = categoryLabels[event.category]?.[isAr ? "ar" : "en"] || event.category;
   const catColor = categoryColors[event.category] || "bg-muted text-muted-foreground";
 
-  const quranRefs = (event.quran_references as unknown as QuranRef[]) || [];
+  const rawQuranRefs = (event.quran_references as unknown as QuranRef[]) || [];
+  const quranRefs = rawQuranRefs.filter(
+    (ref) => typeof ref === "object" && ref !== null && !!(ref.textAr || ref.textEn || ref.text || ref.content)
+  );
   const rawHadith = (event.hadith_references as unknown as (HadithRef | string)[]) || [];
-  // Filter to only structured objects that have actual content; skip plain strings
   const hadithRefs = rawHadith.filter(
     (ref): ref is HadithRef =>
       typeof ref === "object" && ref !== null && !!(ref.textAr || ref.textEn)
@@ -291,10 +299,12 @@ const EventDetailPage = () => {
                   className="rounded-xl border border-secondary/20 bg-secondary/5 p-5"
                 >
                   <p className="font-body text-xs text-secondary font-semibold mb-2">
-                    {isAr ? `سورة ${ref.surah} — آية ${ref.ayah}` : `Surah ${ref.surahEn} — Ayah ${ref.ayah}`}
+                    {isAr
+                      ? `سورة ${ref.surah || ref.surah_name || ""} — آية ${ref.ayah || ref.verse_number || ref.verse || ""}`
+                      : `Surah ${ref.surahEn || ref.surah_name_en || ref.surah || ""} — Ayah ${ref.ayah || ref.verse_number || ref.verse || ""}`}
                   </p>
                   <p className="font-serif-display text-lg text-foreground leading-relaxed">
-                    {isAr ? ref.textAr : ref.textEn}
+                    {isAr ? ref.textAr || ref.text || ref.content : ref.textEn || ref.text || ref.content}
                   </p>
                 </motion.div>
               ))}
