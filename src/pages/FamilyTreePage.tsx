@@ -165,6 +165,7 @@ const FamilyTreePage = () => {
     const father = mainBranch.find(m => m.relation_type === "father");
     const uncles = mainBranch.filter(m => m.relation_type === "uncle");
     const aunts = mainBranch.filter(m => m.relation_type === "aunt");
+    const fosterSiblings = members.filter(m => m.relation_type === "foster_sibling");
 
     const renderRelativesGrid = (
       relatives: FamilyMember[],
