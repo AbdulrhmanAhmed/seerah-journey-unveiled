@@ -35,6 +35,7 @@ const relationColors: Record<string, string> = {
   aunt: "bg-pink-50 border-pink-300 text-pink-800",
   grandson: "bg-sky-50 border-sky-200 text-sky-800",
   granddaughter: "bg-purple-50 border-purple-200 text-purple-800",
+  foster_sibling: "bg-teal-50 border-teal-300 text-teal-800",
   other: "bg-muted border-border text-foreground",
 };
 
