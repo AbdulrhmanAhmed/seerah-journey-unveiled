@@ -35,6 +35,7 @@ const relationColors: Record<string, string> = {
   aunt: "bg-pink-50 border-pink-300 text-pink-800",
   grandson: "bg-sky-50 border-sky-200 text-sky-800",
   granddaughter: "bg-purple-50 border-purple-200 text-purple-800",
+  foster_sibling: "bg-teal-50 border-teal-300 text-teal-800",
   other: "bg-muted border-border text-foreground",
 };
 
@@ -51,6 +52,7 @@ const relationLabels: Record<string, { ar: string; en: string }> = {
   aunt: { ar: "عمة", en: "Aunt" },
   grandson: { ar: "حفيد", en: "Grandson" },
   granddaughter: { ar: "حفيدة", en: "Granddaughter" },
+  foster_sibling: { ar: "أخ/أخت من الرضاعة", en: "Foster Sibling" },
 };
 
 const FamilyTreePage = () => {
@@ -163,10 +165,11 @@ const FamilyTreePage = () => {
     const father = mainBranch.find(m => m.relation_type === "father");
     const uncles = mainBranch.filter(m => m.relation_type === "uncle");
     const aunts = mainBranch.filter(m => m.relation_type === "aunt");
+    const fosterSiblings = members.filter(m => m.relation_type === "foster_sibling");
 
     const renderRelativesGrid = (
       relatives: FamilyMember[],
-      type: "uncle" | "aunt",
+      type: string,
       labelAr: string,
       labelEn: string
     ) => {
@@ -183,14 +186,14 @@ const FamilyTreePage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setSelected(rel)}
-                className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors[type]}`}
+                className={`px-3 py-2 rounded-xl border-2 text-center transition-shadow hover:shadow-md ${relationColors[type] || relationColors.other}`}
                 style={{ minWidth: 100 }}
               >
                 <div className="font-bold text-xs">
                   {isAr ? rel.name : rel.name_en}
                 </div>
                 <div className="text-[10px] opacity-70 mt-0.5">
-                  {relationLabels[type][isAr ? "ar" : "en"]}
+                  {relationLabels[type]?.[isAr ? "ar" : "en"] || type}
                 </div>
               </motion.button>
             ))}
@@ -231,6 +234,7 @@ const FamilyTreePage = () => {
 
           {renderRelativesGrid(uncles, "uncle", "أعمام النبي ﷺ", "Prophet's Uncles")}
           {renderRelativesGrid(aunts, "aunt", "عمات النبي ﷺ", "Prophet's Aunts")}
+          {renderRelativesGrid(fosterSiblings, "foster_sibling", "إخوة النبي ﷺ من الرضاعة", "Prophet's Foster Siblings")}
         </div>
       </div>
     );
