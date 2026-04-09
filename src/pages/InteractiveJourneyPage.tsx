@@ -694,13 +694,13 @@ const InteractiveJourneyPage = () => {
   // Category filter toggle
   const toggleCategory = useCallback((catId: string) => {
     setActiveCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(catId)) {
-        if (next.size > 1) next.delete(catId); // keep at least one
-      } else {
-        next.add(catId);
+      const allCats = new Set(categories.map(c => c.id));
+      // If this is already the only active one, reset to show all
+      if (prev.size === 1 && prev.has(catId)) {
+        return allCats;
       }
-      return next;
+      // Otherwise, show only this category
+      return new Set([catId]);
     });
   }, []);
 
