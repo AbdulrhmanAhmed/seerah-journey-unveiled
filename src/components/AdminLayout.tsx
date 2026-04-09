@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Map, Route, LogOut, LayoutDashboard, Heart, Clock, MessageSquare } from "lucide-react";
+import { Map, Route, LogOut, LayoutDashboard, Heart, Clock, MessageSquare, Brain } from "lucide-react";
 
 const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -11,6 +11,7 @@ const navItems = [
   { path: "/admin/shamail", label: "Shamail", icon: Heart },
   { path: "/admin/timeline", label: "Timeline", icon: Clock },
   { path: "/admin/feedback", label: "Feedback", icon: MessageSquare },
+  { path: "/admin/quiz", label: "Quiz", icon: Brain },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
