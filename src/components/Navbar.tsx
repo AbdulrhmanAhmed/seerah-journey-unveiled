@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, Heart, Menu, X, Map, Brain, GitBranch, Users, MessageSquare } from "lucide-react";
+import {
+  Clock,
+  Heart,
+  Menu,
+  X,
+  Map,
+  Brain,
+  GitBranch,
+  Users,
+  MessageSquare,
+  Swords,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -15,8 +26,12 @@ const Navbar = () => {
   const pillars = [
     { name: t("navJourney"), icon: Clock, path: "/journey" },
     { name: t("navCharacter"), icon: Heart, path: "/character" },
-    { name: t("navInteractiveJourney"), icon: Map, path: "/interactive-journey" },
-    
+    {
+      name: t("navInteractiveJourney"),
+      icon: Map,
+      path: "/interactive-journey",
+    },
+    { name: t("navBattles"), icon: Swords, path: "/battles" },
     { name: t("navQuiz"), icon: Brain, path: "/quiz" },
     { name: t("navFamilyTree"), icon: GitBranch, path: "/family-tree" },
     { name: t("navCompanions"), icon: Users, path: "/companions" },
@@ -28,7 +43,11 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center">
-            <img src={seerahLogo} alt="Seerah Story" className="h-10 md:h-12 w-auto" />
+            <img
+              src={seerahLogo}
+              alt="Seerah Story"
+              className="h-10 md:h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -43,7 +62,7 @@ const Navbar = () => {
                   "relative after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0.5 after:bg-secondary after:transition-all after:duration-300 hover:after:w-3/4",
                   location.pathname === path
                     ? "text-secondary after:w-3/4"
-                    : "text-foreground/70"
+                    : "text-foreground/70",
                 )}
               >
                 <Icon size={16} />
@@ -87,7 +106,7 @@ const Navbar = () => {
                     "hover:bg-secondary/10 hover:text-secondary",
                     location.pathname === path
                       ? "text-secondary bg-secondary/5"
-                      : "text-foreground/70"
+                      : "text-foreground/70",
                   )}
                 >
                   <Icon size={18} />

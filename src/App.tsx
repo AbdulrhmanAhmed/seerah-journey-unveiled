@@ -23,6 +23,7 @@ import AdminFeedbackPage from "./pages/AdminFeedbackPage";
 import AdminQuizPage from "./pages/AdminQuizPage";
 import InteractiveJourneyPage from "./pages/InteractiveJourneyPage";
 import BattleOfBadrPage from "./pages/BattleOfBadrPage";
+import BattlesPage from "./pages/BattlesPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import EventGraphPage from "./pages/EventGraphPage";
 import QuizPage from "./pages/QuizPage";
@@ -42,31 +43,186 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<Layout><Index /></Layout>} />
-              <Route path="/journey" element={<Layout><JourneyPage /></Layout>} />
-              <Route path="/character" element={<Layout><CharacterPage /></Layout>} />
-              <Route path="/map" element={<Layout><MapPage /></Layout>} />
-              <Route path="/library" element={<Layout><LibraryPage /></Layout>} />
-              <Route path="/interactive-journey" element={<Layout><InteractiveJourneyPage /></Layout>} />
-              <Route path="/battle-of-badr" element={<Layout><BattleOfBadrPage /></Layout>} />
-              <Route path="/event/:id" element={<Layout><EventDetailPage /></Layout>} />
-              <Route path="/event-graph" element={<Layout><EventGraphPage /></Layout>} />
-              <Route path="/quiz" element={<Layout><QuizPage /></Layout>} />
-              <Route path="/family-tree" element={<Layout><FamilyTreePage /></Layout>} />
-              <Route path="/companions" element={<Layout><CompanionsPage /></Layout>} />
-              <Route path="/feedback" element={<Layout><FeedbackPage /></Layout>} />
+              <Route
+                path="/"
+                element={
+                  <Layout>
+                    <Index />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/journey"
+                element={
+                  <Layout>
+                    <JourneyPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/character"
+                element={
+                  <Layout>
+                    <CharacterPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/map"
+                element={
+                  <Layout>
+                    <MapPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/library"
+                element={
+                  <Layout>
+                    <LibraryPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/interactive-journey"
+                element={
+                  <Layout>
+                    <InteractiveJourneyPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/battle-of-badr"
+                element={
+                  <Layout>
+                    <BattleOfBadrPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/battles"
+                element={
+                  <Layout>
+                    <BattlesPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/event/:id"
+                element={
+                  <Layout>
+                    <EventDetailPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/event-graph"
+                element={
+                  <Layout>
+                    <EventGraphPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/quiz"
+                element={
+                  <Layout>
+                    <QuizPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/family-tree"
+                element={
+                  <Layout>
+                    <FamilyTreePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/companions"
+                element={
+                  <Layout>
+                    <CompanionsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/feedback"
+                element={
+                  <Layout>
+                    <FeedbackPage />
+                  </Layout>
+                }
+              />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
-              <Route path="/admin/paths" element={<AdminProtectedRoute><AdminPathsPage /></AdminProtectedRoute>} />
-              <Route path="/admin/locations" element={<AdminProtectedRoute><AdminLocationsPage /></AdminProtectedRoute>} />
-              <Route path="/admin/shamail" element={<AdminProtectedRoute><AdminShamailPage /></AdminProtectedRoute>} />
-              <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
-              <Route path="/admin/feedback" element={<AdminProtectedRoute><AdminFeedbackPage /></AdminProtectedRoute>} />
-              <Route path="/admin/quiz" element={<AdminProtectedRoute><AdminQuizPage /></AdminProtectedRoute>} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboard />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/paths"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminPathsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/locations"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminLocationsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/shamail"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminShamailPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/timeline"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminTimelinePage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/feedback"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminFeedbackPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/quiz"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminQuizPage />
+                  </AdminProtectedRoute>
+                }
+              />
 
-              <Route path="*" element={<Layout><NotFound /></Layout>} />
+              <Route
+                path="*"
+                element={
+                  <Layout>
+                    <NotFound />
+                  </Layout>
+                }
+              />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
