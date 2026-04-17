@@ -1057,10 +1057,20 @@ const InteractiveJourneyPage = () => {
           {/* Year display */}
           <motion.div key={currentYear} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center">
             {(() => {
-              const hijri = currentYearEvents.find(e => e.year_hijri)?.year_hijri;
-              return hijri ? (
+              const storedHijri = currentYearEvents.find(e => e.year_hijri)?.year_hijri;
+              let hijriLabel: string | null = null;
+              if (storedHijri) {
+                hijriLabel = `${storedHijri} ${isAr ? "هـ" : "AH"}`;
+              } else if (currentYear < 622) {
+                const bh = 622 - currentYear;
+                hijriLabel = isAr ? `${bh} قبل الهجرة` : `${bh} BH`;
+              } else if (currentYear >= 622) {
+                const ah = currentYear - 621;
+                hijriLabel = `${ah} ${isAr ? "هـ" : "AH"}`;
+              }
+              return hijriLabel ? (
                 <span className="font-serif-display text-xl md:text-3xl font-bold text-secondary gold-glow rounded-lg px-2">
-                  {hijri} {isAr ? "هـ" : "AH"}
+                  {hijriLabel}
                 </span>
               ) : null;
             })()}
