@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
               <Route path="/admin/feedback" element={<AdminProtectedRoute><AdminFeedbackPage /></AdminProtectedRoute>} />
               <Route path="/admin/quiz" element={<AdminProtectedRoute><AdminQuizPage /></AdminProtectedRoute>} />
+              <Route path="/admin/battles" element={<AdminProtectedRoute><AdminBattlesPage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
