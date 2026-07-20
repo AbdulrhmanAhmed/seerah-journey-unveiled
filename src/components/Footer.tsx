@@ -14,10 +14,16 @@ const Footer = () => {
           <p className="font-serif-display text-sm text-foreground/60">
             {t("siteName")}
           </p>
-          <Link to="/feedback" className="flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors">
-            <MessageSquarePlus size={14} />
-            {t("navFeedback")}
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/battles" className="flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors">
+              <Swords size={14} />
+              {t("navBattles")}
+            </Link>
+            <Link to="/feedback" className="flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors">
+              <MessageSquarePlus size={14} />
+              {t("navFeedback")}
+            </Link>
+          </div>
           <p>
             © {new Date().getFullYear()} {t("siteName")}. {t("footerCopyright")}
           </p>
