@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Clock, Heart, Compass, BookOpen, ArrowLeft, ArrowRight } from "lucide-react";
+import { Clock, Heart, Compass, BookOpen, Swords, ArrowLeft, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { TranslationKey } from "@/i18n/translations";
@@ -8,6 +8,7 @@ const pillarsConfig = [
   { titleKey: "navJourney" as TranslationKey, descKey: "pillarJourneyDesc" as TranslationKey, icon: Clock, path: "/journey" },
   { titleKey: "navCharacter" as TranslationKey, descKey: "pillarCharacterDesc" as TranslationKey, icon: Heart, path: "/character" },
   { titleKey: "navInteractiveJourney" as TranslationKey, descKey: "pillarInteractiveDesc" as TranslationKey, icon: Compass, path: "/interactive-journey" },
+  { titleKey: "navBattles" as TranslationKey, descKey: "pillarBattlesDesc" as TranslationKey, icon: Swords, path: "/battles" },
   { titleKey: "navGraph" as TranslationKey, descKey: "pillarGraphDesc" as TranslationKey, icon: BookOpen, path: "/event-graph" },
 ];
 

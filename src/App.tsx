@@ -29,6 +29,9 @@ import QuizPage from "./pages/QuizPage";
 import FamilyTreePage from "./pages/FamilyTreePage";
 import CompanionsPage from "./pages/CompanionsPage";
 import FeedbackPage from "./pages/FeedbackPage";
+import BattlesPage from "./pages/BattlesPage";
+import BattleDetailPage from "./pages/BattleDetailPage";
+import AdminBattlesPage from "./pages/AdminBattlesPage";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +58,8 @@ const App = () => (
               <Route path="/family-tree" element={<Layout><FamilyTreePage /></Layout>} />
               <Route path="/companions" element={<Layout><CompanionsPage /></Layout>} />
               <Route path="/feedback" element={<Layout><FeedbackPage /></Layout>} />
+              <Route path="/battles" element={<Layout><BattlesPage /></Layout>} />
+              <Route path="/battles/:slug" element={<Layout><BattleDetailPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -65,6 +70,7 @@ const App = () => (
               <Route path="/admin/timeline" element={<AdminProtectedRoute><AdminTimelinePage /></AdminProtectedRoute>} />
               <Route path="/admin/feedback" element={<AdminProtectedRoute><AdminFeedbackPage /></AdminProtectedRoute>} />
               <Route path="/admin/quiz" element={<AdminProtectedRoute><AdminQuizPage /></AdminProtectedRoute>} />
+              <Route path="/admin/battles" element={<AdminProtectedRoute><AdminBattlesPage /></AdminProtectedRoute>} />
 
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>
