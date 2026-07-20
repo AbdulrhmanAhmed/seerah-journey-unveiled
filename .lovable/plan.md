@@ -1,118 +1,120 @@
 
-# Battles Section — Full Plan
+# Battles Deep-Dive — Rich Content + Interactive Visuals
 
-Add a dedicated Battles feature with all ~75 military engagements (Ghazawāt + Sarāyā) from *The Sealed Nectar*, backed by a new database table, an admin CRUD panel, and a public browsing experience linked from the homepage.
+Upgrade `/battles/:slug` from a plain facts page into a museum-grade, interactive battle experience. Each major battle gets full *Sealed Nectar* content and a set of visual modules; minor Sarāyā keep the lighter layout.
 
-## 1. Database — new `battles` table
+## 1. Content enrichment (Sealed Nectar)
 
-Separate from `timeline_events` because battles carry structured military data that doesn't fit a generic event row.
+Rewrite `full_story`, `key_events`, `quran_references`, `hadith_references` for the 12 major engagements with the full chapter narrative from Al-Mubarakpuri:
 
-**Columns**
+Badr, Uḥud, Banū Qaynuqā', Banū Naḍīr, Khandaq (Aḥzāb), Banū Qurayẓah, Banū al-Muṣṭaliq, Ḥudaybiyah, Khaybar, Mu'tah, Fatḥ Makkah, Ḥunayn, Ṭā'if, Tabūk.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid PK | |
-| `slug` | text unique | e.g. `badr`, `uhud`, `mutah` |
-| `name` / `name_en` | text | "غزوة بدر الكبرى" / "Battle of Badr" |
-| `kind` | text | `ghazwah` (Prophet led) or `sariyyah` (dispatched) |
-| `sequence_number` | int | 1–28 for ghazawāt, 1–~50 for sarāyā |
-| `hijri_year` | int | e.g. 2 |
-| `hijri_month` | text | "Ramadan" |
-| `gregorian_date` | text | "13 March 624 CE" |
-| `location_name` / `_en` | text | "بدر" / "Badr wells" |
-| `lat`, `lng` | double | for map pin |
-| `commander_muslim` / `_en` | text | Prophet ﷺ or the dispatched leader |
-| `commander_enemy` / `_en` | text | e.g. Abū Jahl |
-| `opponents` / `_en` | text | Quraysh, Banū Naḍīr, etc. |
-| `muslim_forces` | int | 313, 1000, 10000 … nullable |
-| `enemy_forces` | int | nullable |
-| `muslim_casualties` | int | nullable |
-| `enemy_casualties` | int | nullable |
-| `enemy_captured` | int | nullable |
-| `outcome` | text | `victory`, `defeat`, `truce`, `inconclusive`, `withdrawal` |
-| `cause` / `_en` | text | short trigger (1–2 sentences) |
-| `summary` / `_en` | text | one-paragraph overview |
-| `full_story` / `_en` | text | long narrative (markdown) |
-| `key_events` | jsonb | array of `{title, title_en, description, description_en}` |
-| `quran_references` | jsonb | same shape as `timeline_events.quran_references` |
-| `hadith_references` | jsonb | same shape |
-| `related_event_ids` | jsonb | link back to `timeline_events` |
-| `image_url` | text | hero image |
-| `is_major` | boolean | flag the ~10 famous ones (Badr, Uḥud, Khandaq, Qurayẓah, Muṣṭaliq, Ḥudaybiyah, Khaybar, Mu'tah, Fatḥ, Ḥunayn, Ṭā'if, Tabūk) |
-| `is_active`, `display_order`, `created_at` | | standard |
+Each gets these new JSONB fields:
+- `background` / `_en` — political & tribal context (2–4 paragraphs)
+- `preparations` / `_en` — mobilization, march, intelligence
+- `timeline_phases` — `[{ phase, phase_en, day, description, description_en }]` (pre-battle → engagement → aftermath)
+- `key_figures` — `[{ name, name_en, side, role, role_en, note, note_en }]`
+- `aftermath` / `_en` — treaties, revelations, strategic impact
+- `lessons` / `_en` — bulleted takeaways from the book
+- `casualties_detail` — `[{ name, name_en, side, note, note_en }]` for named martyrs & notable slain enemies
 
-**RLS**
-- Public `SELECT` where `is_active = true`.
-- `INSERT/UPDATE/DELETE` restricted to `has_role(auth.uid(), 'admin')`.
-- Matching `GRANT`s for `anon`, `authenticated`, `service_role`.
+## 2. Schema additions
 
-**Seeding**
-- Insert all 28 Ghazawāt with cause/summary/full_story/commanders/forces/casualties/outcome and Qur'anic refs where applicable (Badr → Āl 'Imrān 3:123, Anfāl 8; Uḥud → Āl 'Imrān 3:139-179; Khandaq → Al-Aḥzāb 33:9-27; Banū Naḍīr → Al-Ḥashr; Ḥudaybiyah/Fatḥ → Al-Fatḥ 48; Ḥunayn → At-Tawbah 9:25-27; Tabūk → At-Tawbah 9:38-129).
-- Insert all ~50 Sarāyā with commander, year, brief summary, outcome. Long narratives only for the notable ones (Nakhlah, Rajī', Bi'r Ma'ūnah, Ka'b b. al-Ashraf, Mu'tah, Dhāt al-Salāsil, destruction of the three idols, 'Alī to Yemen).
-- Every entry cites *The Sealed Nectar* by chapter, matching the existing content standard.
+New migration adds nullable columns on `battles`:
 
-## 2. Public pages
+```
+background, background_en           text
+preparations, preparations_en       text
+aftermath, aftermath_en             text
+lessons, lessons_en                 text
+timeline_phases                     jsonb
+key_figures                         jsonb
+casualties_detail                   jsonb
+tactical_map                        jsonb   -- see §4
+troop_movements                     jsonb   -- polyline arrows for Leaflet
+force_composition                   jsonb   -- {cavalry, infantry, armor…} per side
+```
 
-**`/battles` — index**
-- Hero: "الغزوات والسرايا / Battles & Expeditions".
-- Toggle pills: **All / Major only / Ghazawāt / Sarāyā** + search box + year filter (1–11 AH).
-- Grid of cards sorted chronologically:
-  - Image or category icon fallback
-  - Name (ar/en), Hijri year + Gregorian, location, outcome badge (color-coded: victory=emerald, defeat=amber, truce=blue, inconclusive=slate)
-  - Commander line
-  - "View details →"
-- Skeleton loading + `<QueryErrorState>` (reusing the pattern from the audit).
+## 3. Redesigned detail page
 
-**`/battles/:slug` — detail**
-- Sticky header with name + outcome badge.
-- Quick-facts strip: Date (Hijri + CE), Location, Commander (Muslim), Commander (Enemy), Forces (M vs E), Casualties (M vs E).
-- Sections (only render if data exists):
-  1. Cause / السبب
-  2. Summary / ملخص
-  3. Full narrative / السرد الكامل
-  4. Key events timeline (from `key_events` JSONB, vertical stepper)
-  5. Location map — single Leaflet marker at `lat/lng` (reuse existing pattern; `z-[1200]` rule respected)
-  6. Qur'anic verses revealed
-  7. Hadith references
-  8. Related timeline events (chips linking to `/event/:slug`)
-- Bilingual (Amiri headings, Tajawal/Inter body); full RTL/LTR mirroring via `useLanguage`.
+Structure (each section only renders if data exists):
 
-## 3. Homepage integration
+1. **Cinematic hero** — parallax image, name in Amiri (large), outcome ribbon, Hijri+CE date, location, gradient overlay matching outcome color.
+2. **Sticky sub-nav** — Overview · Background · Forces · Tactical Map · Timeline · Key Figures · Aftermath · Lessons · Scripture. Scroll-spy highlights active section.
+3. **Force comparison bar** — animated horizontal bars (Muslim vs Enemy) for troops, cavalry, armor, casualties, captives. Framer Motion count-up.
+4. **Commander cards** — two facing cards (Muslim / Enemy), portrait icon, name, tribe/role, forces led.
+5. **Interactive tactical SVG map** — see §4.
+6. **Geographic Leaflet map** — real-world location with marker + troop-movement arrows (from `troop_movements` polylines: Muslim path emerald, Enemy path amber). Reuses the `z-[1200]` rule.
+7. **Phase-by-phase timeline** — vertical stepper driven by `timeline_phases`, click a phase to reveal its description; auto-play button steps through phases 1s each.
+8. **Key figures grid** — filterable chips (All / Muslim / Enemy / Martyrs), each card opens a side sheet with detail.
+9. **Named casualties list** — martyrs section styled with green crescent, notable enemy slain in amber.
+10. **Aftermath & Lessons** — two-column card layout.
+11. **Scripture** — enhanced Qur'an cards with surah name, ayah range, Arabic (Amiri) + translation, revelation context; Hadith cards with grading.
+12. **Related events chips** — links to `/event/:slug` from `related_event_ids`.
+13. **"Next battle / Previous battle"** footer nav sorted by hijri_year.
 
-- Add a new pillar card in `PillarsSection.tsx` — "Battles & Expeditions / الغزوات والسرايا" → `/battles`, using a `Swords` Lucide icon and the existing emerald/gold token palette.
-- Add link in `Footer.tsx` under an "Explore" list.
-- **No Navbar entry** (per your rule against adding Library/Map/Event Graph — Battles will follow the same policy).
+## 4. Tactical map module (per-battle SVG)
 
-## 4. Admin CRUD — `/admin/battles`
+Generalize `BadrTacticalMap` into a reusable `TacticalBattleMap` that reads `tactical_map` JSONB:
 
-Mirror the existing `/admin/timeline` pattern:
-- List table (sortable by `hijri_year`, filterable by `kind` and `outcome`).
-- "Add battle" and "Edit" dialogs with tabs: **Basic**, **Forces & Outcome**, **Narrative**, **Key events**, **Scripture refs**, **Media**.
-- Rich-text (existing editor) for `full_story` and `full_story_en`.
-- JSONB editors for `key_events`, `quran_references`, `hadith_references` (same UX as timeline admin).
-- Media picker binds to the existing `seerah-media` bucket.
-- Sidebar link in `AdminLayout` (icon: `Swords`).
+```jsonc
+{
+  "terrain": "desert" | "valley" | "mountains" | "urban" | "coast",
+  "labels": [{ x, y, text, text_en, color }],
+  "features": [{ type: "line"|"ellipse"|"path", ...svgProps }],
+  "points": [{
+    id, x, y,
+    label, label_en,
+    side: "muslim"|"enemy"|"neutral",
+    description, description_en,
+    icon: "camp"|"archer"|"cavalry"|"wells"|"command"|"trench"
+  }],
+  "arrows": [{ from:[x,y], to:[x,y], side, label?, label_en? }]
+}
+```
 
-## 5. i18n
+Render:
+- Terrain-tinted gradient background per `terrain` type.
+- Animated pulse rings on interactive points.
+- Directional troop-movement arrows with SVG `<marker>` arrowheads, dashed animation.
+- Click a point → floating card (glass panel) with description; keyboard arrows cycle through points.
+- Legend (Muslim / Enemy / Strategic feature).
+- Optional playhead scrubber that reveals arrows sequentially when `timeline_phases` reference point IDs.
 
-- Add new keys to `src/i18n/translations.ts` in both `ar` and `en`: `battlesTitle`, `battlesSubtitle`, `filterGhazawat`, `filterSaraya`, `filterMajor`, `outcomeVictory/Defeat/Truce/Inconclusive/Withdrawal`, `commanderMuslim`, `commanderEnemy`, `muslimForces`, `enemyForces`, `casualties`, `captives`, `cause`, `keyEvents`, `viewFullBattle`, etc.
+Seed tactical maps for Badr (port existing `badrBattleData`), Uḥud (Mount Uḥud + archers' hill + Khalid's flank), Khandaq (trench line + confederate camps), Ḥunayn (Wadi Ḥunayn ambush), Mu'tah, Khaybar (fortresses of Nāʿim, Qamūṣ etc.), Fatḥ Makkah (four entry columns).
 
-## 6. Technical execution order
+## 5. Admin CRUD updates
 
-1. Migration: create `battles` table + GRANTs + RLS + policies. Await approval.
-2. Seed script (via `supabase--insert`) — three batches:
-   - Batch A: 12 major ghazawāt with full narratives.
-   - Batch B: remaining 16 ghazawāt with short summaries.
-   - Batch C: ~50 sarāyā with commander/year/summary.
-3. Types regenerate → build public `/battles` list page + `useBattles` query hook.
-4. Build `/battles/:slug` detail page.
-5. Wire homepage `PillarsSection` card + footer link.
-6. Build `/admin/battles` list + editor dialog; add sidebar entry.
-7. Add all translation keys.
-8. Verify with Playwright: `/battles` renders, filter works, detail page loads, admin CRUD create/edit round-trips.
+Extend `/admin/battles` editor with new tabs:
+- **Context**: background, preparations, aftermath, lessons (rich text, ar+en).
+- **Phases**: repeatable JSON editor for `timeline_phases`.
+- **Figures**: repeatable editor for `key_figures` and `casualties_detail`.
+- **Tactical Map**: JSON editor + live SVG preview using the same `TacticalBattleMap` renderer.
+- **Movements**: repeat editor for `troop_movements` polylines + inline `LeafletMapPicker` to click waypoints.
 
-## Out of scope (unless you add them later)
+## 6. i18n
 
-- Interactive tactical maps (like the existing Badr SVG). We can migrate `BattleOfBadrPage` into this system in a second pass and add SVG tactical maps as a JSONB field per battle.
-- Audio narration per battle.
-- Bookmarks / share buttons.
+Add keys: `battleBackground`, `battlePreparations`, `battleAftermath`, `battleLessons`, `battleTacticalMap`, `battleGeoMap`, `battlePhases`, `battleKeyFigures`, `battleMartyrs`, `battleForceComparison`, `battleCavalry`, `battleInfantry`, `battleArmor`, `battleNext`, `battlePrev`, plus phase / side labels — in `ar` and `en`.
+
+## 7. Execution order
+
+1. Migration: add columns.
+2. Build `TacticalBattleMap` component + JSON schema helpers.
+3. Rebuild `BattleDetailPage.tsx` with sticky sub-nav, force bars, commander cards, phases stepper, geo map, related events, prev/next.
+4. Seed enriched content for the 12 major battles (3 SQL batches) with full Sealed Nectar narratives, phases, figures, tactical maps, movements.
+5. Extend `AdminBattlesPage` editor with the new tabs.
+6. Add translation keys.
+7. Playwright verify: `/battles/badr-al-kubra` renders every module, tactical map interactive, geo map draws arrows, sub-nav scroll-spy works, admin round-trip saves JSON.
+
+## Technical details
+
+- Reuse existing `motion/framer-motion`, `Leaflet` via refs (per project rule), `Amiri`/`Tajawal`/`Inter` fonts, semantic tokens only (no hardcoded colors).
+- Outcome ribbon uses `outcomeStyles` tokens already in place; add matching gradient token in `index.css`.
+- Sticky sub-nav uses `IntersectionObserver` for scroll-spy; hidden on mobile behind a `Sheet`.
+- All new JSONB fields nullable so existing Sarāyā rows still render the lean layout.
+
+## Out of scope
+
+- Audio narration per battle (deferred).
+- 3D terrain / Mapbox globe (deferred; sticking with Leaflet).
+- Video reenactments.

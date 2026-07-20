@@ -251,12 +251,15 @@ function BattleForm({ value, onChange, onSave, saving }: { value: Battle; onChan
   return (
     <div className="space-y-4">
       <Tabs defaultValue="basic">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="basic">Basic</TabsTrigger>
           <TabsTrigger value="forces">Forces</TabsTrigger>
           <TabsTrigger value="narrative">Narrative</TabsTrigger>
-          <TabsTrigger value="events">Key Events</TabsTrigger>
-          <TabsTrigger value="refs">Refs & Media</TabsTrigger>
+          <TabsTrigger value="context">Context</TabsTrigger>
+          <TabsTrigger value="phases">Phases</TabsTrigger>
+          <TabsTrigger value="figures">Figures</TabsTrigger>
+          <TabsTrigger value="tactical">Tactical</TabsTrigger>
+          <TabsTrigger value="refs">Refs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-3 mt-4">
@@ -343,9 +346,52 @@ function BattleForm({ value, onChange, onSave, saving }: { value: Battle; onChan
           </Row>
         </TabsContent>
 
-        <TabsContent value="events" className="mt-4">
-          <Field label="Key Events (JSON array of {title, title_en, description, description_en})">
-            <Textarea rows={14} value={jsonField("key_events")} onChange={(e) => parseJson("key_events", e.target.value)} className="font-mono text-xs" />
+        <TabsContent value="context" className="mt-4 space-y-3">
+          <Row>
+            <Field label="Background (AR)"><Textarea rows={6} value={value.background || ""} onChange={(e) => set("background", e.target.value)} /></Field>
+            <Field label="Background (EN)"><Textarea rows={6} value={value.background_en || ""} onChange={(e) => set("background_en", e.target.value)} /></Field>
+          </Row>
+          <Row>
+            <Field label="Preparations (AR)"><Textarea rows={5} value={value.preparations || ""} onChange={(e) => set("preparations", e.target.value)} /></Field>
+            <Field label="Preparations (EN)"><Textarea rows={5} value={value.preparations_en || ""} onChange={(e) => set("preparations_en", e.target.value)} /></Field>
+          </Row>
+          <Row>
+            <Field label="Aftermath (AR)"><Textarea rows={5} value={value.aftermath || ""} onChange={(e) => set("aftermath", e.target.value)} /></Field>
+            <Field label="Aftermath (EN)"><Textarea rows={5} value={value.aftermath_en || ""} onChange={(e) => set("aftermath_en", e.target.value)} /></Field>
+          </Row>
+          <Row>
+            <Field label="Lessons (AR)"><Textarea rows={4} value={value.lessons || ""} onChange={(e) => set("lessons", e.target.value)} /></Field>
+            <Field label="Lessons (EN)"><Textarea rows={4} value={value.lessons_en || ""} onChange={(e) => set("lessons_en", e.target.value)} /></Field>
+          </Row>
+        </TabsContent>
+
+        <TabsContent value="phases" className="mt-4 space-y-3">
+          <Field label="Key Events (JSON: [{title, title_en, description, description_en}])">
+            <Textarea rows={8} value={jsonField("key_events")} onChange={(e) => parseJson("key_events", e.target.value)} className="font-mono text-xs" />
+          </Field>
+          <Field label="Timeline Phases (JSON: [{phase, phase_en, day, description, description_en}])">
+            <Textarea rows={10} value={jsonField("timeline_phases")} onChange={(e) => parseJson("timeline_phases", e.target.value)} className="font-mono text-xs" />
+          </Field>
+        </TabsContent>
+
+        <TabsContent value="figures" className="mt-4 space-y-3">
+          <Field label="Key Figures (JSON: [{name, name_en, side, role, role_en, note, note_en}])">
+            <Textarea rows={10} value={jsonField("key_figures")} onChange={(e) => parseJson("key_figures", e.target.value)} className="font-mono text-xs" />
+          </Field>
+          <Field label="Casualties Detail (JSON: [{name, name_en, side, note, note_en}])">
+            <Textarea rows={8} value={jsonField("casualties_detail")} onChange={(e) => parseJson("casualties_detail", e.target.value)} className="font-mono text-xs" />
+          </Field>
+        </TabsContent>
+
+        <TabsContent value="tactical" className="mt-4 space-y-3">
+          <Field label="Tactical Map (JSON: {terrain, labels, points, arrows, features})">
+            <Textarea rows={14} value={jsonField("tactical_map")} onChange={(e) => parseJson("tactical_map", e.target.value)} className="font-mono text-xs" />
+          </Field>
+          <Field label="Troop Movements (JSON: [{side, path:[[lat,lng]...], label, label_en}])">
+            <Textarea rows={8} value={jsonField("troop_movements")} onChange={(e) => parseJson("troop_movements", e.target.value)} className="font-mono text-xs" />
+          </Field>
+          <Field label="Force Composition (JSON: {cavalry:{muslim,enemy}, armor:{...}, camels:{...}})">
+            <Textarea rows={6} value={jsonField("force_composition")} onChange={(e) => parseJson("force_composition", e.target.value)} className="font-mono text-xs" />
           </Field>
         </TabsContent>
 

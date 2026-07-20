@@ -16,6 +16,11 @@ export type Database = {
     Tables: {
       battles: {
         Row: {
+          aftermath: string | null
+          aftermath_en: string | null
+          background: string | null
+          background_en: string | null
+          casualties_detail: Json | null
           cause: string | null
           cause_en: string | null
           commander_enemy: string | null
@@ -27,6 +32,7 @@ export type Database = {
           enemy_captured: number | null
           enemy_casualties: number | null
           enemy_forces: number | null
+          force_composition: Json | null
           full_story: string | null
           full_story_en: string | null
           gregorian_date: string | null
@@ -38,8 +44,11 @@ export type Database = {
           is_active: boolean
           is_major: boolean
           key_events: Json | null
+          key_figures: Json | null
           kind: string
           lat: number | null
+          lessons: string | null
+          lessons_en: string | null
           lng: number | null
           location_name: string | null
           location_name_en: string | null
@@ -50,15 +59,25 @@ export type Database = {
           opponents: string | null
           opponents_en: string | null
           outcome: string | null
+          preparations: string | null
+          preparations_en: string | null
           quran_references: Json | null
           related_event_ids: Json | null
           sequence_number: number | null
           slug: string
           summary: string | null
           summary_en: string | null
+          tactical_map: Json | null
+          timeline_phases: Json | null
+          troop_movements: Json | null
           updated_at: string
         }
         Insert: {
+          aftermath?: string | null
+          aftermath_en?: string | null
+          background?: string | null
+          background_en?: string | null
+          casualties_detail?: Json | null
           cause?: string | null
           cause_en?: string | null
           commander_enemy?: string | null
@@ -70,6 +89,7 @@ export type Database = {
           enemy_captured?: number | null
           enemy_casualties?: number | null
           enemy_forces?: number | null
+          force_composition?: Json | null
           full_story?: string | null
           full_story_en?: string | null
           gregorian_date?: string | null
@@ -81,8 +101,11 @@ export type Database = {
           is_active?: boolean
           is_major?: boolean
           key_events?: Json | null
+          key_figures?: Json | null
           kind?: string
           lat?: number | null
+          lessons?: string | null
+          lessons_en?: string | null
           lng?: number | null
           location_name?: string | null
           location_name_en?: string | null
@@ -93,15 +116,25 @@ export type Database = {
           opponents?: string | null
           opponents_en?: string | null
           outcome?: string | null
+          preparations?: string | null
+          preparations_en?: string | null
           quran_references?: Json | null
           related_event_ids?: Json | null
           sequence_number?: number | null
           slug: string
           summary?: string | null
           summary_en?: string | null
+          tactical_map?: Json | null
+          timeline_phases?: Json | null
+          troop_movements?: Json | null
           updated_at?: string
         }
         Update: {
+          aftermath?: string | null
+          aftermath_en?: string | null
+          background?: string | null
+          background_en?: string | null
+          casualties_detail?: Json | null
           cause?: string | null
           cause_en?: string | null
           commander_enemy?: string | null
@@ -113,6 +146,7 @@ export type Database = {
           enemy_captured?: number | null
           enemy_casualties?: number | null
           enemy_forces?: number | null
+          force_composition?: Json | null
           full_story?: string | null
           full_story_en?: string | null
           gregorian_date?: string | null
@@ -124,8 +158,11 @@ export type Database = {
           is_active?: boolean
           is_major?: boolean
           key_events?: Json | null
+          key_figures?: Json | null
           kind?: string
           lat?: number | null
+          lessons?: string | null
+          lessons_en?: string | null
           lng?: number | null
           location_name?: string | null
           location_name_en?: string | null
@@ -136,12 +173,17 @@ export type Database = {
           opponents?: string | null
           opponents_en?: string | null
           outcome?: string | null
+          preparations?: string | null
+          preparations_en?: string | null
           quran_references?: Json | null
           related_event_ids?: Json | null
           sequence_number?: number | null
           slug?: string
           summary?: string | null
           summary_en?: string | null
+          tactical_map?: Json | null
+          timeline_phases?: Json | null
+          troop_movements?: Json | null
           updated_at?: string
         }
         Relationships: []
