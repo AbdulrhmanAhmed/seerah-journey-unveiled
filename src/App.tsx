@@ -58,6 +58,8 @@ const App = () => (
               <Route path="/family-tree" element={<Layout><FamilyTreePage /></Layout>} />
               <Route path="/companions" element={<Layout><CompanionsPage /></Layout>} />
               <Route path="/feedback" element={<Layout><FeedbackPage /></Layout>} />
+              <Route path="/battles" element={<Layout><BattlesPage /></Layout>} />
+              <Route path="/battles/:slug" element={<Layout><BattleDetailPage /></Layout>} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLoginPage />} />
