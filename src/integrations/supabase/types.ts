@@ -14,6 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      battles: {
+        Row: {
+          cause: string | null
+          cause_en: string | null
+          commander_enemy: string | null
+          commander_enemy_en: string | null
+          commander_muslim: string | null
+          commander_muslim_en: string | null
+          created_at: string
+          display_order: number | null
+          enemy_captured: number | null
+          enemy_casualties: number | null
+          enemy_forces: number | null
+          full_story: string | null
+          full_story_en: string | null
+          gregorian_date: string | null
+          hadith_references: Json | null
+          hijri_month: string | null
+          hijri_year: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_major: boolean
+          key_events: Json | null
+          kind: string
+          lat: number | null
+          lng: number | null
+          location_name: string | null
+          location_name_en: string | null
+          muslim_casualties: number | null
+          muslim_forces: number | null
+          name: string
+          name_en: string | null
+          opponents: string | null
+          opponents_en: string | null
+          outcome: string | null
+          quran_references: Json | null
+          related_event_ids: Json | null
+          sequence_number: number | null
+          slug: string
+          summary: string | null
+          summary_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          cause?: string | null
+          cause_en?: string | null
+          commander_enemy?: string | null
+          commander_enemy_en?: string | null
+          commander_muslim?: string | null
+          commander_muslim_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          enemy_captured?: number | null
+          enemy_casualties?: number | null
+          enemy_forces?: number | null
+          full_story?: string | null
+          full_story_en?: string | null
+          gregorian_date?: string | null
+          hadith_references?: Json | null
+          hijri_month?: string | null
+          hijri_year?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_major?: boolean
+          key_events?: Json | null
+          kind?: string
+          lat?: number | null
+          lng?: number | null
+          location_name?: string | null
+          location_name_en?: string | null
+          muslim_casualties?: number | null
+          muslim_forces?: number | null
+          name: string
+          name_en?: string | null
+          opponents?: string | null
+          opponents_en?: string | null
+          outcome?: string | null
+          quran_references?: Json | null
+          related_event_ids?: Json | null
+          sequence_number?: number | null
+          slug: string
+          summary?: string | null
+          summary_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cause?: string | null
+          cause_en?: string | null
+          commander_enemy?: string | null
+          commander_enemy_en?: string | null
+          commander_muslim?: string | null
+          commander_muslim_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          enemy_captured?: number | null
+          enemy_casualties?: number | null
+          enemy_forces?: number | null
+          full_story?: string | null
+          full_story_en?: string | null
+          gregorian_date?: string | null
+          hadith_references?: Json | null
+          hijri_month?: string | null
+          hijri_year?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_major?: boolean
+          key_events?: Json | null
+          kind?: string
+          lat?: number | null
+          lng?: number | null
+          location_name?: string | null
+          location_name_en?: string | null
+          muslim_casualties?: number | null
+          muslim_forces?: number | null
+          name?: string
+          name_en?: string | null
+          opponents?: string | null
+          opponents_en?: string | null
+          outcome?: string | null
+          quran_references?: Json | null
+          related_event_ids?: Json | null
+          sequence_number?: number | null
+          slug?: string
+          summary?: string | null
+          summary_en?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       companions: {
         Row: {
           bio: string | null
