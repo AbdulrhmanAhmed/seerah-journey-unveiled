@@ -29,6 +29,9 @@ import QuizPage from "./pages/QuizPage";
 import FamilyTreePage from "./pages/FamilyTreePage";
 import CompanionsPage from "./pages/CompanionsPage";
 import FeedbackPage from "./pages/FeedbackPage";
+import BattlesPage from "./pages/BattlesPage";
+import BattleDetailPage from "./pages/BattleDetailPage";
+import AdminBattlesPage from "./pages/AdminBattlesPage";
 
 const queryClient = new QueryClient();
 
