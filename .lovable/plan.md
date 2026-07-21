@@ -1,65 +1,41 @@
 ## Goal
+Deepen every major battle detail page with substantially more *Sealed Nectar* content. Currently the 12 major battles have short background/aftermath/lessons blurbs but empty `full_story`, no Qur'anic references, no Hadith references, and thin preparations/casualty lists.
 
-1. Make the Battles feature reachable directly from the main navbar (currently only linked from the homepage and footer).
-2. Fill in the missing rich Sealed Nectar content for every battle that is still a stub, so opening any card in `/battles` leads to a meaningful detail page — not an almost-empty screen.
+## Scope — 12 major battles
+Badr al-Kubrā · Uḥud · al-Aḥzāb (Khandaq) · Banū Qurayẓah · al-Ḥudaybiyah · Khaybar · Fatḥ Makkah · Ḥunayn & Awṭās · Siege of aṭ-Ṭāʾif · Muʾtah · Tabūk · Sariyyah Usāmah b. Zayd
 
-## Current state (verified)
+## What each battle will gain
+For every major battle, expand these existing DB fields using *The Sealed Nectar* (ar-Raheeq al-Makhtum) as the primary source, cross-checked with Ibn Hishām and Ṣaḥīḥ al-Bukhārī/Muslim where Mubarakpuri cites them:
 
-- Navbar (`src/components/Navbar.tsx`) has no Battles entry.
-- 65 of the ~75 battles have no `background`, `preparations`, `aftermath`, `lessons`, `timeline_phases`, `key_figures`, or `tactical_map`. Only 9 major battles are fully populated (Badr, Uḥud, Khandaq, Ḥudaybiyah, Khaybar, Ḥunayn, Muʾtah, Fatḥ Makkah, Tabūk).
-- Still-empty majors: **Banū Qurayẓah**, **Siege of aṭ-Ṭāʾif**, **Usāmah b. Zayd to Ubnā**.
+1. **`background` + `background_en`** — expand from ~250 chars to a full multi-paragraph narrative: political context, tribal alliances, immediate trigger.
+2. **`preparations` + `preparations_en`** — Prophet's ﷺ consultation (shūrā), troop mobilization, march route, intelligence gathering, spiritual preparation (duʿāʾ, tahajjud).
+3. **`full_story` + `full_story_en`** — a long-form chronological narrative (currently empty for all 12). This is the biggest addition: the complete Sealed Nectar chapter condensed into a rich readable account.
+4. **`aftermath` + `aftermath_en`** — expand to cover captives, spoils distribution, revealed verses, treaties, political ripple effects.
+5. **`lessons` + `lessons_en`** — expand from bullet-style to fuller reflections (leadership, tawakkul, discipline, obedience — mapped to specific incidents in the battle).
+6. **`timeline_phases`** — add missing intermediate phases and enrich each phase's `description` / `description_en` with specific figures, dialogue, and named locations.
+7. **`key_figures`** — extend to 12-18 named figures per battle (commanders, standard-bearers, martyrs, poets, envoys) with `role`, `note`, and side.
+8. **`casualties_detail`** — populate named martyrs and notable enemy casualties from Sealed Nectar's appendices.
+9. **`quran_references`** — add the revealed verses tied to each battle (e.g. Sūrat al-Anfāl for Badr, Āl ʿImrān 121-179 for Uḥud, al-Aḥzāb 9-27 for Khandaq, al-Fatḥ for Ḥudaybiyah, al-Tawbah for Tabūk) with `surah`, `surahEn`, `ayah`, `textAr`, `textEn`.
+10. **`hadith_references`** — add 2-4 authentic hadiths per battle (Bukhārī/Muslim) with `sourceAr`, `sourceEn`, `textAr`, `textEn`.
+11. **`troop_movements`** (where map exists) — add labeled polyline points so `BattleGeoMap` shows march routes.
 
-## 1. Navbar entry
+## Approach
+- No schema changes — all fields already exist and the detail page already renders them.
+- No new UI components — `BattleDetailPage.tsx` already has sections for every field above (verified: overview, background, forces, tactical, geo, phases, figures, aftermath, lessons, scripture, plus a `full_story` collapsible under phases).
+- Content will be written per battle in a series of `supabase--insert` UPDATE calls, one battle per call to keep each migration reviewable.
+- Bilingual: Arabic first (primary sources), English mirrored.
+- Every added Qurʾān/Hadith reference will use the exact JSONB shape the page already reads (`textAr`/`textEn`/`surah`/`surahEn`/`ayah` for Qurʾān; `sourceAr`/`sourceEn`/`textAr`/`textEn` for Hadith).
 
-Edit `src/components/Navbar.tsx`:
-- Import `Swords` from lucide-react.
-- Add `{ name: t("navBattles"), icon: Swords, path: "/battles" }` to the `pillars` array, placed right after Interactive Journey so battle content sits near the timeline pillars.
-- No new translation key needed (`navBattles` already exists in `src/i18n/translations.ts`).
-
-The mobile menu picks up the same array automatically.
-
-## 2. Battle content expansion (Sealed Nectar sourced)
-
-Two migrations updating existing rows in the `battles` table — no schema change, no new tables.
-
-### 2a. Remaining major battles — full rich payload
-
-For each of `bani-qurayzah`, `at-taif`, `sariyyah-usamah`, set the same fields already used for Badr/Uḥud/etc.:
-- `background`, `background_en`
-- `preparations`, `preparations_en`
-- `aftermath`, `aftermath_en`
-- `lessons`, `lessons_en`
-- `timeline_phases` (JSONB: 6-9 phases with `title`/`title_en`, `description`/`description_en`, optional `hijri_date`)
-- `key_figures` (JSONB: 6-9 figures with `name`/`name_en`, `role`/`role_en`, `side`)
-- `casualties_detail` (JSONB with `muslim`, `enemy`, `captives`, etc.)
-- `tactical_map` (JSONB — reuse the same schema `TacticalBattleMap` already renders: `points[]` with x/y/label, `arrows[]` with from/to/side)
-
-### 2b. All remaining minor battles/expeditions — concise payload
-
-For every battle where `background IS NULL`, populate at minimum:
-- `background` / `background_en` — 2-3 paragraphs on context and cause from Sealed Nectar
-- `preparations` / `preparations_en` — force size, commander, banner colour, route
-- `aftermath` / `aftermath_en` — outcome, spoils, follow-up
-- `lessons` / `lessons_en` — 1-2 paragraph reflection
-- `key_figures` (JSONB) — 3-5 entries (commander + notable participants)
-- `casualties_detail` (JSONB) — even if `{ muslim: 0, enemy: 0, notes }` when Sealed Nectar records no casualties
-- `summary` / `summary_en` — improved 1-2 sentence card blurb if currently empty
-
-Small skirmishes (assassination sarāyā like Kaʿb b. al-Ashraf, Abū Rāfiʿ) will not receive a `tactical_map` or multi-phase timeline — those visual modules already render nothing when the JSON is absent, which is intended.
-
-## 3. Detail page verification
-
-`src/pages/BattleDetailPage.tsx` already gates every section on the presence of its data field, so no code changes are needed there. After the seed migrations run, previously empty pages (e.g. `/battles/katl-kab-ibn-al-ashraf`, the page the user is currently on) will render the new Background / Preparations / Aftermath / Lessons / Key Figures / Casualties sections automatically.
+## Order of execution
+Chronological, one battle per update, so you can review after each:
+1. Badr → 2. Uḥud → 3. Khandaq → 4. Banū Qurayẓah → 5. Ḥudaybiyah → 6. Khaybar → 7. Fatḥ Makkah → 8. Ḥunayn/Awṭās → 9. aṭ-Ṭāʾif → 10. Muʾtah → 11. Tabūk → 12. Sariyyah Usāmah.
 
 ## Out of scope
-
-- No schema changes.
-- No changes to admin battle editor.
-- No new components or route changes.
-- Custom images for battles (would need generation; can be a follow-up if desired).
+- Minor battles / sarāyā (already have generated summaries).
+- New pages, routes, or navigation.
+- Any UI/styling changes to `BattleDetailPage.tsx`.
 
 ## Technical notes
-
-- Two migrations to keep each under the SQL size limit: (a) three remaining majors with full payload, (b) all minor battles in one batch using `UPDATE ... WHERE slug = '...'` per row.
-- All Arabic strings sourced from Ar-Raḥīq al-Makhtūm (Al-Mubarakpuri), cross-checked with Ibn Hishām for figure roles.
-- JSONB columns will be inserted as valid JSON literals so existing components (`PhaseStepper`, `ForceComparison`, `TacticalBattleMap`) consume them without modification.
+- All writes via `supabase--insert` UPDATE statements against `public.battles` keyed by `slug`.
+- JSONB fields will be replaced wholesale (not merged) since current arrays are known.
+- Estimated ~12 update calls; each battle's payload is large so they must be sequential, not batched.
