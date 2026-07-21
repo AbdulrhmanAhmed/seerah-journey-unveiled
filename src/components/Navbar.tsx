@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, Heart, Menu, X, Map, Brain, GitBranch, Users, MessageSquare } from "lucide-react";
+import { Clock, Heart, Menu, X, Map, Brain, GitBranch, Users, MessageSquare, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
