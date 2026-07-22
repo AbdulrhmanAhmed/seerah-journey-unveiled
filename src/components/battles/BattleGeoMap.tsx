@@ -39,16 +39,26 @@ const BattleGeoMap = ({ lat, lng, name, movements = [] }: Props) => {
     const allPoints: L.LatLngExpression[] = [[lat, lng]];
 
     movements.forEach((m) => {
+      if (!m || !Array.isArray(m.path)) return;
+      const validPath = m.path.filter(
+        (pt): pt is [number, number] =>
+          Array.isArray(pt) &&
+          pt.length >= 2 &&
+          typeof pt[0] === "number" &&
+          typeof pt[1] === "number" &&
+          Number.isFinite(pt[0]) &&
+          Number.isFinite(pt[1])
+      );
+      if (validPath.length < 2) return;
       const color = sideColor[m.side || "neutral"];
-      const line = L.polyline(m.path, {
+      const line = L.polyline(validPath, {
         color,
         weight: 3,
         opacity: 0.75,
         dashArray: "6 6",
       }).addTo(map);
-      m.path.forEach((pt) => allPoints.push(pt));
-      // Arrowhead at end
-      const end = m.path[m.path.length - 1];
+      validPath.forEach((pt) => allPoints.push(pt));
+      const end = validPath[validPath.length - 1];
       L.circleMarker(end, { radius: 5, color, fillColor: color, fillOpacity: 1 }).addTo(map);
       if (m.label) line.bindTooltip(m.label);
     });
