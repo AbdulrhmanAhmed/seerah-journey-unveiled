@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 interface Phase {
   phase?: string;
   phase_en?: string;
+  title?: string;
+  title_en?: string;
   day?: string;
   description?: string;
   description_en?: string;
@@ -27,7 +29,9 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
   }, [playing, phases.length]);
 
   if (!phases || phases.length === 0) return null;
-  const p = phases[active];
+  const p = phases[active] || {};
+  const label = (ph: Phase) =>
+    (isAr ? ph.phase || ph.title : ph.phase_en || ph.title_en || ph.phase || ph.title) || "";
 
   return (
     <div>
@@ -72,9 +76,7 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
                 }`}
               >
                 <div className="text-xs">{ph.day}</div>
-                <div className="text-sm font-amiri">
-                  {isAr ? ph.phase : ph.phase_en || ph.phase}
-                </div>
+                <div className="text-sm font-amiri">{label(ph)}</div>
               </button>
             </li>
           ))}
@@ -92,7 +94,7 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
           >
             {p.day && <div className="text-xs uppercase tracking-wide text-secondary mb-1">{p.day}</div>}
             <h4 className="font-amiri text-xl font-bold text-foreground mb-3">
-              {isAr ? p.phase : p.phase_en || p.phase}
+              {label(p)}
             </h4>
             <p className="text-foreground/85 leading-loose whitespace-pre-line">
               {isAr ? p.description : p.description_en || p.description}
