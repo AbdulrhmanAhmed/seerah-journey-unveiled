@@ -1,41 +1,33 @@
-## Goal
-Deepen every major battle detail page with substantially more *Sealed Nectar* content. Currently the 12 major battles have short background/aftermath/lessons blurbs but empty `full_story`, no Qur'anic references, no Hadith references, and thin preparations/casualty lists.
+# Fill Out Battle Phases
 
-## Scope — 12 major battles
-Badr al-Kubrā · Uḥud · al-Aḥzāb (Khandaq) · Banū Qurayẓah · al-Ḥudaybiyah · Khaybar · Fatḥ Makkah · Ḥunayn & Awṭās · Siege of aṭ-Ṭāʾif · Muʾtah · Tabūk · Sariyyah Usāmah b. Zayd
+Today only the 12 major battles have phase timelines (7-10 phases each, title + description only). The other 60 expeditions show an empty phases section.
 
-## What each battle will gain
-For every major battle, expand these existing DB fields using *The Sealed Nectar* (ar-Raheeq al-Makhtum) as the primary source, cross-checked with Ibn Hishām and Ṣaḥīḥ al-Bukhārī/Muslim where Mubarakpuri cites them:
+## What gets built
 
-1. **`background` + `background_en`** — expand from ~250 chars to a full multi-paragraph narrative: political context, tribal alliances, immediate trigger.
-2. **`preparations` + `preparations_en`** — Prophet's ﷺ consultation (shūrā), troop mobilization, march route, intelligence gathering, spiritual preparation (duʿāʾ, tahajjud).
-3. **`full_story` + `full_story_en`** — a long-form chronological narrative (currently empty for all 12). This is the biggest addition: the complete Sealed Nectar chapter condensed into a rich readable account.
-4. **`aftermath` + `aftermath_en`** — expand to cover captives, spoils distribution, revealed verses, treaties, political ripple effects.
-5. **`lessons` + `lessons_en`** — expand from bullet-style to fuller reflections (leadership, tawakkul, discipline, obedience — mapped to specific incidents in the battle).
-6. **`timeline_phases`** — add missing intermediate phases and enrich each phase's `description` / `description_en` with specific figures, dialogue, and named locations.
-7. **`key_figures`** — extend to 12-18 named figures per battle (commanders, standard-bearers, martyrs, poets, envoys) with `role`, `note`, and side.
-8. **`casualties_detail`** — populate named martyrs and notable enemy casualties from Sealed Nectar's appendices.
-9. **`quran_references`** — add the revealed verses tied to each battle (e.g. Sūrat al-Anfāl for Badr, Āl ʿImrān 121-179 for Uḥud, al-Aḥzāb 9-27 for Khandaq, al-Fatḥ for Ḥudaybiyah, al-Tawbah for Tabūk) with `surah`, `surahEn`, `ayah`, `textAr`, `textEn`.
-10. **`hadith_references`** — add 2-4 authentic hadiths per battle (Bukhārī/Muslim) with `sourceAr`, `sourceEn`, `textAr`, `textEn`.
-11. **`troop_movements`** (where map exists) — add labeled polyline points so `BattleGeoMap` shows march routes.
+### 1. Phases for the 60 remaining expeditions
+Each sariyyah/expedition gets 4-6 bilingual phases sourced from The Sealed Nectar, following the same narrative arc:
+dispatch and objective -> march and route -> contact with the enemy -> engagement -> outcome and return to Madinah.
+Written in Arabic and English, with real names, numbers, and places rather than generic filler.
 
-## Approach
-- No schema changes — all fields already exist and the detail page already renders them.
-- No new UI components — `BattleDetailPage.tsx` already has sections for every field above (verified: overview, background, forces, tactical, geo, phases, figures, aftermath, lessons, scripture, plus a `full_story` collapsible under phases).
-- Content will be written per battle in a series of `supabase--insert` UPDATE calls, one battle per call to keep each migration reviewable.
-- Bilingual: Arabic first (primary sources), English mirrored.
-- Every added Qurʾān/Hadith reference will use the exact JSONB shape the page already reads (`textAr`/`textEn`/`surah`/`surahEn`/`ayah` for Qurʾān; `sourceAr`/`sourceEn`/`textAr`/`textEn` for Hadith).
+Done in batches of about 10 battles so each batch can be reviewed.
 
-## Order of execution
-Chronological, one battle per update, so you can review after each:
-1. Badr → 2. Uḥud → 3. Khandaq → 4. Banū Qurayẓah → 5. Ḥudaybiyah → 6. Khaybar → 7. Fatḥ Makkah → 8. Ḥunayn/Awṭās → 9. aṭ-Ṭāʾif → 10. Muʾtah → 11. Tabūk → 12. Sariyyah Usāmah.
+### 2. Richer phases for the 12 major battles
+Existing phases keep their titles but gain:
+- Longer, more detailed descriptions (specific incidents, named companions, dialogue reported in the sources)
+- A `day` label (for example "Saturday, 7 Shawwal 3 AH — dawn")
+- A `location` label (for example "Slopes of Mount Uhud")
+- 2-4 extra phases where the narrative currently jumps (for example the archers' hill at Uhud, the negotiation rounds at Hudaybiyah)
 
-## Out of scope
-- Minor battles / sarāyā (already have generated summaries).
-- New pages, routes, or navigation.
-- Any UI/styling changes to `BattleDetailPage.tsx`.
+### 3. Phase stepper UI update
+`src/components/battles/PhaseStepper.tsx` renders the new `day` and `location` fields as small labels above each phase title, bilingual and RTL-aware, and stays unchanged in appearance for phases that lack them.
 
 ## Technical notes
-- All writes via `supabase--insert` UPDATE statements against `public.battles` keyed by `slug`.
-- JSONB fields will be replaced wholesale (not merged) since current arrays are known.
-- Estimated ~12 update calls; each battle's payload is large so they must be sequential, not batched.
+
+- Phase objects stay in the existing `timeline_phases` JSONB column on `battles`; no schema migration needed. New optional keys: `day`, `day_en`, `location`, `location_en`.
+- Content is written via data updates to `battles`, batched by expedition group.
+- The stepper already tolerates both `title`/`phase` key shapes; the new fields are read defensively so older rows keep working.
+- Admin editor at `/admin/battles` continues to edit phases as raw JSON — its field hint text is updated to mention the new keys.
+
+## Sources
+
+The Sealed Nectar (ar-Raheeq al-Makhtum), cross-checked against Ibn Hisham and Sahih al-Bukhari/Muslim for named incidents.
