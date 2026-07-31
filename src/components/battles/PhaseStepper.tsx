@@ -10,6 +10,9 @@ interface Phase {
   title?: string;
   title_en?: string;
   day?: string;
+  day_en?: string;
+  location?: string;
+  location_en?: string;
   description?: string;
   description_en?: string;
 }
@@ -32,6 +35,8 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
   const p = phases[active] || {};
   const label = (ph: Phase) =>
     (isAr ? ph.phase || ph.title : ph.phase_en || ph.title_en || ph.phase || ph.title) || "";
+  const dayOf = (ph: Phase) => (isAr ? ph.day : ph.day_en || ph.day) || "";
+  const placeOf = (ph: Phase) => (isAr ? ph.location : ph.location_en || ph.location) || "";
 
   return (
     <div>
@@ -75,7 +80,7 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
                   i === active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <div className="text-xs">{ph.day}</div>
+                <div className="text-xs text-secondary/90">{dayOf(ph)}</div>
                 <div className="text-sm font-amiri">{label(ph)}</div>
               </button>
             </li>
@@ -90,17 +95,27 @@ const PhaseStepper = ({ phases }: { phases: Phase[] }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: isRtl ? 20 : -20 }}
             transition={{ duration: 0.3 }}
-            className="rounded-xl border border-border bg-card p-6"
+            className="rounded-xl border border-border bg-card p-6 md:p-7"
           >
-            {p.day && <div className="text-xs uppercase tracking-wide text-secondary mb-1">{p.day}</div>}
-            <h4 className="font-amiri text-xl font-bold text-foreground mb-3">
+            {(dayOf(p) || placeOf(p)) && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-xs">
+                {dayOf(p) && (
+                  <span className="tracking-wide text-secondary font-medium">{dayOf(p)}</span>
+                )}
+                {placeOf(p) && (
+                  <span className="text-muted-foreground">{placeOf(p)}</span>
+                )}
+              </div>
+            )}
+            <h4 className="font-amiri text-2xl font-bold text-foreground mb-4">
               {label(p)}
             </h4>
-            <p className="text-foreground/85 leading-loose whitespace-pre-line">
-              {isAr ? p.description : p.description_en || p.description}
-            </p>
+            <div className="max-w-[68ch] space-y-4 text-foreground/85 leading-loose whitespace-pre-line text-[0.975rem]">
+              {(isAr ? p.description : p.description_en || p.description)}
+            </div>
           </motion.div>
         </AnimatePresence>
+
       </div>
     </div>
   );
